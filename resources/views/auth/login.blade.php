@@ -131,10 +131,10 @@
         <div class="login-left">
     
     <div class="logo-box">
-        <img src="{{ asset('assets/img/corporate/Oudhyana_img/logo.png') }}" alt="Oudhyana Chikankaari">
+        <img src="{{ asset('assets/img/corporate/Oudhyana_img/logo.png') }}" alt="La Pavone">
     </div>
 
-    <h2>Oudhyana Chikankaari</h2>
+    <h2>La Pavone</h2>
     <p>By Akansha Agarwal</p>
 </div>
 

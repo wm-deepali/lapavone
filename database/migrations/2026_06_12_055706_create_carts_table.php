@@ -13,9 +13,7 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')
-                ->nullable()
-                ->constrained()
-                ->nullOnDelete();
+                ->nullable();
 
             $table->string('session_id')
                 ->nullable();
