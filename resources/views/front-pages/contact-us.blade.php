@@ -1,217 +1,141 @@
 @extends('layouts.app')
 @section('content')
 
-    <main class="aq-contact-page">
-        <!-- Hero Section -->
-        <section class="aq-catpage-hero">
-            <div class="aq-hero-glow"></div>
-            <div class="aq-floating-gift-box aq-floating-shape-1">
-                <i class="fa-solid fa-gem"></i>
+
+    <main class="contact-page-content">
+        <!-- 1. Hero Section -->
+        <section class="contact-hero-split">
+            <div class="contact-hero-left">
+                <img src="assets/images/contact_hero.png" alt="Contact Hero">
             </div>
-            <div class="aq-floating-gift-box aq-floating-shape-2">
-                <i class="fa-solid fa-gem"></i>
-            </div>
-            <div class="aq-catpage-hero-content">
-                <h1 class="aq-catpage-title">Contact Us</h1>
-                <div class="aq-catpage-breadcrumbs">
-                    <span class="text-white opacity-75">CONTACT US</span>
+            <div class="contact-hero-right">
+                <div class="contact-hero-content">
+                    <h1 class="hero-right-title">GET IN TOUCH WITH US</h1>
+                    <p class="hero-right-text">Whether you're looking for your next signature scent,<br>have a
+                        question about an order, or simply want to know more<br>about our fragrances, we're here to
+                        help.</p>
                 </div>
             </div>
         </section>
 
-        <!-- Contact Content Section -->
-        <section class="aq-contact-content pt-100 pb-100">
-            <div class="container">
-                <div class="row g-5">
-                    <!-- Left: Locations -->
-                    <div class="col-lg-5">
-                        <div class="aq-contact-info-wrapper pe-lg-4">
-                            <h3 class="font-family-heading mb-40">Our Offices</h3>
+        <!-- 2. Text Section -->
+        <section class="contact-text-section">
+            <div class="lp-container">
+                <h1 class="contact-title">BECAUSE GOOD CONVERSATIONS DESERVE<br>THE SAME ATTENTION AS GOOD
+                    FRAGRANCES.</h1>
+                <p class="contact-subtitle">For product recommendations, order support, collaborations, or general
+                    enquiries,<br>reach out to us and our team will get back to you as soon as possible.</p>
+            </div>
+        </section>
 
-                             @foreach($branches as $branch)
-                                <div class="aq-office-card {{ $loop->first ? 'corporate-card' : '' }} mb-30 p-4">
-                                    <div class="d-flex align-items-start">
-                                        <div class="aq-office-icon me-3 mt-1">
-                                            {!! $branch->icon ?: '<i class="fa-solid fa-location-dot"></i>' !!}
-                                        </div>
+        <!-- 3. Form Section -->
+        <section class="contact-form-section">
+            <div class="contact-form-container">
+                <form action="{{ route('contact.submit') }}" method="POST" class="contact-form">
+                    @csrf
 
-                                        <div>
-                                            <h4 class="font-family-heading mb-2">
-                                                {{ $branch->title }}
-                                            </h4>
-
-                                            <p class="aq-office-address mb-2">
-                                                {!! nl2br(e($branch->address)) !!}
-                                            </p>
-
-                                            <div class="aq-office-details">
-
-                                                @if($branch->phone)
-                                                    <strong>Phone:</strong> {{ $branch->phone }}<br>
-                                                @endif
-
-                                                @if($branch->email)
-                                                    <strong>Email:</strong> {{ $branch->email }}<br>
-                                                @endif
-
-                                                @if($branch->working_hours)
-                                                    <strong>Working Hours:</strong>
-                                                    {{ $branch->working_hours }}
-                                                @endif
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
-
-                    
+                    @if(session('success'))
+                        <div class="alert alert-success mb-3">
+                            {{ session('success') }}
                         </div>
+                    @endif
+
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ old('first_name') }}"
+                            placeholder="Enter your name">
+
+                        @error('first_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
 
-                    <!-- Right: Form -->
-                    <div class="col-lg-7">
-                        <div class="aq-contact-form-wrapper p-5">
-                            <h3 class="font-family-heading mb-4 aq-contact-form-title">Send us a Message</h3>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ old('last_name') }}"
+                            placeholder="Enter your surname">
 
-                            @if(session('success'))
-                                <div class="alert alert-success">
-                                    {{ session('success') }}
-                                </div>
-                            @endif
-
-
-                            <form id="aqContactPageForm" method="POST" action="{{ route('contact.submit') }}">
-                                @csrf
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label class="aq-contact-label">Your Name *</label>
-                                        <div class="position-relative">
-                                            <i class="fa-regular fa-user position-absolute aq-contact-input-icon"></i>
-                                            <input type="text" name="name"
-                                                class="form-control aq-contact-input @error('name') is-invalid @enderror"
-                                                value="{{ old('name') }}" placeholder="E.g. Rajesh Kumar">
-                                        </div>
-                                        @error('name')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6 mb-4">
-                                        <label class="aq-contact-label">Email Address *</label>
-                                        <div class="position-relative">
-                                            <i class="fa-regular fa-envelope position-absolute aq-contact-input-icon"></i>
-                                            <input type="email" name="email"
-                                                class="form-control aq-contact-input @error('email') is-invalid @enderror"
-                                                value="{{ old('email') }}" placeholder="rajesh@company.com">
-                                        </div>
-                                        @error('email')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-4">
-                                        <label class="aq-contact-label">Mobile Number *</label>
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-phone position-absolute aq-contact-input-icon"></i>
-                                            <input type="text" name="mobile" maxlength="10"
-                                                class="form-control aq-contact-input @error('mobile') is-invalid @enderror"
-                                                value="{{ old('mobile') }}" placeholder="9876543210">
-                                        </div>
-                                        @error('mobile')
-                                            <div class="invalid-feedback">
-                                                {{ $message }}
-                                            </div>
-                                        @enderror
-                                    </div>
-
-                                    <div class="col-md-6 mb-4">
-                                        <label class="aq-contact-label">Company Name</label>
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-building position-absolute aq-contact-input-icon"></i>
-                                            <input type="text" name="company" class="form-control aq-contact-input"
-                                                value="{{ old('company') }}" placeholder="E.g. XYZ Corp">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="aq-contact-label">Select Inquiry Type *</label>
-                                    <select name="inquiry_type"
-                                        class="form-select aq-contact-input @error('inquiry_type') is-invalid @enderror">
-                                        <option value="">What can we help you with?</option>
-                                        <option value="Bespoke Bridal Curation" {{ old('inquiry_type') == 'Bespoke Bridal Curation' ? 'selected' : '' }}>
-                                            Bespoke Bridal Curation
-                                        </option>
-                                        <option value="Bulk Corporate Gifting" {{ old('inquiry_type') == 'Bulk Corporate Gifting' ? 'selected' : '' }}>
-                                            Bulk Corporate Gifting
-                                        </option>
-                                        <option value="Partnership / Vendor Inquiry" {{ old('inquiry_type') == 'Partnership / Vendor Inquiry' ? 'selected' : '' }}>
-                                            Partnership / Vendor Inquiry
-                                        </option>
-                                        <option value="Other" {{ old('inquiry_type') == 'Other' ? 'selected' : '' }}>
-                                            Other
-                                        </option>
-                                    </select>
-                                    @error('inquiry_type')
-                                        <div class="invalid-feedback d-block">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="aq-contact-label">Your Message *</label>
-                                    <textarea name="message"
-                                        class="form-control aq-contact-input @error('message') is-invalid @enderror"
-                                        rows="4"
-                                        placeholder="Tell us about your requirements...">{{ old('message') }}</textarea>
-                                    @error('message')
-                                        <div class="invalid-feedback">
-                                            {{ $message }}
-                                        </div>
-                                    @enderror
-                                </div>
-
-                                {{-- Google reCAPTCHA --}}
-                                <div class="mb-4">
-                                    <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}">
-                                    </div>
-
-                                    @error('g-recaptcha-response')
-                                        <small class="text-danger d-block mt-2">{{ $message }}</small>
-                                    @enderror
-                                </div>
-
-                                <button type="submit" class="aq-contact-btn-submit w-100">
-                                    <span>Send Message</span>
-                                    <i class="fa-solid fa-paper-plane ms-2"></i>
-                                </button>
-                            </form>
-                        </div>
+                        @error('last_name')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label>
+                            Phone Number
+                            <span class="optional">(Optional)</span>
+                        </label>
+
+                        <div class="phone-input-group">
+                            <select class="form-control country-select" name="country_code">
+                                <option value="+91" selected>IN (+91)</option>
+                                <option value="+1">US (+1)</option>
+                                <option value="+44">UK (+44)</option>
+                                <option value="+61">AU (+61)</option>
+                                <option value="+971">UAE (+971)</option>
+                            </select>
+
+                            <input type="tel" name="mobile" class="form-control phone-input" value="{{ old('mobile') }}"
+                                placeholder="9876543210">
+                        </div>
+
+                        @error('mobile')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email</label>
+
+                        <input type="email" name="email" class="form-control" value="{{ old('email') }}"
+                            placeholder="Enter your email">
+
+                        @error('email')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label>Message</label>
+
+                        <textarea name="message" rows="4" class="form-control"
+                            placeholder="Write your message">{{ old('message') }}</textarea>
+
+                        @error('message')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+
+                    <div class="form-group mt-3">
+                        <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}">
+                        </div>
+
+                        @error('g-recaptcha-response')
+                            <small class="text-danger d-block mt-2">
+                                {{ $message }}
+                            </small>
+                        @enderror
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        Submit
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 4. Customer Service Section -->
+        <section class="contact-service-section">
+            <div class="lp-container">
+                <h2 class="service-title">CUSTOMER SERVICE</h2>
+                <p class="service-time">Monday to Friday, 10am - 5pm EST</p>
+                <a href="mailto:info@lapavone.com" class="service-link">Email Us</a>
+
+
             </div>
         </section>
     </main>
 
-    <style>
-        .is-invalid {
-            border-color: #dc3545 !important;
-        }
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
-        .invalid-feedback {
-            display: block;
-            font-size: 13px;
-            color: #dc3545;
-            margin-top: 6px;
-        }
-    </style>
 @endsection

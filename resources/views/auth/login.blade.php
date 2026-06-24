@@ -25,11 +25,11 @@
     }
 
 .logo-box {
-    background: #fff;
-    padding: 15px;
+    background: #ecf8f7;
+    padding: 10px;
     border-radius: 15px;
     display: inline-block;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
 }
 
 .logo-box img {
@@ -38,15 +38,16 @@
 }
     .login-left {
         width: 45%;
-        background: linear-gradient(135deg, #c98fbb, #c98fbb);
+        background: linear-gradient(135deg, #1f524f, #1f524f);
         color: #fff;
         text-align: center;
         padding: 40px 20px;
     }
 
     .login-left img {
-        width: 120px;
-        margin-bottom: 20px;
+        width: 240px;
+        border-radius: 15px;
+        margin-bottom: 5px;
     }
 
     .login-left h2 {
@@ -67,13 +68,13 @@
     .login-title {
         font-weight: 600;
         margin-bottom: 25px;
-        color: #333;
+        color: #1f524f;
     }
 
     .form-control {
         border-radius: 10px;
         padding: 12px;
-        background: #fcf4ef;
+        background: #ecf8f6;
         border: none;
     }
 
@@ -88,7 +89,7 @@
         padding: 12px;
         border-radius: 12px;
         border: none;
-        background: linear-gradient(90deg, #c98fbb, #c98fbb);
+        background: linear-gradient(90deg, #1f524f, #1f524f);
         color: #fff;
         font-weight: 500;
     }
@@ -119,7 +120,7 @@
             width: 100%;
         }
         .login-left {
-    background: linear-gradient(135deg, #f97316, #fbbf24);
+    background: linear-gradient(135deg, #1f524f, #1f524f);
 }
     }
 </style>
@@ -131,11 +132,11 @@
         <div class="login-left">
     
     <div class="logo-box">
-        <img src="{{ asset('assets/img/corporate/Oudhyana_img/logo.png') }}" alt="La Pavone">
+        <img src="{{ asset('assets/images/lapavone-login.webp') }}" alt="La Pavone">
     </div>
 
     <h2>La Pavone</h2>
-    <p>By Akansha Agarwal</p>
+    <p>Luxury Perfume Collection</p>
 </div>
 
         <!-- RIGHT SIDE -->

@@ -51,6 +51,7 @@ class CollectionController extends Controller
                 : Str::slug($request->name),
 
             'status' => $request->status ?? 1,
+            'show_in_navigation' => $request->show_in_navigation ?? 0,
             'sort_order' => $request->sort_order ?? 0,
             'meta_title' => $request->meta_title,
             'meta_description' => $request->meta_description,
@@ -97,6 +98,7 @@ class CollectionController extends Controller
 
             'status' => $request->status ?? 1,
             'sort_order' => $request->sort_order ?? 0,
+            'show_in_navigation' => $request->show_in_navigation ?? 0,
             'meta_title' => $request->meta_title,
             'meta_description' => $request->meta_description,
         ]);

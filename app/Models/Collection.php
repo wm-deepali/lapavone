@@ -13,6 +13,7 @@ class Collection extends Model
         'meta_description',
         'code',
         'status',
+        'show_in_navigation',
         'sort_order',
     ];
 

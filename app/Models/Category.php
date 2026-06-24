@@ -12,20 +12,17 @@ class Category extends Model
     protected $fillable = [
         'name',
         'slug',
-        'parent_id',
         'sub_title',
         'meta_title',
         'meta_description',
-        'image',
-        'sort_order',
-
+        'square_image',
+        'horizontal_image',
+        'parent_id',
         'is_popular',
-        'status',
-
-        'added_by',
         'is_featured',
-        'show_in_navbar',
-        'is_sub_category',
+        'status',
+        'sort_order',
+        'added_by',
     ];
 
     /*

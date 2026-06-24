@@ -31,6 +31,7 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'language' => 'nullable|in:en,hi',  // ← add
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
         ]);
@@ -54,25 +55,16 @@ class BlogController extends Controller
 
 
         Blog::create([
-
             'title' => $request->title,
-
             'slug' => $slug,
-
             'image' => $imageName,
-
+            'language' => $request->language ?? 'en',  // ← add
             'short_description' => $request->short_description,
-
             'content' => $request->content,
-
             'meta_title' => $request->meta_title,
-
             'meta_description' => $request->meta_description,
-
             'show_home' => $request->show_home ? 1 : 0,
-
-            'status' => $request->status ? 1 : 0
-
+            'status' => $request->status ? 1 : 0,
         ]);
 
 
@@ -96,10 +88,10 @@ class BlogController extends Controller
         $request->validate([
             'title' => 'required',
             'content' => 'required',
+            'language' => 'nullable|in:en,hi',  // ← add
             'meta_title' => 'nullable|string|max:255',
             'meta_description' => 'nullable|string',
         ]);
-
         $blog = Blog::findOrFail($id);
 
         $slug = Str::slug($request->title);
@@ -125,21 +117,16 @@ class BlogController extends Controller
 
 
         $blog->update([
-
             'title' => $request->title,
-
             'slug' => $slug,
-
             'image' => $imageName,
-
+            'language' => $request->language ?? 'en',  // ← add
             'short_description' => $request->short_description,
-
             'content' => $request->content,
-
+            'meta_title' => $request->meta_title,        // ← also missing from update, add this
+            'meta_description' => $request->meta_description,  // ← also missing from update, add this
             'show_home' => $request->show_home ? 1 : 0,
-
-            'status' => $request->status ? 1 : 0
-
+            'status' => $request->status ? 1 : 0,
         ]);
 
 

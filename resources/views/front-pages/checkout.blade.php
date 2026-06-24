@@ -1,865 +1,515 @@
 @extends('layouts.app')
 @section('content')
 
-    <style>
-        .saved-address-card {
-            border: 1px solid #e5e5e5;
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: .3s;
-        }
+    <div class="checkout-page-wrapper">
 
-        .saved-address-card:hover {
-            border-color: #d49aa7;
-        }
-
-        .saved-address-card.active {
-            border: 2px solid #d49aa7;
-            background: #fff8fa;
-        }
-
-        .saved-address-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .saved-address-radio {
-            width: 18px !important;
-            height: 18px !important;
-            margin-right: 10px;
-            position: static !important;
-        }
-
-
-
-        .saved-address-card input:checked+.saved-address-content {
-            color: #000;
-        }
-
-        .saved-address-card:has(input:checked) {
-            border: 2px solid #d49aa7;
-            background: #fff8fa;
-        }
-
-        .saved-address-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .saved-address-title {
-            font-weight: 600;
-            color: #d49aa7;
-        }
-    </style>
-
-
-    <main class="aq-cart-page">
-
-        <!-- 1. Luxury Inner Banner / Hero Section -->
-        <section class="aq-catpage-hero aq-apparel-hero">
-            <div class="aq-hero-glow"></div>
-            <div class="aq-floating-gift-box aq-floating-shape-1">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-            </div>
-            <div class="aq-floating-gift-box aq-floating-shape-2">
-                <i class="fa-regular fa-star"></i>
-            </div>
-            <div class="aq-catpage-hero-content">
-                <h1 class="aq-catpage-title">Checkout</h1>
-                <div class="aq-catpage-breadcrumbs">
-                    <a href="{{ route('home') }}">Home</a>
-                    <span>/</span>
-                    <a href="{{ route('cart') }}">Cart</a>
-                    <span>/</span>
-                    <span>Checkout</span>
+        <section class="checkout-section" style="padding: 80px 0; background-color: #FAFAF8;">
+            <div class="lp-container">
+                <div class="checkout-header text-center" style="margin-bottom: 48px;">
+                    <h1 class="checkout-title"
+                        style="font-family: 'Cinzel', serif; color: #1F5552; font-size: 36px; letter-spacing: 2px;">
+                        CHECKOUT</h1>
+                    <p class="checkout-subtitle"
+                        style="font-family: 'Outfit', sans-serif; color: #666; font-size: 16px; margin-top: 8px;">
+                        Complete your purchase securely.</p>
                 </div>
-            </div>
-        </section>
 
-        <!-- Breadcrumb Bar -->
-
-
-
-
-        <section class="aq-cart-wrapper" id="aqCartMainSection">
-            <div class="container">
-
-                <form id="checkoutForm">
-                    @csrf
-
-                    <div class="row">
-
-                        <!-- Left: Billing & Shipping -->
-                        <div class="col-xl-8 col-lg-8 col-12 mb-40">
-                            <h1 class="aq-cart-title font-family-heading mb-4">Billing & Shipping Details</h1>
-
-                            <div class="aq-checkout-container aq-contact-page">
-
-                                <input type="hidden" id="selectedAddressId" name="address_id"
-                                    value="{{ $defaultAddress->id ?? '' }}">
-
-                                @if($addresses->count())
-
-                                    <div class="mb-4">
-
-                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                            <h6 class="mb-0">Saved Addresses</h6>
-                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#newAddressModal">
-                                                + Add New Address
-                                            </button>
-
-                                        </div>
-
-                                        @foreach($addresses as $address)
-
-                                            <label class="saved-address-card">
-
-                                                <input type="radio" name="address_option" value="{{ $address->id }}"
-                                                    class="saved-address-radio" {{ $address->is_default ? 'checked' : '' }}>
-                                                <div class="saved-address-content">
-
-                                                    <div class="saved-address-header">
-                                                        <span class="saved-address-title">
-                                                            {{ $address->address_type ?? 'Address' }}
-                                                        </span>
-
-                                                        @if($address->is_default)
-                                                            <span class="badge bg-success">
-                                                                Default
-                                                            </span>
-                                                        @endif
-                                                    </div>
-
-                                                    <strong>{{ $address->name }}</strong>
-
-                                                    <div>{{ $address->phone }}</div>
-
-                                                    <div>{{ $address->email }}</div>
-
-                                                    <div>{{ $address->address_line_1 }}</div>
-
-                                                    @if($address->address_line_2)
-                                                        <div>{{ $address->address_line_2 }}</div>
-                                                    @endif
-
-                                                    <div>
-                                                        {{ $address->city?->name }},
-                                                        {{ $address->state?->name }}
-                                                        - {{ $address->pincode }}
-                                                    </div>
-
-                                                </div>
-
-                                            </label>
-
-                                        @endforeach
-
-                                    </div>
-
-                                @endif
-                                <!-- Contact Information -->
-                                <h4 class="aq-checkout-section-title font-family-heading my-4 pb-2">
-                                    1. Contact Information
-                                </h4>
-
-                                <div class="row g-3 mb-5">
-
-                                    <div class="col-md-12">
-                                        <div class="position-relative">
-                                            <i class="fa-regular fa-user position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="text" id="customer_name" name="name"
-                                                class="form-control aq-contact-input" value="{{ $customer->name }}"
-                                                placeholder="Full Name *" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i class="fa-regular fa-envelope position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="email" id="customer_email" name="email"
-                                                class="form-control aq-contact-input" value="{{ $customer->email }}"
-                                                placeholder="Email Address *" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-phone position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="tel" id="customer_phone" name="phone"
-                                                class="form-control aq-contact-input" value="{{ $customer->mobile }}"
-                                                placeholder="Phone Number *" required>
-                                        </div>
-                                    </div>
-
+                <div class="row g-5">
+                    <!-- Left Column: Forms -->
+                    <div class="col-lg-7">
+                        <div class="checkout-form-container">
+                            <!-- Contact Info -->
+                            <div class="checkout-section-block">
+                                <h2 class="checkout-section-title">Contact Information</h2>
+                                <div class="form-group">
+                                    <input type="email" class="form-control" placeholder="Email Address">
                                 </div>
-
-                                <!-- Shipping Address -->
-                                <h4 class="aq-checkout-section-title font-family-heading my-4 pb-2">2. Shipping Address</h4>
-
-                                <div id="newAddressSection" class="row g-3 mb-5">
-
-                                    <div class="col-12">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-house position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="text" id="address_line_1" name="address_line_1"
-                                                class="form-control aq-contact-input"
-                                                value="{{ $defaultAddress->address_line_1 ?? '' }}"
-                                                placeholder="Address Line 1 (House No., Building, Street) *" required>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-map-pin position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="text" id="address_line_2" name="address_line_2"
-                                                class="form-control aq-contact-input"
-                                                value="{{ $defaultAddress->address_line_2 ?? '' }}"
-                                                placeholder="Address Line 2 (Area, Landmark)">
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i
-                                                class="fa-solid fa-earth-americas position-absolute aq-contact-input-icon"></i>
-
-                                            <select name="country" class="form-control aq-contact-input">
-                                                <option value="India" selected>India</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-map position-absolute aq-contact-input-icon"></i>
-
-                                            <select name="state_id" id="state_id" class="form-control aq-contact-input"
-                                                required>
-
-                                                <option value="">Select State</option>
-
-                                                @foreach($states as $state)
-                                                    <option value="{{ $state->id }}" {{ ($defaultAddress->state_id ?? '') == $state->id ? 'selected' : '' }}>
-                                                        {{ $state->name }}
-                                                    </option>
-                                                @endforeach
-
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-city position-absolute aq-contact-input-icon"></i>
-
-                                            <select name="city_id" id="city_id" class="form-control aq-contact-input"
-                                                required>
-
-                                                <option value="">Select City</option>
-
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-6">
-                                        <div class="position-relative">
-                                            <i class="fa-solid fa-location-dot position-absolute aq-contact-input-icon"></i>
-
-                                            <input type="text" id="pincode" name="pincode"
-                                                value="{{ $defaultAddress->pincode ?? '' }}"
-                                                class="form-control aq-contact-input" placeholder="Postal Code / PIN Code *"
-                                                required>
-                                        </div>
-                                    </div>
-
+                                <div class="form-check mt-3">
+                                    <input class="form-check-input" type="checkbox" id="newsOffers" checked>
+                                    <label class="form-check-label" for="newsOffers">
+                                        Email me with news and exclusive offers
+                                    </label>
                                 </div>
-
-                                <!-- Payment Method -->
-                                <h4 class="aq-checkout-section-title font-family-heading my-4 pb-2">3. Payment Method</h4>
-                                <div class="checkout-payment-methods">
-                                    <div class="payment-method-box active">
-                                        <label class="aq-custom-radio-container">
-                                            <input type="radio" name="payment_method" value="razorpay" checked>
-                                            <span class="checkmark-radio"></span>
-                                            Pay Online
-                                        </label>
-                                    </div>
-                                    <div class="payment-method-box">
-                                        <label class="aq-custom-radio-container">
-                                            <input type="radio" name="payment_method" value="cod">
-                                            <span class="checkmark-radio"></span>
-                                            Cash on Delivery (COD)
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="aq-checkout-disclaimer">
-                                    <i class="fa-solid fa-lock mr-5"></i> Your personal data will be used to process your
-                                    order, support your experience throughout this website, and for other purposes described
-                                    in our privacy policy.
-                                </div>
-
                             </div>
-                        </div>
 
-                        <!-- Right: Order Summary sticky card -->
-                        <div class="col-xl-4 col-lg-4 col-12">
-                            <div class="aq-summary-card">
+                            <!-- Shipping Address -->
+                            <div class="checkout-section-block mt-5">
+                                <h2 class="checkout-section-title" style="margin-bottom: 24px;">Shipping Address</h2>
 
-                                <h3 class="aq-summary-title">Order Summary</h3>
-
-                                @if($cart && $cart->items->count())
-
-                                    <div class="mb-3">
-
-                                        @foreach($cart->items as $item)
-
-                                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
-
-                                                <div>
-
-                                                    <div style="font-size:14px;font-weight:600;">
-                                                        {{ $item->product->name }}
-                                                    </div>
-
-                                                    <small class="text-muted">
-                                                        Qty : {{ $item->quantity }}
-                                                    </small>
-
-                                                    @if($item->variant && $item->variant->values->count())
-
-                                                        <div class="mt-1">
-
-                                                            @foreach($item->variant->values as $variantValue)
-
-                                                                <small class="d-block text-muted">
-                                                                    {{ $variantValue->attributeValue->attribute->name }}
-                                                                    :
-                                                                    {{ $variantValue->attributeValue->value }}
-                                                                </small>
-
-                                                            @endforeach
-
-                                                        </div>
-
-                                                    @endif
-
+                                <!-- Address Cards Row -->
+                                <div class="address-cards-row mb-4">
+                                    <div class="row g-3">
+                                        <!-- Add New Address Card -->
+                                        <div class="col-md-4">
+                                            <div class="address-card add-new-card" id="card-new-address">
+                                                <div class="add-new-content">
+                                                    <span class="plus-icon">+</span>
+                                                    <span class="add-text">Add New Address</span>
                                                 </div>
-
-                                                <div style="font-weight:600;">
-                                                    ₹{{ number_format($item->total) }}
-                                                </div>
-
                                             </div>
-
-                                        @endforeach
-
-                                    </div>
-
-                                @endif
-
-                                <div class="aq-summary-row">
-                                    <span>Cart Subtotal</span>
-                                    <span id="summarySubtotal">
-                                        ₹{{ number_format($cart->subtotal ?? 0, 2) }}
-                                    </span>
-                                </div>
-
-                                <div class="aq-summary-row">
-                                    <span>Coupon Discount</span>
-                                    <span id="summaryDiscount" style="color:green;">
-                                        - ₹{{ number_format($cart->discount ?? 0, 2) }}
-                                    </span>
-                                </div>
-
-
-                                <div class="aq-summary-row">
-                                    <span>Shipping & Handling</span>
-                                    <span class="text-success font-weight-bold">
-                                        Free
-                                    </span>
-                                </div>
-
-                                @if($cart && $cart->tax_amount > 0)
-
-                                    @if($cart->gst_type == 'cgst_sgst')
-
-                                        <div class="aq-summary-row">
-                                            <span>CGST ({{ $cart->cgst_rate }}%)</span>
-                                            <span>
-                                                ₹{{ number_format($cart->cgst_amount, 2) }}
-                                            </span>
                                         </div>
 
-                                        <div class="aq-summary-row">
-                                            <span>SGST ({{ $cart->sgst_rate }}%)</span>
-                                            <span>
-                                                ₹{{ number_format($cart->sgst_amount, 2) }}
-                                            </span>
+                                        <!-- Default Address Card -->
+                                        <div class="col-md-4">
+                                            <div class="address-card existing-address-card active"
+                                                id="card-default-address">
+                                                <span class="default-badge">DEFAULT SHIPPING</span>
+                                                <div>
+                                                    <h3 class="address-name">Bilal Khilji</h3>
+                                                    <p class="address-details-text">
+                                                        A-152, Bhagat Singh Colony<br>
+                                                        Near Central Park<br>
+                                                        Bhiwadi, Rajasthan 301019<br>
+                                                        India
+                                                    </p>
+                                                    <p class="address-phone-text">Phone: +91 98765 43210</p>
+                                                </div>
+                                                <div>
+                                                    <hr class="card-divider">
+                                                    <div class="card-actions">
+                                                        <a href="#" class="action-edit">Edit</a>
+                                                        <a href="#" class="action-delete">Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                    @elseif($cart->gst_type == 'igst')
-
-                                        <div class="aq-summary-row">
-                                            <span>IGST ({{ $cart->igst_rate }}%)</span>
-                                            <span>
-                                                ₹{{ number_format($cart->igst_amount, 2) }}
-                                            </span>
+                                        <!-- Office Address Card -->
+                                        <div class="col-md-4">
+                                            <div class="address-card existing-address-card" id="card-office-address">
+                                                <div>
+                                                    <h3 class="address-name">Bilal Khilji (Office)</h3>
+                                                    <p class="address-details-text">
+                                                        Tech Park Tower B, 4th Floor<br>
+                                                        Sector 45<br>
+                                                        Gurugram, Haryana 122003<br>
+                                                        India
+                                                    </p>
+                                                    <p class="address-phone-text">Phone: +91 99887 76655</p>
+                                                </div>
+                                                <div>
+                                                    <hr class="card-divider">
+                                                    <div class="card-actions">
+                                                        <a href="#" class="action-edit">Edit</a>
+                                                        <a href="#" class="action-default-set">Set as Default</a>
+                                                        <a href="#" class="action-delete">Delete</a>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-
-                                    @endif
-
-                                @endif
-
-                                <div class="aq-summary-row total-row">
-                                    <span>Total Amount</span>
-                                    <span id="summaryTotal">
-                                        ₹{{ number_format($cart->grand_total ?? 0, 2) }}
-                                    </span>
+                                    </div>
                                 </div>
 
-                                <button type="button" id="placeOrderBtn" class="aq-btn-final-quote aq-checkout-btn-submit">
-
-                                    <span>Place Order Now</span>
-                                    <i class="fa-solid fa-check-circle ml-10"></i>
-
-                                </button>
-
-                                <div class="aq-summary-perks">
-
-                                    <div class="aq-summary-perk-item">
-                                        <i class="fa-solid fa-circle-check"></i>
-                                        <span>Secure Checkout with SSL Encryption</span>
+                                <!-- New Address Input Form (Hidden by default when existing card is active) -->
+                                <div class="row g-3" id="shipping-form-fields" style="display: none;">
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" placeholder="First Name">
                                     </div>
-
-                                    <div class="aq-summary-perk-item">
-                                        <i class="fa-solid fa-circle-check"></i>
-                                        <span>Free Shipping on Pre-paid Orders</span>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" placeholder="Last Name">
                                     </div>
-
+                                    <div class="col-12">
+                                        <input type="text" class="form-control" placeholder="Address">
+                                    </div>
+                                    <div class="col-12">
+                                        <input type="text" class="form-control"
+                                            placeholder="Apartment, suite, etc. (optional)">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" placeholder="City">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select class="form-select">
+                                            <option selected disabled>State</option>
+                                            <option value="Rajasthan">Rajasthan</option>
+                                            <option value="Maharashtra">Maharashtra</option>
+                                            <option value="Delhi">Delhi</option>
+                                            <option value="Karnataka">Karnataka</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" placeholder="PIN Code">
+                                    </div>
+                                    <div class="col-12">
+                                        <input type="tel" class="form-control" placeholder="Phone Number">
+                                    </div>
                                 </div>
-
                             </div>
-                        </div>
 
+                            <!-- Payment Options -->
+                            <!-- <div class="checkout-section-block mt-5">
+                                    <h2 class="checkout-section-title">Payment</h2>
+                                    <p class="text-muted" style="font-family: 'Outfit', sans-serif; font-size: 14px;">All
+                                        transactions are secure and encrypted.</p>
+                                    <div class="payment-methods-box">
+                                        <div class="payment-option border-bottom">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod"
+                                                    id="creditCard" checked>
+                                                <label class="form-check-label fw-bold" for="creditCard">
+                                                    Credit Card / Debit Card
+                                                </label>
+                                            </div>
+                                            <div class="payment-details mt-3">
+                                                <input type="text" class="form-control mb-3" placeholder="Card Number">
+                                                <input type="text" class="form-control mb-3" placeholder="Name on Card">
+                                                <div class="row g-3">
+                                                    <div class="col-6">
+                                                        <input type="text" class="form-control"
+                                                            placeholder="Expiration date (MM/YY)">
+                                                    </div>
+                                                    <div class="col-6">
+                                                        <input type="text" class="form-control"
+                                                            placeholder="Security code (CVV)">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="payment-option border-bottom">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" id="upi">
+                                                <label class="form-check-label fw-bold" for="upi">
+                                                    UPI (GPay, PhonePe, Paytm)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="payment-option border-bottom">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod"
+                                                    id="paypal">
+                                                <label class="form-check-label fw-bold" for="paypal">
+                                                    PayPal
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="payment-option">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="paymentMethod" id="cod">
+                                                <label class="form-check-label fw-bold" for="cod">
+                                                    Cash on Delivery (COD)
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                        </div>
                     </div>
 
-                </form>
+                    <!-- Right Column: Order Summary -->
+                    <div class="col-lg-5">
+                        <div class="checkout-summary-card">
 
+                            <!-- Items -->
+                            <div class="checkout-item">
+                                <div class="checkout-item-img">
+                                    <img src="assets/images/products/best_seller_1.png" alt="Reign">
+                                    <span class="checkout-item-badge">1</span>
+                                </div>
+                                <div class="checkout-item-details">
+                                    <h3 class="checkout-item-name">Reign</h3>
+                                    <p class="checkout-item-type">Signature Collection</p>
+                                </div>
+                                <div class="checkout-item-price">₹3,999</div>
+                            </div>
+
+                            <div class="checkout-item">
+                                <div class="checkout-item-img">
+                                    <img src="assets/images/products/best_seller_2.png" alt="Rosea">
+                                    <span class="checkout-item-badge">2</span>
+                                </div>
+                                <div class="checkout-item-details">
+                                    <h3 class="checkout-item-name">Rosea</h3>
+                                    <p class="checkout-item-type">Floral Collection</p>
+                                </div>
+                                <div class="checkout-item-price">₹7,998</div>
+                            </div>
+
+                            <hr class="checkout-divider">
+
+                            <!-- Discount Code -->
+                            <div class="mb-4">
+                                <div class="d-flex gap-2">
+                                    <input type="text" id="discount-input" class="form-control" placeholder="Discount code"
+                                        style="border: 1px solid rgba(35, 75, 70, 0.2); border-radius: 8px; font-family: 'Outfit', sans-serif; padding: 12px 16px; font-size: 14px;">
+                                    <button class="lp-btn" id="apply-coupon-btn">Apply</button>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                                    <span id="coupon-message"
+                                        style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; display: none;"></span>
+                                    <a href="#" id="view-coupons-link" data-bs-toggle="modal"
+                                        data-bs-target="#couponsModal">View All Coupons</a>
+                                </div>
+                            </div>
+
+                            <hr class="checkout-divider">
+
+                            <!-- Totals -->
+                            <div class="summary-line">
+                                <span>Subtotal</span>
+                                <span id="subtotal-val">₹11,997</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>Shipping</span>
+                                <span>Free</span>
+                            </div>
+                            <div class="summary-line">
+                                <span>Taxes (18% GST Included)</span>
+                                <span id="taxes-val">₹1,830</span>
+                            </div>
+                            <div class="summary-line coupon-applied-row" id="discount-row" style="display: none;">
+                                <span>Discount (<span id="discount-code-label"></span>) <a href="#" id="remove-coupon-btn"
+                                        style="color: #dc3545; font-size: 11px; margin-left: 6px; text-decoration: underline;">Remove</a></span>
+                                <span>-₹<span id="discount-val">0</span></span>
+                            </div>
+                            <hr class="checkout-divider">
+                            <div class="summary-line total-line" style="font-size: 20px; color: #1F5552;">
+                                <span>Total</span>
+                                <span class="fw-bold" id="total-val">₹11,997</span>
+                            </div>
+                            <button class="lp-btn lp-btn-solid w-100 mt-4" style="padding: 16px; font-size: 16px;"
+                                onclick="window.location.href='order-details.html'">COMPLETE ORDER</button>
+                            <p class="secure-checkout mt-3 text-center"><i class="fa-solid fa-lock"></i> Secure
+                                Encrypted Checkout</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
 
-        <div class="modal fade aq-premium-modal address-modal" id="newAddressModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" style="max-width: 550px;">
+        <!-- Coupons Modal -->
+        <div class="modal fade" id="couponsModal" tabindex="-1" aria-labelledby="couponsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-
-                    <button type="button" class="btn-close position-absolute" style="top: 20px; right: 20px; z-index: 10;"
-                        data-bs-dismiss="modal" aria-label="Close"></button>
-                    <div class="p-4">
-                        <h3 class="font-family-heading mb-4">Add New Address</h3>
-
-
-                        <form id="newAddressForm">
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="aq-form-label">Full Name *</label>
-                                    <input type="text" id="modal_name" class="form-control" required
-                                        value="{{ $customer->name ?? '' }}" placeholder="John Doe">
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="aq-form-label">Mobile Number *</label>
-                                    <input type="tel" id="modal_phone" class="form-control" required
-                                        value="{{ $customer->mobile ?? '' }}" placeholder="+91 00000 00000">
-                                </div>
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="couponsModalLabel"
+                            style="font-family: 'Cinzel', serif; color: #1F5552; font-weight: 600; letter-spacing: 1px; font-size: 20px;">
+                            AVAILABLE COUPONS</h5>
+                        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Coupon Card 1 -->
+                        <div class="coupon-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="coupon-badge">PAVONE15</span>
+                                <button class="btn-use-coupon" data-code="PAVONE15">USE COUPON</button>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="aq-form-label">Email Address *</label>
-                                <input type="email" id="modal_email" class="form-control" required
-                                    value="{{ $customer->email ?? '' }}" placeholder="example@email.com">
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 13px; color: #666; line-height: 1.4;">
+                                Get <strong>15% OFF</strong> on all luxury collections. Experience our signature scents with
+                                an exclusive discount.
                             </div>
+                        </div>
 
-                            <div class="mb-3">
-                                <label class="aq-form-label">Address Line 1 *</label>
-                                <input type="text" id="modal_address_line_1" class="form-control" required
-                                    placeholder="House/Flat No., Building Name">
+                        <!-- Coupon Card 2 -->
+                        <div class="coupon-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="coupon-badge">GOLDENHOUR</span>
+                                <button class="btn-use-coupon" data-code="GOLDENHOUR">USE COUPON</button>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="aq-form-label">Address Line 2 (Optional)</label>
-                                <input type="text" id="modal_address_line_2" class="form-control"
-                                    placeholder="Street, Sector, Area">
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 13px; color: #666; line-height: 1.4;">
+                                Get flat <strong>₹1,000 OFF</strong> on a minimum order of ₹5,000. Perfect for warm,
+                                aromatic selections.
                             </div>
+                        </div>
 
-                            <div class="row">
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="aq-form-label">State *</label>
-
-                                    <select id="modal_state_id" class="form-select" required>
-
-                                        <option value="">Select State</option>
-
-                                        @foreach($states as $state)
-                                            <option value="{{ $state->id }}">
-                                                {{ $state->name }}
-                                            </option>
-                                        @endforeach
-
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="aq-form-label">City *</label>
-
-                                    <select id="modal_city_id" class="form-select" required>
-
-                                        <option value="">Select City</option>
-
-                                    </select>
-                                </div>
-
+                        <!-- Coupon Card 3 -->
+                        <div class="coupon-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <span class="coupon-badge">LUPAVONE5</span>
+                                <button class="btn-use-coupon" data-code="LUPAVONE5">USE COUPON</button>
                             </div>
-
-                            <div class="row">
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="aq-form-label">Pincode *</label>
-
-                                    <input type="text" id="modal_pincode" class="form-control" required
-                                        placeholder="122002">
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label class="aq-form-label">Address Type *</label>
-
-                                    <div class="d-flex gap-4 mt-2">
-
-                                        <label class="d-flex align-items-center gap-2"
-                                            style="cursor:pointer;font-size:14px;color:#555;">
-
-                                            <input type="radio" name="address_type" value="home" checked
-                                                style="width:16px;height:16px;margin:0;appearance:auto !important;">
-
-                                            Home
-                                        </label>
-
-                                        <label class="d-flex align-items-center gap-2"
-                                            style="cursor:pointer;font-size:14px;color:#555;">
-
-                                            <input type="radio" name="address_type" value="office"
-                                                style="width:16px;height:16px;margin:0;appearance:auto !important;">
-
-                                            Office
-                                        </label>
-
-                                    </div>
-                                </div>
-
+                            <div style="font-family: 'Outfit', sans-serif; font-size: 13px; color: #666; line-height: 1.4;">
+                                Enjoy flat <strong>5% OFF</strong> on any order size. A small token from La Pavone.
                             </div>
-
-                            <button type="button" id="saveAddressBtn" class="aq-btn-submit w-100"
-                                style="background: var(--aq-color-maroon); color:#fff; padding:12px; border:none; border-radius:8px;">
-
-                                Save Address
-
-                            </button>
-
-                        </form>
-
-
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        </div>
 
 
-
-    </main>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script>
+    </div>
 
 
-        $(document).ready(function () {
+        <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const discountInput = document.getElementById('discount-input');
+            const applyCouponBtn = document.getElementById('apply-coupon-btn');
+            const couponMessage = document.getElementById('coupon-message');
+            const discountRow = document.getElementById('discount-row');
+            const discountCodeLabel = document.getElementById('discount-code-label');
+            const discountValEl = document.getElementById('discount-val');
+            const totalValEl = document.getElementById('total-val');
+            const removeCouponBtn = document.getElementById('remove-coupon-btn');
+            const taxesValEl = document.getElementById('taxes-val');
 
-            function loadCities(stateId, citySelector, selectedCityId = '') {
-                if (!stateId) {
+            // Original Values
+            const subtotal = 11997; // parsed from static text
+            
+            // Available coupons definition
+            const coupons = {
+                'PAVONE15': {
+                    type: 'percent',
+                    value: 15,
+                    description: '15% OFF on all luxury collections'
+                },
+                'GOLDENHOUR': {
+                    type: 'flat',
+                    value: 1000,
+                    description: 'Flat ₹1,000 OFF on orders above ₹5,000'
+                },
+                'LUPAVONE5': {
+                    type: 'percent',
+                    value: 5,
+                    description: 'Flat 5% OFF on order size'
+                }
+            };
 
-                    $(citySelector).html(
-                        '<option value="">Select City</option>'
-                    );
-
+            // Coupon apply logic
+            function applyCoupon(code) {
+                if (!code) {
+                    showMessage('Please enter a coupon code.', 'error');
                     return;
                 }
 
-                $(citySelector).html(
-                    '<option value="">Loading...</option>'
-                );
+                const coupon = coupons[code];
 
-                $.ajax({
-                    url: "{{ route('get-cities') }}",
-                    type: "GET",
-                    data: {
-                        state_id: stateId
-                    },
-                    success: function (response) {
+                if (coupon) {
+                    let discountAmount = 0;
+                    if (coupon.type === 'percent') {
+                        discountAmount = Math.round(subtotal * (coupon.value / 100));
+                    } else if (coupon.type === 'flat') {
+                        discountAmount = coupon.value;
+                    }
 
-                        let options =
-                            '<option value="">Select City</option>';
+                    const finalTotal = subtotal - discountAmount;
+                    const finalTax = Math.round(finalTotal * 18 / 118);
 
-                        $.each(response, function (key, city) {
+                    // Update UI values
+                    discountCodeLabel.textContent = code;
+                    discountValEl.textContent = discountAmount.toLocaleString('en-IN');
+                    totalValEl.textContent = '₹' + finalTotal.toLocaleString('en-IN');
+                    if (taxesValEl) {
+                        taxesValEl.textContent = '₹' + finalTax.toLocaleString('en-IN');
+                    }
 
-                            let selected =
-                                city.id == selectedCityId
-                                    ? 'selected'
-                                    : '';
+                    // Show elements
+                    discountRow.style.display = 'flex';
+                    showMessage(`Coupon "${code}" applied successfully!`, 'success');
+                } else {
+                    showMessage('Invalid coupon code.', 'error');
+                    // Reset summary UI
+                    discountRow.style.display = 'none';
+                    totalValEl.textContent = '₹' + subtotal.toLocaleString('en-IN');
+                    if (taxesValEl) {
+                        const originalTax = Math.round(subtotal * 18 / 118);
+                        taxesValEl.textContent = '₹' + originalTax.toLocaleString('en-IN');
+                    }
+                }
+            }
 
-                            options += `
-                                        <option value="${city.id}" ${selected}>
-                                            ${city.name}
-                                        </option>
-                                    `;
-                        });
+            // Remove Coupon function
+            function removeCoupon() {
+                discountInput.value = '';
+                discountRow.style.display = 'none';
+                totalValEl.textContent = '₹' + subtotal.toLocaleString('en-IN');
+                if (taxesValEl) {
+                    const originalTax = Math.round(subtotal * 18 / 118);
+                    taxesValEl.textContent = '₹' + originalTax.toLocaleString('en-IN');
+                }
+                couponMessage.style.display = 'none';
+            }
 
-                        $(citySelector).html(options);
+            // Show success/error message
+            function showMessage(text, type) {
+                couponMessage.textContent = text;
+                couponMessage.style.display = 'block';
+                if (type === 'success') {
+                    couponMessage.style.color = '#2e7d32'; // Green
+                } else {
+                    couponMessage.style.color = '#c62828'; // Red
+                }
+            }
+
+            // Event Listeners for USE COUPON buttons in modal
+            document.querySelectorAll('.btn-use-coupon').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const code = btn.getAttribute('data-code');
+                    discountInput.value = code;
+
+                    // Apply coupon
+                    applyCoupon(code);
+
+                    // Close Modal using Bootstrap API
+                    const modalEl = document.getElementById('couponsModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                });
+            });
+
+            // Event Listener for manual Apply click
+            if (applyCouponBtn) {
+                applyCouponBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const code = discountInput.value.trim().toUpperCase();
+                    applyCoupon(code);
+                });
+            }
+
+            // Event Listener for Coupon Code input keypress (Enter)
+            if (discountInput) {
+                discountInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const code = discountInput.value.trim().toUpperCase();
+                        applyCoupon(code);
                     }
                 });
             }
 
+            // Event Listener for Remove link
+            if (removeCouponBtn) {
+                removeCouponBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    removeCoupon();
+                });
+            }
 
-            let defaultCityId =
-                "{{ $defaultAddress->city_id ?? '' }}";
+            // --- Shipping Address Card Selection Logic ---
+            const cardNewAddress = document.getElementById('card-new-address');
+            const existingAddressCards = document.querySelectorAll('.existing-address-card');
+            const shippingFormFields = document.getElementById('shipping-form-fields');
 
-            loadCities(
-                $('#state_id').val(),
-                '#city_id',
-                defaultCityId
-            );
+            if (cardNewAddress && shippingFormFields) {
+                // Click Add New Address Card
+                cardNewAddress.addEventListener('click', () => {
+                    document.querySelectorAll('.address-card').forEach(c => c.classList.remove('active'));
+                    cardNewAddress.classList.add('active');
+                    
+                    // Show custom address form fields
+                    shippingFormFields.style.display = 'flex';
+                });
+            }
 
-            $('#state_id').on('change', function () {
+            existingAddressCards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Prevent card action buttons from triggering selection
+                    if (e.target.tagName === 'A') return;
 
-                loadCities(
-                    $(this).val(),
-                    '#city_id'
-                );
+                    document.querySelectorAll('.address-card').forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
 
-            });
-
-            $('#modal_state_id').on('change', function () {
-
-                loadCities(
-                    $(this).val(),
-                    '#modal_city_id'
-                );
-
-            });
-
-
-
-            $('.saved-address-radio').on('change', function () {
-
-                let addressId = $(this).val();
-
-                $.ajax({
-                    url: "{{ route('checkout.change-default-address') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        address_id: addressId
-                    },
-                    success: function (response) {
-
-                        if (response.success) {
-                            location.reload();
-                        }
+                    // Hide custom address form fields
+                    if (shippingFormFields) {
+                        shippingFormFields.style.display = 'none';
                     }
                 });
             });
-
-
-            $('#saveAddressBtn').on('click', function () {
-
-                $.ajax({
-                    url: "{{ route('address.store') }}",
-                    type: "POST",
-
-                    data: {
-                        _token: "{{ csrf_token() }}",
-
-                        name: $('#modal_name').val(),
-                        email: $('#modal_email').val(),
-                        phone: $('#modal_phone').val(),
-
-                        address_line_1: $('#modal_address_line_1').val(),
-                        address_line_2: $('#modal_address_line_2').val(),
-
-                        state_id: $('#modal_state_id').val(),
-                        city_id: $('#modal_city_id').val(),
-
-                        pincode: $('#modal_pincode').val(),
-
-                        address_type: $('input[name="address_type"]:checked').val()
-                    },
-
-                    success: function (response) {
-
-                        if (response.success) {
-
-                            location.reload();
-                        }
-                    }
-                });
-
-            });
-
         });
-
-
-        $('#placeOrderBtn').on('click', function () {
-
-            let btn = $(this);
-
-            btn.prop('disabled', true);
-
-            $.ajax({
-
-                url: "{{ route('checkout.place-order') }}",
-
-                type: "POST",
-
-                data: $('#checkoutForm').serialize(),
-
-                success: function (response) {
-
-                    btn.prop('disabled', false);
-
-                    if (!response.success) {
-
-                        alert(response.message);
-                        return;
-                    }
-
-                    let paymentMethod = $(
-                        'input[name="payment_method"]:checked'
-                    ).val();
-
-                    // COD
-                    if (paymentMethod === 'cod') {
-
-                        window.location.href = response.redirect_url;
-                        return;
-                    }
-
-                    // Razorpay
-                    if (paymentMethod === 'razorpay') {
-
-                        let localOrderId = response.order_id;
-
-                        let options = {
-
-                            key: response.key,
-
-                            amount: response.amount,
-
-                            currency: "INR",
-
-                            name: "{{ config('app.name') }}",
-
-                            description: "Order Payment",
-
-                            order_id: response.razorpay_order_id,
-
-                            prefill: {
-
-                                name: response.customer_name,
-
-                                email: response.customer_email,
-
-                                contact: response.customer_phone
-                            },
-
-                            handler: function (razorpayResponse) {
-
-                                $.ajax({
-                                    url: "{{ route('checkout.razorpay.success') }}",
-                                    type: "POST",
-                                    data: {
-
-                                        _token: "{{ csrf_token() }}",
-
-                                        order_id: localOrderId,
-
-                                        razorpay_payment_id:
-                                            razorpayResponse.razorpay_payment_id,
-
-                                        razorpay_order_id:
-                                            razorpayResponse.razorpay_order_id,
-
-                                        razorpay_signature:
-                                            razorpayResponse.razorpay_signature
-                                    },
-
-                                    success: function (res) {
-
-                                        if (res.success) {
-                                            window.location.href =
-                                                res.redirect_url;
-                                        }
-                                    }
-                                });
-
-                            }
-                        };
-
-                        let rzp = new Razorpay(options);
-                        rzp.open();
-                    }
-
-                },
-               error: function (xhr) {
-
-    btn.prop('disabled', false);
-
-    let message = 'Something went wrong.';
-
-    if (xhr.status === 422) {
-
-        let errors = xhr.responseJSON.errors;
-
-        message = Object.values(errors)
-            .map(error => error[0])
-            .join('<br>');
-    }
-
-    Swal.fire({
-        icon: 'error',
-        title: 'Validation Error',
-        html: message,
-        confirmButtonColor: '#d49aa7'
-    });
-}
-            });
-
-        });
-
     </script>
-
-
+    
 @endsection

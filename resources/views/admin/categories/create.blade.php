@@ -265,31 +265,61 @@
                     <div>
 
                         <!-- Media -->
-                        <div class="section-card">
-                            <div class="section-card-header">
-                                <h5>Image</h5>
-                            </div>
-                            <div class="section-card-body">
-                                <div class="file-upload-area" id="uploadArea">
-                                    <input type="file" name="image" accept="image/*" id="imageInput">
-                                    <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
-                                    <p>Click or drag an image here</p>
-                                    <small>PNG, JPG, WEBP — max 2 MB</small>
-                                </div>
-                                <!-- Preview -->
-                                <div id="imagePreview" style="display:none;margin-top:12px;text-align:center">
-                                    <img id="previewImg" src="" alt="Preview"
-                                        style="max-width:100%;border-radius:var(--radius-sm);border:1px solid var(--border);">
-                                    <div style="margin-top:8px">
-                                        <button type="button" onclick="clearImage()"
-                                            style="font-size:12px;color:var(--red);background:none;border:none;cursor:pointer;padding:0">
-                                            <i class="fa fa-times"></i> Remove
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                       <div class="section-card">
+    <div class="section-card-header">
+        <h5>Images</h5>
+    </div>
 
+    <div class="section-card-body">
+
+        <!-- Square Image -->
+        <div class="field-group">
+            <label class="field-label">Square Image</label>
+
+            <div class="file-upload-area" id="squareUploadArea">
+                <input type="file" name="square_image" accept="image/*" id="squareImageInput">
+                <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
+                <p>Click or drag square image here</p>
+                <small>Recommended: 500 × 500 px</small>
+            </div>
+
+            <div id="squareImagePreview" style="display:none;margin-top:12px;text-align:center">
+                <img id="squarePreviewImg"
+                     style="max-width:100%;border-radius:12px;border:1px solid var(--border)">
+                <div style="margin-top:8px">
+                    <button type="button" onclick="clearSquareImage()"
+                            style="background:none;border:none;color:red">
+                        <i class="fa fa-times"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Horizontal Image -->
+        <div class="field-group">
+            <label class="field-label">Horizontal Image</label>
+
+            <div class="file-upload-area" id="horizontalUploadArea">
+                <input type="file" name="horizontal_image" accept="image/*" id="horizontalImageInput">
+                <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
+                <p>Click or drag horizontal image here</p>
+                <small>Recommended: 1200 × 600 px</small>
+            </div>
+
+            <div id="horizontalImagePreview" style="display:none;margin-top:12px;text-align:center">
+                <img id="horizontalPreviewImg"
+                     style="max-width:100%;border-radius:12px;border:1px solid var(--border)">
+                <div style="margin-top:8px">
+                    <button type="button" onclick="clearHorizontalImage()"
+                            style="background:none;border:none;color:red">
+                        <i class="fa fa-times"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
                         <!-- Settings -->
                         <div class="section-card">
                             <div class="section-card-header">
@@ -330,16 +360,6 @@
                                     </select>
                                 </div>
 
-                                <div class="toggle-row">
-                                    <div>
-                                        <div class="toggle-label">Show In Navbar</div>
-                                        <div class="toggle-sub">Display in top navigation</div>
-                                    </div>
-                                    <select name="show_in_navbar" class="field-select-sm">
-                                        <option value="0">No</option>
-                                        <option value="1">Yes</option>
-                                    </select>
-                                </div>
 
                             </div>
                         </div>
@@ -381,22 +401,49 @@ $('#name').on('keyup', function () {
     }
 });
 
-// Image preview
-document.getElementById('imageInput').addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        document.getElementById('previewImg').src = e.target.result;
-        document.getElementById('imagePreview').style.display = 'block';
-        document.getElementById('uploadArea').style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-});
 
-function clearImage() {
-    document.getElementById('imageInput').value = '';
-    document.getElementById('imagePreview').style.display = 'none';
-    document.getElementById('uploadArea').style.display = 'block';
+function setupImagePreview(inputId, previewId, imageId, uploadAreaId) {
+    document.getElementById(inputId).addEventListener('change', function () {
+
+        const file = this.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.getElementById(imageId).src = e.target.result;
+            document.getElementById(previewId).style.display = 'block';
+            document.getElementById(uploadAreaId).style.display = 'none';
+        };
+
+        reader.readAsDataURL(file);
+    });
 }
+
+setupImagePreview(
+    'squareImageInput',
+    'squareImagePreview',
+    'squarePreviewImg',
+    'squareUploadArea'
+);
+
+setupImagePreview(
+    'horizontalImageInput',
+    'horizontalImagePreview',
+    'horizontalPreviewImg',
+    'horizontalUploadArea'
+);
+
+function clearSquareImage() {
+    document.getElementById('squareImageInput').value = '';
+    document.getElementById('squareImagePreview').style.display = 'none';
+    document.getElementById('squareUploadArea').style.display = 'block';
+}
+
+function clearHorizontalImage() {
+    document.getElementById('horizontalImageInput').value = '';
+    document.getElementById('horizontalImagePreview').style.display = 'none';
+    document.getElementById('horizontalUploadArea').style.display = 'block';
+}
+
 </script>

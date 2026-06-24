@@ -9,6 +9,7 @@ class Blog extends Model
     protected $fillable = [
         'title',
         'slug',
+        'language',   // ← add
         'image',
         'short_description',
         'content',

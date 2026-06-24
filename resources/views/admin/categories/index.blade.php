@@ -495,8 +495,8 @@
                                 </th>
                                 <th>Parent</th>
                                 <th>
-                                    <a href="{{ sortUrl('is_popular') }}" class="sort-link">
-                                        Popular {!! sortIcon('is_popular') !!}
+                                    <a href="{{ sortUrl('is_featured') }}" class="sort-link">
+                                        Featured {!! sortIcon('is_featured') !!}
                                     </a>
                                 </th>
                                 <th>
@@ -522,10 +522,10 @@
                                     </td>
 
                                     <td>
-                                        @if($cat->image)
-                                            <img src="{{ asset('storage/' . $cat->image) }}"
-                                                class="cat-img" alt="{{ $cat->name }}">
-                                        @else
+                                       @if($cat->square_image)
+    <img src="{{ asset('storage/' . $cat->square_image) }}"
+        class="cat-img" alt="{{ $cat->name }}">
+@else
                                             <div class="cat-img-placeholder">
                                                 <i class="fa fa-image"></i>
                                             </div>
@@ -544,7 +544,7 @@
                                     </td>
 
                                     <td>
-                                        {!! $cat->is_popular
+                                        {!! $cat->is_featured
                                             ? '<span class="pill pill-yes">Yes</span>'
                                             : '<span class="pill pill-no">No</span>' !!}
                                     </td>
@@ -597,7 +597,6 @@
 
                 <!-- Pagination -->
                 <div class="cat-pagination">
-                    {{ $categories->links('pagination::bootstrap-4') }}
                 </div>
 
             </div><!-- /cat-card -->

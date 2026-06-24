@@ -347,6 +347,20 @@
                                     </label>
                                 </div>
 
+                                <div class="toggle-row">
+    <div>
+        <div class="toggle-label">Language</div>
+        <div class="toggle-sub">Blog content language</div>
+    </div>
+    <select name="language" style="height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);
+            padding:0 10px;font-size:13px;color:var(--text-primary);background:var(--surface);
+            outline:none;font-family:var(--font);">
+        <option value="en" {{ old('language', $blog->language) == 'en' ? 'selected' : '' }}>English</option>
+        <option value="hi" {{ old('language', $blog->language) == 'hi' ? 'selected' : '' }}>Hindi</option>
+    </select>
+</div>
+                                
+
                             </div>
                         </div>
 

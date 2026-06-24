@@ -13,7 +13,7 @@ class FaqController extends Controller
     {
         $faqs = Faq::latest()->get();
 
-        return view('admin.faqs.index',compact('faqs'));
+        return view('admin.faqs.index', compact('faqs'));
     }
 
 
@@ -27,24 +27,24 @@ class FaqController extends Controller
     {
 
         $request->validate([
-            'question'=>'required',
-            'answer'=>'required'
+            'question' => 'required',
+            'answer' => 'required'
         ]);
 
         Faq::create([
 
-            'question'=>$request->question,
+            'question' => $request->question,
 
-            'answer'=>$request->answer,
+            'answer' => $request->answer,
 
-            'show_home'=>$request->show_home ? 1:0,
+            'show_on_product_page' => $request->show_on_product_page ? 1 : 0,
 
-            'status'=>$request->status ? 1:0
+            'status' => $request->status ? 1 : 0
 
         ]);
 
         return redirect()->route('admin.faqs.index')
-            ->with('success','FAQ Added Successfully');
+            ->with('success', 'FAQ Added Successfully');
 
     }
 
@@ -53,29 +53,29 @@ class FaqController extends Controller
     {
         $faq = Faq::findOrFail($id);
 
-        return view('admin.faqs.edit',compact('faq'));
+        return view('admin.faqs.edit', compact('faq'));
     }
 
 
-    public function update(Request $request,$id)
+    public function update(Request $request, $id)
     {
 
         $faq = Faq::findOrFail($id);
 
         $faq->update([
 
-            'question'=>$request->question,
+            'question' => $request->question,
 
-            'answer'=>$request->answer,
+            'answer' => $request->answer,
 
-            'show_home'=>$request->show_home ? 1:0,
+            'show_on_product_page' => $request->show_on_product_page ? 1 : 0,
 
-            'status'=>$request->status ? 1:0
+            'status' => $request->status ? 1 : 0
 
         ]);
 
         return redirect()->route('admin.faqs.index')
-            ->with('success','FAQ Updated Successfully');
+            ->with('success', 'FAQ Updated Successfully');
 
     }
 
@@ -86,7 +86,7 @@ class FaqController extends Controller
         Faq::findOrFail($id)->delete();
 
         return response()->json([
-            'message'=>'FAQ Deleted Successfully'
+            'message' => 'FAQ Deleted Successfully'
         ]);
 
     }

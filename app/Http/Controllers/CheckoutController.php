@@ -31,42 +31,42 @@ class CheckoutController extends Controller
 
     public function checkout()
     {
-        $customer = auth('customer')->user();
+        // $customer = auth('customer')->user();
 
-        $cart = Cart::with([
-            'items.product.images',
-            'items.product.category',
-            'items.variant.values.attributeValue.attribute',
-        ])
-            ->where('user_id', $customer->id)
-            ->first();
+        // $cart = Cart::with([
+        //     'items.product.images',
+        //     'items.product.category',
+        //     'items.variant.values.attributeValue.attribute',
+        // ])
+        //     ->where('user_id', $customer->id)
+        //     ->first();
 
-        if ($cart) {
-            $cart->recalculateTotals();
-            $cart->refresh();
-        }
+        // if ($cart) {
+        //     $cart->recalculateTotals();
+        //     $cart->refresh();
+        // }
 
-        $customer = auth('customer')->user();
+        // $customer = auth('customer')->user();
 
-        $addresses = $customer->addresses()
-            ->with(['state', 'city'])
-            ->orderByDesc('is_default')
-            ->get();
+        // $addresses = $customer->addresses()
+        //     ->with(['state', 'city'])
+        //     ->orderByDesc('is_default')
+        //     ->get();
 
-        $defaultAddress = $addresses->firstWhere('is_default', true);
+        // $defaultAddress = $addresses->firstWhere('is_default', true);
 
-        $states = State::orderBy('name')
-            ->get();
+        // $states = State::orderBy('name')
+        //     ->get();
 
         return view(
             'front-pages.checkout',
-            compact(
-                'cart',
-                'customer',
-                'addresses',
-                'defaultAddress',
-                'states'
-            )
+            // compact(
+            //     'cart',
+            //     'customer',
+            //     'addresses',
+            //     'defaultAddress',
+            //     'states'
+            // )
         );
     }
 

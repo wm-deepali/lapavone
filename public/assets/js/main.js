@@ -402,11 +402,11 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.className = 'footer-dropdown-menu';
             
             const englishLink = document.createElement('a');
-            englishLink.href = 'blog.html?lang=en';
+            englishLink.href = 'blogs?lang=en';
             englishLink.textContent = 'English';
             
             const hindiLink = document.createElement('a');
-            hindiLink.href = 'blog.html?lang=hi';
+            hindiLink.href = 'blogs?lang=hi';
             hindiLink.textContent = 'Hindi';
             
             menu.appendChild(englishLink);

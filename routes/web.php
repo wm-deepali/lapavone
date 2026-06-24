@@ -20,18 +20,8 @@ use App\Http\Controllers\Admin\{
     DashboardController,
     DynamicPageController,
     FaqController,
-    GalleryImageController,
     GiftingOccasionController,
-    HomeBrandSectionController,
-    HomeBrandSectionImageController,
-    HomeDealBannerController,
-    HomeFeatureCardController,
-    HomeHeroBannerController,
-    HomeHeroSlideController,
     HomePageController,
-    HomeSliderController,
-    HomeTextSliderController,
-    HomeWhyController,
     LogoutController,
     OrderController,
     OtherEnquiryController,
@@ -51,7 +41,13 @@ use App\Http\Controllers\Admin\{
     StockAlertsController,
     SalesReportController,
     ProductReportController,
-    CustomerReportController
+    CustomerReportController,
+    HeroSectionController,
+    BannerSectionController,
+    TestimonialSectionController,
+    AudioSectionController,
+
+
 };
 
 use Illuminate\Support\Facades\Route;
@@ -70,33 +66,22 @@ Route::middleware('maintenance.mode')->group(function () {
 
 
     Route::controller(FrontController::class)->group(function () {
+        Route::view('/invoice', 'front-pages.invoice');
+        Route::view('/terms-conditions', 'front-pages.terms-conditions');
+        Route::view('/wishlist', 'user.wishlist')->name('wishlist');
+        Route::view('/profile', 'user.profile');
+        Route::view('/orders', 'user.orders');
+        Route::view('/order-details', 'user.order-details');
+        Route::view('/addresses', 'user.addresses');
+
 
         Route::get('/', 'home')->name('home');
         Route::get('/search-suggestions', 'searchSuggestions')->name('search.suggestions');
-        Route::get('/occasions', 'occasions')->name('occasions');
-        Route::get('/categories', 'categories')->name('categories');
 
+        Route::get('/category/{category:slug}', 'category')->name('shop.category');
+        Route::get('/collection/{collection:slug}',  'collection')->name('shop.collection');
 
-        // Category-based listing (unchanged)
-        Route::get('/products/{slug}', 'productListing')->name('products.listing');
-
-        // Collection-based listing (new)
-        Route::get('/collections/{slug}', 'collectionListing')->name('collections.listing');
-
-        // Occasion-based listing (new, same pattern)
-        Route::get('/occasions/{slug}', 'occasionListing')->name('occasions.listing');
-
-        Route::get('/price/{slug}', 'priceRangeListing')->name('price.listing');
-
-        // Attribute-value based listing (new) e.g. /attribute/fabric/cotton
-        Route::get('/attribute/{attributeSlug}/{valueSlug}', 'attributeListing')->name('attribute.listing');
-
-        // One shared AJAX endpoint used by all four pages above
-        Route::post('/products/filter', 'filterProducts')->name('products.filter');
-
-
-        Route::get('/product/{slug}', 'productDetail')->name('product.details');
-        Route::get('/product/quick-view/{id}', 'quickView')->name('product.quickview');
+        Route::get('/product/{product:slug}', 'productDetail')->name('shop.product');
 
         Route::get('/about-us', 'aboutUs')->name('about-us');
         Route::get('/blogs', 'blogs')->name('blogs');
@@ -129,26 +114,26 @@ Route::middleware('maintenance.mode')->group(function () {
         Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply.coupon');
         Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove.coupon');
 
-        Route::middleware('customer')->group(function () {
+        // Route::middleware('customer')->group(function () {
 
-            Route::get('/checkout', [CheckoutController::class, 'checkout'])
-                ->name('checkout');
+        Route::get('/checkout', [CheckoutController::class, 'checkout'])
+            ->name('checkout');
 
-            Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
+        Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
 
-            Route::post('/checkout/change-default-address', [CheckoutController::class, 'changeDefaultAddress'])
-                ->name('checkout.change-default-address');
+        Route::post('/checkout/change-default-address', [CheckoutController::class, 'changeDefaultAddress'])
+            ->name('checkout.change-default-address');
 
-            Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])
-                ->name('checkout.place-order');
+        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])
+            ->name('checkout.place-order');
 
-            Route::post('/payment/razorpay/success', [CheckoutController::class, 'razorpaySuccess'])
-                ->name('checkout.razorpay.success');
+        Route::post('/payment/razorpay/success', [CheckoutController::class, 'razorpaySuccess'])
+            ->name('checkout.razorpay.success');
 
-            Route::get('/order-success/{order}', [CheckoutController::class, 'orderSuccess'])
-                ->name('order.success');
+        Route::get('/order-success/{order}', [CheckoutController::class, 'orderSuccess'])
+            ->name('order.success');
 
-        });
+        // });
 
 
     });
@@ -238,15 +223,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // product routes
         Route::get('products/subcategories/{category}', [ProductController::class, 'subcategories'])->name('products.subcategories');
         Route::get('products/category-attributes/{category}', [ProductController::class, 'categoryAttributes'])->name('products.category-attributes');
-        Route::post('/products/upload-images-zip', [ProductController::class, 'uploadImagesZip'])->name('products.images.upload');
-        Route::get('/products/import', [ProductController::class, 'import'])->name('products.import');
-        Route::post('/products/import', [ProductController::class, 'importStore'])->name('products.import.store');
-        Route::get('products/import/sample', [ProductController::class, 'downloadSample'])->name('products.import.sample');
-        Route::get('products/reference/categories', [ProductController::class, 'downloadCategoryReference'])->name('products.reference.categories');
-        Route::get('products/reference/subcategories', [ProductController::class, 'downloadSubCategoryReference'])->name('products.reference.subcategories');
-        Route::get('products/reference/brands', [ProductController::class, 'downloadBrandReference'])->name('products.reference.brands');
-        Route::get('products/reference/occasions', [ProductController::class, 'downloadOccasionReference'])->name('products.reference.occasions');
-        Route::get('products/reference/customizations', [ProductController::class, 'downloadCustomizationReference'])->name('products.reference.customizations');
         Route::resource('products', ProductController::class)->names('products');
 
         Route::resource('customizations', CustomizationController::class);
@@ -286,74 +262,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
 
         // ✅ MAIN DASHBOARD
-        Route::get('/home-page', [HomePageController::class, 'index'])
-            ->name('home-page.index');
+        Route::get('/home', [HomePageController::class, 'index'])
+            ->name('home.index');
 
-        Route::prefix('home/sliders')->name('home.sliders.')->group(function () {
+        // 1. Hero Section
+        Route::get('home/hero', [HeroSectionController::class, 'edit'])->name('home.hero.edit');
+        Route::put('home/hero', [HeroSectionController::class, 'update'])->name('home.hero.update');
 
-            Route::get('/', [HomeSliderController::class, 'index'])->name('index');
+        // 2. Static Banner 1
+        Route::get('home/banner1', [BannerSectionController::class, 'edit'])->name('home.banner1.edit');
+        Route::put('home/banner1', [BannerSectionController::class, 'update'])->name('home.banner1.update');
 
-            Route::get('/create', [HomeSliderController::class, 'create'])->name('create');
+        // 3. Testimonial Banner
+        Route::get('home/testimonial', [TestimonialSectionController::class, 'edit'])->name('home.testimonial.edit');
+        Route::put('home/testimonial', [TestimonialSectionController::class, 'update'])->name('home.testimonial.update');
 
-            Route::post('/store', [HomeSliderController::class, 'store'])->name('store');
-
-            Route::get('/edit/{id}', [HomeSliderController::class, 'edit'])->name('edit');
-
-            Route::put('/update/{id}', [HomeSliderController::class, 'update'])->name('update');
-
-            Route::delete('/delete/{id}', [HomeSliderController::class, 'destroy'])->name('destroy');
-        });
-
-        Route::prefix('home/text-sliders')->name('home.text-sliders.')->group(function () {
-
-            Route::get('/', [HomeTextSliderController::class, 'index'])->name('index');
-
-            Route::get('/create', [HomeTextSliderController::class, 'create'])->name('create');
-
-            Route::post('/store', [HomeTextSliderController::class, 'store'])->name('store');
-
-            Route::get('/edit/{id}', [HomeTextSliderController::class, 'edit'])->name('edit');
-
-            Route::put('/update/{id}', [HomeTextSliderController::class, 'update'])->name('update');
-
-            Route::delete('/delete/{id}', [HomeTextSliderController::class, 'destroy'])->name('destroy');
-        });
-
-        Route::resource('gallery-images', GalleryImageController::class)->names('gallery-images');
-
-        Route::get('home/brand-section', [HomeBrandSectionController::class, 'edit'])->name('home.brand-section.edit');
-        Route::post('home/brand-section', [HomeBrandSectionController::class, 'update'])->name('home.brand-section.update');
-        Route::resource('home-brand-section-images', HomeBrandSectionImageController::class);
-
-        Route::resource('home-deal-banners', HomeDealBannerController::class)->names('home-deal-banners');
-        Route::delete('home-deal-banners/delete/{id}', [HomeDealBannerController::class, 'destroy'])->name('home-deal-banners.delete');
-
-        Route::resource('home-hero-slides', HomeHeroSlideController::class)->names('home-hero-slides');
-        Route::resource('home-hero-banners', HomeHeroBannerController::class)->names('home-hero-banners');
-
-
-
-
-        // ================= WHY SECTION =================
-        Route::get('/home-why', [HomeWhyController::class, 'index'])
-            ->name('home.why.index');
-
-        Route::post('/home-why/update', [HomeWhyController::class, 'updateSection'])
-            ->name('home.why.update');
-
-        Route::post('/home-why/card/store', [HomeWhyController::class, 'storeCard'])
-            ->name('home.why.card.store');
-
-        Route::get('/home-why/card/{id}', [HomeWhyController::class, 'editCard'])
-            ->name('home.why.card.edit');
-
-        Route::post('/home-why/card/{id}', [HomeWhyController::class, 'updateCard'])
-            ->name('home.why.card.update');
-
-        Route::delete('/home-why/card/{id}', [HomeWhyController::class, 'deleteCard'])
-            ->name('home.why.card.delete');
-
-        Route::resource('home-feature-cards', HomeFeatureCardController::class);
+        // 4. Audio Section
+        Route::get('home/audio', [AudioSectionController::class, 'edit'])->name('home.audio.edit');
+        Route::put('home/audio', [AudioSectionController::class, 'update'])->name('home.audio.update');
 
 
         Route::get('/seo', [SeoController::class, 'index'])->name('seo.index');
@@ -458,33 +384,33 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('reports/customers/export/pdf', [CustomerReportController::class, 'exportPdf'])->name('reports.customers.export.pdf');
         // Cleaner URL
         Route::get('/notifications/', function () {
-    return view('admin.notifications.index');
-})->name('notifications.index');
+            return view('admin.notifications.index');
+        })->name('notifications.index');
 
 
 
-Route::prefix('roles-and-permission')->group(function () {
+        Route::prefix('roles-and-permission')->group(function () {
 
-    // Roles Category
-    Route::view('/roles-category', 'admin.roles-and-permission.roles-category.index')->name('roles-category.index');
-    Route::view('/roles-category/create', 'admin.roles-and-permission.roles-category.create')->name('roles-category.create');
-    Route::view('/roles-category/edit', 'admin.roles-and-permission.roles-category.edit')->name('roles-category.edit');
+            // Roles Category
+            Route::view('/roles-category', 'admin.roles-and-permission.roles-category.index')->name('roles-category.index');
+            Route::view('/roles-category/create', 'admin.roles-and-permission.roles-category.create')->name('roles-category.create');
+            Route::view('/roles-category/edit', 'admin.roles-and-permission.roles-category.edit')->name('roles-category.edit');
 
-    // Permission and Settings
-    Route::view('/permission-and-settings', 'admin.roles-and-permission.permission-and-settings.index')->name('permission-settings.index');
-    Route::view('/permission-and-settings/create', 'admin.roles-and-permission.permission-and-settings.create')->name('permission-settings.create');
-    Route::view('/permission-and-settings/edit', 'admin.roles-and-permission.permission-and-settings.edit')->name('permission-settings.edit');
+            // Permission and Settings
+            Route::view('/permission-and-settings', 'admin.roles-and-permission.permission-and-settings.index')->name('permission-settings.index');
+            Route::view('/permission-and-settings/create', 'admin.roles-and-permission.permission-and-settings.create')->name('permission-settings.create');
+            Route::view('/permission-and-settings/edit', 'admin.roles-and-permission.permission-and-settings.edit')->name('permission-settings.edit');
 
-    // Team
-    Route::view('/team', 'admin.roles-and-permission.team.index')->name('team.index');
-    Route::view('/team/create', 'admin.roles-and-permission.team.create')->name('team.create');
-    Route::view('/team/edit', 'admin.roles-and-permission.team.edit')->name('team.edit');
-    Route::view('/team/customise-permission', 'admin.roles-and-permission.team.customise-permission')->name('team.customise-permission');
-    Route::view('/team/activity-logs', 'admin.roles-and-permission.team.activity-logs')->name('team.activity-logs');
-    Route::view('/team/login', 'admin.roles-and-permission.team.login')->name('team.login');
-    Route::view('/team/login-history', 'admin.roles-and-permission.team.login-history')->name('team.login-history');
+            // Team
+            Route::view('/team', 'admin.roles-and-permission.team.index')->name('team.index');
+            Route::view('/team/create', 'admin.roles-and-permission.team.create')->name('team.create');
+            Route::view('/team/edit', 'admin.roles-and-permission.team.edit')->name('team.edit');
+            Route::view('/team/customise-permission', 'admin.roles-and-permission.team.customise-permission')->name('team.customise-permission');
+            Route::view('/team/activity-logs', 'admin.roles-and-permission.team.activity-logs')->name('team.activity-logs');
+            Route::view('/team/login', 'admin.roles-and-permission.team.login')->name('team.login');
+            Route::view('/team/login-history', 'admin.roles-and-permission.team.login-history')->name('team.login-history');
 
-});
+        });
 
     });
 });

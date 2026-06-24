@@ -530,6 +530,18 @@
                                             Inactive</option>
                                     </select>
                                 </div>
+                                <div class="toggle-row">
+                                    <div>
+                                        <div class="toggle-label">Show In Navigation</div>
+                                        <div class="toggle-sub">Visibility on Navigation</div>
+                                    </div>
+                                    <select name="show_in_navigation" class="field-select-sm">
+                                        <option value="0" {{ old('show_in_navigation', $collection->show_in_navigation) == 1 ? 'selected' : '' }}>
+                                            No</option>
+                                        <option value="1" {{ old('show_in_navigation', $collection->show_in_navigation) == 1 ? 'selected' : '' }}>
+                                            Yes</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -9,7 +9,7 @@ class Faq extends Model
     protected $fillable = [
         'question',
         'answer',
-        'show_home',
+        'show_on_product_page',
         'status'
     ];
 }

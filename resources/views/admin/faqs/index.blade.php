@@ -118,7 +118,7 @@
                             <tr>
                                 <th style="width:60px">ID</th>
                                 <th>Question</th>
-                                <th style="width:110px">Show on Home</th>
+                                <th style="width:110px">Show on Product Page</th>
                                 <th style="width:110px">Status</th>
                                 <th style="width:90px">Actions</th>
                             </tr>
@@ -135,7 +135,7 @@
                                     </td>
 
                                     <td>
-                                        @if($faq->show_home)
+                                        @if($faq->show_on_product_page)
                                             <span class="pill pill-yes">Yes</span>
                                         @else
                                             <span class="pill pill-no">No</span>

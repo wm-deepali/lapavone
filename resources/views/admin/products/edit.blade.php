@@ -314,9 +314,9 @@
                                 </div>
 
                                 <div class="field-group">
-                                    <label class="field-label">Short Description</label>
-                                    <textarea name="short_description" class="field-textarea"
-                                              rows="3">{{ old('short_description', $product->short_description) }}</textarea>
+                                    <label class="field-label">Sub Title</label>
+                                    <input type="text" name="sub_title"
+                                        class="field-input"  value="{{ old('sub_title', $product->sub_title) }}"></input>
                                 </div>
 
                             </div>
@@ -334,17 +334,22 @@
                                 </div>
 
                                 <div class="field-group">
-                                    <label class="field-label">Delivery &amp; Returns</label>
-                                    <textarea name="delivery_returns" id="delivery_returns" class="field-textarea"
-                                              style="min-height:100px">{{ old('delivery_returns', $product->delivery_returns) }}</textarea>
+                                      <label class="field-label">Product Notes</label>
+                                    <textarea name="product_notes" id="product_notes" class="field-textarea"
+                                              style="min-height:100px">{{ old('product_notes', $product->product_notes) }}</textarea>
                                 </div>
 
                                  <div class="field-group">
-                                    <label class="field-label">Fabric &amp; Care</label>
-                                    <textarea name="fabric_care" id="fabric_care" class="field-textarea"
-                                              style="min-height:100px">{{ old('fabric_care', $product->fabric_care) }}</textarea>
+                                    <label class="field-label">How To Use</label>
+                                    <textarea name="how_to_use" id="how_to_use" class="field-textarea"
+                                              style="min-height:100px">{{ old('how_to_use', $product->how_to_use) }}</textarea>
                                 </div>
 
+                                 <div class="field-group">
+                                    <label class="field-label">The Story</label>
+                                    <textarea name="the_story"  class="field-textarea"
+                                              style="min-height:100px">{{ old('the_story', $product->the_story) }}</textarea>
+                                </div>
                             </div>
                         </div>
 
@@ -385,44 +390,119 @@
                         </div>
 
                         <!-- Media -->
-                        <div class="section-card">
-                            <div class="section-card-header"><h5>Media</h5></div>
-                            <div class="section-card-body">
+                       <!-- Media -->
+<div class="section-card">
+    <div class="section-card-header"><h5>Media</h5></div>
+    <div class="section-card-body">
 
-                                @if($product->images->count())
-                                    <div class="field-group">
-                                        <label class="field-label">Current Images</label>
-                                        <div class="media-grid" id="existingMedia">
-                                            @foreach($product->images as $img)
-                                                <div class="thumb-box" id="img_{{ $img->id }}">
-                                                    <img src="{{ asset('storage/' . $img->image) }}" alt="">
-                                                    <button type="button" class="thumb-remove"
-                                                            onclick="removeExistingImage({{ $img->id }})">×</button>
-                                                    <div class="thumb-default">
-                                                        <input type="radio" name="default_type"
-                                                               value="old_{{ $img->id }}"
-                                                               {{ $img->is_default ? 'checked' : '' }}>
-                                                        Default
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
+        <!-- ── Card Images ─────────────────────────────── -->
+        <p class="field-label" style="margin-bottom:10px;">Card Images</p>
+        <div class="inv-grid" style="gap:14px; margin-bottom:20px;">
 
-                                <div class="field-group">
-                                    <label class="field-label">Upload New Images <span style="font-weight:400;text-transform:none;font-size:11px">(max 6 total)</span></label>
-                                    <div class="upload-area">
-                                        <input type="file" id="images" name="images[]" multiple accept="image/*">
-                                        <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
-                                        <div class="upload-label">Click or drag to upload</div>
-                                        <div class="upload-sub">PNG, JPG, WEBP &middot; max 6 images</div>
-                                    </div>
-                                    <div id="previewContainer" class="media-grid"></div>
-                                </div>
+            <!-- Default Image -->
+            <div>
+                <label class="field-label">Default Image</label>
+                @php $defaultImg = $product->images->firstWhere('image_type', 'default'); @endphp
+                @if($defaultImg)
+                    <div class="thumb-box" id="existing_default_wrap" style="margin-bottom:10px;">
+                        <img src="{{ asset('storage/' . $defaultImg->image) }}"
+                             style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);">
+                        <button type="button" class="thumb-remove"
+                                onclick="removeExistingTyped({{ $defaultImg->id }}, 'existing_default_wrap')">×</button>
+                        <div class="thumb-default" style="font-size:11px;color:var(--text-hint);margin-top:4px;">Current</div>
+                    </div>
+                @endif
+                <div class="upload-area">
+                    <input type="file" id="default_image" name="card_default" accept="image/*"
+                           onchange="previewSingle(this,'default-preview')">
+                    <div class="upload-icon"><i class="fa fa-image"></i></div>
+                    <div class="upload-label" style="font-size:13px;">{{ $defaultImg ? 'Replace' : 'Upload' }}</div>
+                    <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
+                </div>
+                <div id="default-preview" style="margin-top:10px;"></div>
+            </div>
 
-                            </div>
-                        </div>
+            <!-- Hover Image -->
+            <div>
+                <label class="field-label">Hover Image</label>
+                @php $hoverImg = $product->images->firstWhere('image_type', 'hover'); @endphp
+                @if($hoverImg)
+                    <div class="thumb-box" id="existing_hover_wrap" style="margin-bottom:10px;">
+                        <img src="{{ asset('storage/' . $hoverImg->image) }}"
+                             style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);">
+                        <button type="button" class="thumb-remove"
+                                onclick="removeExistingTyped({{ $hoverImg->id }}, 'existing_hover_wrap')">×</button>
+                        <div class="thumb-default" style="font-size:11px;color:var(--text-hint);margin-top:4px;">Current</div>
+                    </div>
+                @endif
+                <div class="upload-area">
+                    <input type="file" id="hover_image" name="card_hover" accept="image/*"
+                           onchange="previewSingle(this,'hover-preview')">
+                    <div class="upload-icon"><i class="fa fa-image"></i></div>
+                    <div class="upload-label" style="font-size:13px;">{{ $hoverImg ? 'Replace' : 'Upload' }}</div>
+                    <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
+                </div>
+                <div id="hover-preview" style="margin-top:10px;"></div>
+            </div>
+        </div>
+
+        <!-- ── Banner Images ───────────────────────────── -->
+        <label class="field-label">Banner Images</label>
+        <div class="field-hint" style="margin-bottom:10px;">
+            These appear on the product detail page. Remove individual banners below, then upload new ones.
+        </div>
+
+        @php $bannerImgs = $product->images->where('image_type', 'banner'); @endphp
+        @if($bannerImgs->count())
+            <div class="media-grid" style="margin-bottom:14px;" id="existingBanners">
+                @foreach($bannerImgs as $img)
+                    <div class="thumb-box" id="banner_{{ $img->id }}">
+                        <img src="{{ asset('storage/' . $img->image) }}"
+                             style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);">
+                        <button type="button" class="thumb-remove"
+                                onclick="removeExistingTyped({{ $img->id }}, 'banner_{{ $img->id }}')">×</button>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="upload-area">
+            <input type="file" id="banner_images" name="banner_images[]" multiple accept="image/*">
+            <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
+            <div class="upload-label" style="font-size:13px;">Click or drag banner images here</div>
+            <div class="upload-sub">PNG, JPG, WEBP — max 10 images, 2 MB each</div>
+        </div>
+        <div id="bannerPreviewContainer" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
+
+
+        {{-- ── Story Image ─────────────────────────────────── --}}
+<div style="margin-top:20px;">
+    <label class="field-label">Story Image</label>
+    <div class="field-hint" style="margin-bottom:10px;">
+        Displayed in "The Story" section on the product page.
+    </div>
+    @php $storyImg = $product->images->firstWhere('image_type', 'story'); @endphp
+    @if($storyImg)
+        <div class="thumb-box" id="existing_story_wrap" style="margin-bottom:10px;display:inline-block;">
+            <img src="{{ asset('storage/' . $storyImg->image) }}"
+                 style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--border);">
+            <button type="button" class="thumb-remove"
+                    onclick="removeExistingTyped({{ $storyImg->id }}, 'existing_story_wrap')">×</button>
+            <div class="thumb-default">Current</div>
+        </div>
+    @endif
+    <div class="upload-area">
+        <input type="file" id="story_image" name="story_image" accept="image/*"
+               onchange="previewSingle(this,'story-preview')">
+        <div class="upload-icon"><i class="fa fa-image"></i></div>
+        <div class="upload-label" style="font-size:13px;">{{ isset($storyImg) && $storyImg ? 'Replace' : 'Upload' }}</div>
+        <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
+    </div>
+    <div id="story-preview" style="margin-top:10px;"></div>
+</div>
+
+    </div>
+</div>
 
                     </div><!-- /left column -->
 
@@ -467,21 +547,26 @@
                                         <input type="number" name="stock" class="field-input"
                                                value="{{ old('stock', $product->stock) }}">
                                     </div>
-                                    <div class="field-group" style="margin:0">
+                                     <div class="field-group" style="margin:0">
+                                        <label class="field-label">Weight (in ml)</label>
+                                        <input type="number" name="weight" class="field-input"
+                                               value="{{ old('weight', $product->weight) }}">
+                                    </div>
+                                    <!-- <div class="field-group" style="margin:0">
                                         <label class="field-label">Min Qty</label>
                                         <input type="number" name="min_qty" class="field-input"
                                                value="{{ old('min_qty', $product->min_qty) }}">
-                                    </div>
+                                    </div> -->
                                 </div>
 
-                                <div class="field-group">
+                                <!-- <div class="field-group">
                                     <label class="field-label">Delivery Time</label>
                                     <input type="text" name="delivery_time" class="field-input"
                                            value="{{ old('delivery_time', $product->delivery_time) }}"
                                            placeholder="e.g. 3–5 business days">
-                                </div>
+                                </div> -->
 
-                                <div>
+                                <!-- <div>
     <label class="check-pill">
         <input type="checkbox" name="quality" {{ old('quality', $product->quality) ? 'checked' : '' }}>
         <span>Quality Assurance</span>
@@ -490,13 +575,13 @@
         <input type="checkbox" name="pan_india" {{ old('pan_india', $product->pan_india) ? 'checked' : '' }}>
         <span>PAN India Delivery</span>
     </label>
-</div>
+</div> -->
 
                             </div>
                         </div>
 
                         <!-- Occasions -->
-                        <div class="section-card">
+                        <!-- <div class="section-card">
                             <div class="section-card-header"><h5>Occasions</h5></div>
                             <div class="section-card-body">
                                 @foreach($occasions as $o)
@@ -507,7 +592,7 @@
                                     </label>
                                 @endforeach
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Collections -->
                         <div class="section-card">
@@ -547,15 +632,15 @@
                 </div><!-- /edit-layout -->
 
                 <!-- ── Attributes & Variants (full width below grid) ── -->
-                <div id="attribute-container"></div>
-
+                <!-- <div id="attribute-container"></div> -->
+<!-- 
                 <div id="variant-btn-wrapper" style="display:none; margin: 16px 0;">
                     <button type="button" id="generate-variants" class="btn-accent-outline">
                         <i class="fa fa-cogs"></i> Generate Variants
                     </button>
-                </div>
+                </div> -->
 
-                <div id="variant-container"></div>
+                <!-- <div id="variant-container"></div> -->
 
                 <!-- Action bar -->
                 <div class="action-bar">
@@ -578,10 +663,12 @@
 let selectedAttributeValues = @json($selectedAttributeValues);
 let existingVariants        = @json($existingVariants);
 
-CKEDITOR.config.versionCheck = false;
-CKEDITOR.replace('description');
-CKEDITOR.replace('delivery_returns');
-CKEDITOR.replace('fabric_care');
+    /* ── CKEditor ───────────────────────────────────────────────── */
+    CKEDITOR.config.versionCheck = false;
+    CKEDITOR.replace('description');
+    CKEDITOR.replace('product_notes');
+    CKEDITOR.replace('how_to_use');
+    // CKEDITOR.replace('the_story');
 
 $(document).ready(function () {
     let categoryId = $('#category_id').val();
@@ -616,48 +703,79 @@ $(document).on('submit', '.save-form', function () {
     btn.html('<i class="fa fa-spinner fa-spin"></i> Updating...');
 });
 
-// ── Image handling ────────────────────────────────────────────
-let selectedFiles = [];
+/* ── Single image preview (default / hover) ─────────────────── */
+function previewSingle(input, containerId) {
+    let container = document.getElementById(containerId);
+    container.innerHTML = '';
+    if (!input.files || !input.files[0]) return;
+    let reader = new FileReader();
+    reader.onload = function (e) {
+        container.innerHTML = `
+            <div class="thumb-box" style="display:inline-block">
+                <img src="${e.target.result}"
+                     style="width:80px;height:80px;object-fit:cover;
+                            border-radius:var(--radius-sm);border:1px solid var(--border);">
+                <button type="button" class="thumb-remove"
+                        onclick="clearSingle('${input.id}','${containerId}')">×</button>
+            </div>`;
+    };
+    reader.readAsDataURL(input.files[0]);
+}
 
-$('#images').on('change', function (e) {
+function clearSingle(inputId, containerId) {
+    document.getElementById(inputId).value = '';
+    document.getElementById(containerId).innerHTML = '';
+}
+
+/* ── Remove existing typed image (default / hover / banner) ─── */
+function removeExistingTyped(id, wrapperId) {
+    if (!confirm('Remove this image?')) return;
+    document.getElementById(wrapperId).remove();
+    $('<input>').attr({ type: 'hidden', name: 'delete_images[]', value: id }).appendTo('form');
+}
+
+/* ── Banner images preview ──────────────────────────────────── */
+let bannerFiles = [];
+
+$('#banner_images').on('change', function (e) {
     let files = Array.from(e.target.files);
-    if ((selectedFiles.length + files.length) > 6) { alert('Max 6 images allowed'); return; }
-    files.forEach(file => selectedFiles.push(file));
-    renderPreview();
+    if ((bannerFiles.length + files.length) > 10) {
+        alert('Maximum 10 banner images allowed');
+        return;
+    }
+    bannerFiles.push(...files);
+    renderBannerPreview();
 });
 
-function renderPreview() {
-    $('#previewContainer').html('');
-    selectedFiles.forEach((file, index) => {
+function renderBannerPreview() {
+    let container = $('#bannerPreviewContainer');
+    container.html('');
+    bannerFiles.forEach((file, index) => {
         let reader = new FileReader();
         reader.onload = function (e) {
-            $('#previewContainer').append(`
+            container.append(`
                 <div class="thumb-box">
-                    <img src="${e.target.result}">
-                    <button type="button" class="thumb-remove" onclick="removeImage(${index})">×</button>
-                    <div class="thumb-default">
-                        <input type="radio" name="default_type" value="new_${index}" ${index === 0 ? 'checked' : ''}> Default
-                    </div>
-                </div>
-            `);
+                    <img src="${e.target.result}"
+                         style="width:80px;height:80px;object-fit:cover;
+                                border-radius:var(--radius-sm);border:1px solid var(--border);">
+                    <button type="button" class="thumb-remove"
+                            onclick="removeBanner(${index})">×</button>
+                </div>`);
         };
         reader.readAsDataURL(file);
     });
 }
 
-function removeImage(index) { selectedFiles.splice(index, 1); renderPreview(); }
-
-function removeExistingImage(id) {
-    if (confirm('Remove this image?')) {
-        $('#img_' + id).remove();
-        $('<input>').attr({ type: 'hidden', name: 'delete_images[]', value: id }).appendTo('form');
-    }
+function removeBanner(index) {
+    bannerFiles.splice(index, 1);
+    renderBannerPreview();
 }
 
+/* ── Sync banner files before submit ────────────────────────── */
 $('form').on('submit', function () {
-    let dataTransfer = new DataTransfer();
-    selectedFiles.forEach(file => dataTransfer.items.add(file));
-    document.getElementById('images').files = dataTransfer.files;
+    let dt = new DataTransfer();
+    bannerFiles.forEach(f => dt.items.add(f));
+    document.getElementById('banner_images').files = dt.files;
 });
 
 // ── Category → sub + attributes ──────────────────────────────
@@ -667,7 +785,7 @@ $('#category_id').on('change', function () {
     $('#variant-btn-wrapper').hide();
     $('#subcategory_id').html('<option value="">Loading...</option>');
     if (!categoryId) { $('#subcategory-wrapper').hide(); return; }
-    loadAttributes(categoryId);
+    // loadAttributes(categoryId);
     window.subCategoryUrl = "{{ url('admin/products/subcategories') }}";
     $.get(window.subCategoryUrl + '/' + categoryId, function (response) {
         if (response.length > 0) {
@@ -681,124 +799,125 @@ $('#category_id').on('change', function () {
     });
 });
 
-function loadAttributes(categoryId) {
-    $('#attribute-container').html('');
-    window.attributeUrl = "{{ url('admin/products/category-attributes') }}";
-    $.get(window.attributeUrl + '/' + categoryId, function (response) {
-        if (response.length > 0) {
-            let html = `
-                <div class="section-card">
-                    <div class="section-card-header"><h5>Attributes</h5></div>
-                    <div class="section-card-body">
-            `;
-            response.forEach(function (item) {
-                html += `<div class="field-group">
-                    <label class="field-label">${item.attribute.name}</label>`;
-                if (item.attribute.has_values) {
-                    html += `<div class="attr-check-wrap">`;
-                    item.attribute.values.forEach(function (value) {
-                        let checked = selectedAttributeValues.includes(value.id) ? 'checked' : '';
-                        html += `
-                            <label class="attr-check-item">
-                                <input type="checkbox" class="attribute-value"
-                                    data-attribute-id="${item.attribute.id}"
-                                    data-attribute-name="${item.attribute.name}"
-                                    data-value-name="${value.value}"
-                                    data-variant="${item.used_for_variant}"
-                                    name="attribute_values[${item.attribute.id}][]"
-                                    value="${value.id}" ${checked}>
-                                ${value.value}
-                            </label>`;
-                    });
-                    html += `</div>`;
-                }
-                html += `</div>`;
-            });
-            html += `</div></div>`;
-            $('#attribute-container').html(html);
-            $('#variant-btn-wrapper').show();
-        } else {
-            $('#attribute-container').html('');
-            $('#variant-btn-wrapper').hide();
-        }
-    });
-}
+// function loadAttributes(categoryId) {
+//     $('#attribute-container').html('');
+//     window.attributeUrl = "{{ url('admin/products/category-attributes') }}";
+//     $.get(window.attributeUrl + '/' + categoryId, function (response) {
+//         if (response.length > 0) {
+//             let html = `
+//                 <div class="section-card">
+//                     <div class="section-card-header"><h5>Attributes</h5></div>
+//                     <div class="section-card-body">
+//             `;
+//             response.forEach(function (item) {
+//                 html += `<div class="field-group">
+//                     <label class="field-label">${item.attribute.name}</label>`;
+//                 if (item.attribute.has_values) {
+//                     html += `<div class="attr-check-wrap">`;
+//                     item.attribute.values.forEach(function (value) {
+//                         let checked = selectedAttributeValues.includes(value.id) ? 'checked' : '';
+//                         html += `
+//                             <label class="attr-check-item">
+//                                 <input type="checkbox" class="attribute-value"
+//                                     data-attribute-id="${item.attribute.id}"
+//                                     data-attribute-name="${item.attribute.name}"
+//                                     data-value-name="${value.value}"
+//                                     data-variant="${item.used_for_variant}"
+//                                     name="attribute_values[${item.attribute.id}][]"
+//                                     value="${value.id}" ${checked}>
+//                                 ${value.value}
+//                             </label>`;
+//                     });
+//                     html += `</div>`;
+//                 }
+//                 html += `</div>`;
+//             });
+//             html += `</div></div>`;
+//             $('#attribute-container').html(html);
+//             $('#variant-btn-wrapper').show();
+//         } else {
+//             $('#attribute-container').html('');
+//             $('#variant-btn-wrapper').hide();
+//         }
+//     });
+// }
 
-$(document).on('click', '#generate-variants', function () {
-    let variantAttributes = {};
-    $('.attribute-value:checked').each(function () {
-        if ($(this).data('variant') != 1) return;
-        let attributeId = $(this).data('attribute-id');
-        if (!variantAttributes[attributeId]) variantAttributes[attributeId] = [];
-        variantAttributes[attributeId].push({ id: $(this).val(), name: $(this).data('value-name') });
-    });
-    let groups = Object.values(variantAttributes);
-    if (groups.length === 0) { alert('Please select at least one value from attributes marked as Variant.'); return; }
-    renderVariants(cartesian(groups));
-});
+// $(document).on('click', '#generate-variants', function () {
+//     let variantAttributes = {};
+//     $('.attribute-value:checked').each(function () {
+//         if ($(this).data('variant') != 1) return;
+//         let attributeId = $(this).data('attribute-id');
+//         if (!variantAttributes[attributeId]) variantAttributes[attributeId] = [];
+//         variantAttributes[attributeId].push({ id: $(this).val(), name: $(this).data('value-name') });
+//     });
+//     let groups = Object.values(variantAttributes);
+//     if (groups.length === 0) { alert('Please select at least one value from attributes marked as Variant.'); return; }
+//     renderVariants(cartesian(groups));
+// });
 
-function cartesian(arr) {
-    if (arr.length === 1) return arr[0].map(item => [item]);
-    return arr.reduce((a, b) => a.flatMap(d => b.map(e => [].concat(d, e))));
-}
+// function cartesian(arr) {
+//     if (arr.length === 1) return arr[0].map(item => [item]);
+//     return arr.reduce((a, b) => a.flatMap(d => b.map(e => [].concat(d, e))));
+// }
 
-function variantRowHTML(index, variantName, data = {}) {
-    return `
-    <tr>
-        <td>${variantName}${data.id ? `<input type="hidden" name="variants[${index}][id]" value="${data.id}">` : ''}</td>
-        <td><input type="text"   name="variants[${index}][sku]"           class="form-control" value="${data.sku ?? ''}"></td>
-        <td><input type="number" name="variants[${index}][mrp]"           class="form-control" step="0.01" value="${data.mrp ?? ''}"></td>
-        <td>
-            <select name="variants[${index}][discount_type]" class="form-control">
-                <option value="amount"     ${(data.discount_type ?? '') == 'amount'     ? 'selected' : ''}>Amount</option>
-                <option value="percentage" ${(data.discount_type ?? '') == 'percentage' ? 'selected' : ''}>%</option>
-            </select>
-        </td>
-        <td><input type="number" name="variants[${index}][discount]"      class="form-control" step="0.01" value="${data.discount ?? ''}"></td>
-        <td><input type="number" name="variants[${index}][price]"         class="form-control" step="0.01" value="${data.price ?? ''}" readonly></td>
-        <td><input type="number" name="variants[${index}][stock]"         class="form-control" value="${data.stock ?? ''}"></td>
-        <td>
-            ${data.image ? `<img src="/storage/${data.image}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--border);margin-bottom:6px;display:block">` : ''}
-            <input type="file" name="variants[${index}][image]" class="form-control" style="height:auto;padding:4px">
-            ${data.image ? `<input type="hidden" name="variants[${index}][old_image]" value="${data.image}">` : ''}
-        </td>
-    </tr>`;
-}
+// function variantRowHTML(index, variantName, data = {}) {
+//     return `
+//     <tr>
+//         <td>${variantName}${data.id ? `<input type="hidden" name="variants[${index}][id]" value="${data.id}">` : ''}</td>
+//         <td><input type="text"   name="variants[${index}][sku]"           class="form-control" value="${data.sku ?? ''}"></td>
+//         <td><input type="number" name="variants[${index}][mrp]"           class="form-control" step="0.01" value="${data.mrp ?? ''}"></td>
+//         <td>
+//             <select name="variants[${index}][discount_type]" class="form-control">
+//                 <option value="amount"     ${(data.discount_type ?? '') == 'amount'     ? 'selected' : ''}>Amount</option>
+//                 <option value="percentage" ${(data.discount_type ?? '') == 'percentage' ? 'selected' : ''}>%</option>
+//             </select>
+//         </td>
+//         <td><input type="number" name="variants[${index}][discount]"      class="form-control" step="0.01" value="${data.discount ?? ''}"></td>
+//         <td><input type="number" name="variants[${index}][price]"         class="form-control" step="0.01" value="${data.price ?? ''}" readonly></td>
+//         <td><input type="number" name="variants[${index}][stock]"         class="form-control" value="${data.stock ?? ''}"></td>
+//         <td>
+//             ${data.image ? `<img src="/storage/${data.image}" style="width:50px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--border);margin-bottom:6px;display:block">` : ''}
+//             <input type="file" name="variants[${index}][image]" class="form-control" style="height:auto;padding:4px">
+//             ${data.image ? `<input type="hidden" name="variants[${index}][old_image]" value="${data.image}">` : ''}
+//         </td>
+//     </tr>`;
+// }
 
-function variantTableWrap(tbody) {
-    return `<div class="section-card" style="margin-bottom:16px">
-        <div class="section-card-header"><h5>Variants</h5></div>
-        <div class="section-card-body" style="padding:0;overflow-x:auto">
-            <table class="table table-bordered" style="margin:0">
-                <thead><tr>
-                    <th>Variant</th><th>SKU</th><th>MRP</th><th>Discount Type</th><th>Discount</th><th>Final Price</th><th>Stock</th><th>Image</th>
-                </tr></thead>
-                <tbody>${tbody}</tbody>
-            </table>
-        </div>
-    </div>`;
-}
+// function variantTableWrap(tbody) {
+//     return `<div class="section-card" style="margin-bottom:16px">
+//         <div class="section-card-header"><h5>Variants</h5></div>
+//         <div class="section-card-body" style="padding:0;overflow-x:auto">
+//             <table class="table table-bordered" style="margin:0">
+//                 <thead><tr>
+//                     <th>Variant</th><th>SKU</th><th>MRP</th><th>Discount Type</th><th>Discount</th><th>Final Price</th><th>Stock</th><th>Image</th>
+//                 </tr></thead>
+//                 <tbody>${tbody}</tbody>
+//             </table>
+//         </div>
+//     </div>`;
+// }
 
-function renderVariants(combinations) {
-    let tbody = '';
-    combinations.forEach(function (combo, index) {
-        if (!Array.isArray(combo)) combo = [combo];
-        let names = combo.map(x => x.name).join(' / ');
-        let hiddenInputs = combo.map(x => `<input type="hidden" name="variants[${index}][values][]" value="${x.id}">`).join('');
-        tbody += variantRowHTML(index, names + hiddenInputs);
-    });
-    $('#variant-container').html(variantTableWrap(tbody));
-}
+// function renderVariants(combinations) {
+//     let tbody = '';
+//     combinations.forEach(function (combo, index) {
+//         if (!Array.isArray(combo)) combo = [combo];
+//         let names = combo.map(x => x.name).join(' / ');
+//         let hiddenInputs = combo.map(x => `<input type="hidden" name="variants[${index}][values][]" value="${x.id}">`).join('');
+//         tbody += variantRowHTML(index, names + hiddenInputs);
+//     });
+//     $('#variant-container').html(variantTableWrap(tbody));
+// }
 
-function renderExistingVariants() {
-    let tbody = '';
-    existingVariants.forEach(function (variant, index) {
-        tbody += variantRowHTML(index, variant.variant_name, variant);
-    });
-    $('#variant-container').html(variantTableWrap(tbody));
-}
+// function renderExistingVariants() {
+//     let tbody = '';
+//     existingVariants.forEach(function (variant, index) {
+//         tbody += variantRowHTML(index, variant.variant_name, variant);
+//     });
+//     $('#variant-container').html(variantTableWrap(tbody));
+// }
 
 // Variant price calc
+
 $(document).on('keyup change',
     'input[name$="[mrp]"], input[name$="[discount]"], select[name$="[discount_type]"]',
     function () {

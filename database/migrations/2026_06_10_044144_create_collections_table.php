@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->string('code')->unique();
 
             $table->boolean('status')->default(1);
+            $table->boolean('show_in_navigation')->default(0);
             $table->integer('sort_order')->default(0);
 
             $table->timestamps();

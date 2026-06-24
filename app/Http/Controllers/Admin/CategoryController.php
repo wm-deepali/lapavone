@@ -63,6 +63,7 @@ class CategoryController extends Controller
             ->paginate(10)
             ->appends($request->all());
 
+            // dd($categories->toArray());
         return view('admin.categories.index', compact(
             'categories',
             'parentCategories'
@@ -84,10 +85,15 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $image = null;
+        $squareImage = null;
+        $horizontalImage = null;
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image')->store('categories', 'public');
+        if ($request->hasFile('square_image')) {
+            $squareImage = $request->file('square_image')->store('categories', 'public');
+        }
+
+        if ($request->hasFile('horizontal_image')) {
+            $horizontalImage = $request->file('horizontal_image')->store('categories', 'public');
         }
 
         Category::create([
@@ -101,7 +107,8 @@ class CategoryController extends Controller
 
             'meta_title' => $request->meta_title,
             'meta_description' => $request->meta_description,
-            'image' => $image,
+            'square_image' => $squareImage,
+            'horizontal_image' => $horizontalImage,
 
             // ✅ FIXED
             'parent_id' => $request->parent_id ?: null,
@@ -109,7 +116,6 @@ class CategoryController extends Controller
             // FLAGS
             'is_popular' => $request->is_popular ?? 0,
             'is_featured' => $request->is_featured ?? 0,
-            'show_in_navbar' => $request->show_in_navbar ?? 0,
 
             'added_by' => 'admin',
 
@@ -148,15 +154,35 @@ class CategoryController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        $image = $category->image;
+        $squareImage = $category->square_image;
+        $horizontalImage = $category->horizontal_image;
 
-        if ($request->hasFile('image')) {
+        if ($request->hasFile('square_image')) {
 
-            if ($category->image && Storage::disk('public')->exists($category->image)) {
-                Storage::disk('public')->delete($category->image);
+            if (
+                $category->square_image &&
+                Storage::disk('public')->exists($category->square_image)
+            ) {
+
+                Storage::disk('public')->delete($category->square_image);
             }
 
-            $image = $request->file('image')->store('categories', 'public');
+            $squareImage = $request->file('square_image')
+                ->store('categories', 'public');
+        }
+
+        if ($request->hasFile('horizontal_image')) {
+
+            if (
+                $category->horizontal_image &&
+                Storage::disk('public')->exists($category->horizontal_image)
+            ) {
+
+                Storage::disk('public')->delete($category->horizontal_image);
+            }
+
+            $horizontalImage = $request->file('horizontal_image')
+                ->store('categories', 'public');
         }
 
         $category->update([
@@ -170,14 +196,14 @@ class CategoryController extends Controller
 
             'meta_title' => $request->meta_title,
             'meta_description' => $request->meta_description,
-            'image' => $image,
+            'square_image' => $squareImage,
+            'horizontal_image' => $horizontalImage,
 
             // ✅ FIXED
             'parent_id' => $request->parent_id ?: null,
 
             'is_popular' => $request->is_popular ?? 0,
             'is_featured' => $request->is_featured ?? 0,
-            'show_in_navbar' => $request->show_in_navbar ?? 0,
 
             'status' => $request->status ?? 1,
             'sort_order' => $request->sort_order ?? 0,
@@ -192,10 +218,23 @@ class CategoryController extends Controller
     {
         $category = Category::findOrFail($id);
 
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
+        if (
+            $category->square_image &&
+            Storage::disk('public')->exists($category->square_image)
+        ) {
+
+            Storage::disk('public')->delete($category->square_image);
         }
 
+        if (
+            $category->horizontal_image &&
+            Storage::disk('public')->exists($category->horizontal_image)
+        ) {
+
+            Storage::disk('public')->delete($category->horizontal_image);
+        }
+
+        
         $category->delete();
 
         return response()->json([

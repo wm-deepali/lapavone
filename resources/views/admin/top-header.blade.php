@@ -11,6 +11,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}" />
 
   <title>Admin Dashboard | La Pavone</title>
+<link rel="icon" type="image/png" href="{{ asset('assets/images/favicon-32x32.png') }}">
   <!--  <title>Krishna Chikan | @yield('title')</title> -->
 
 
@@ -51,8 +52,8 @@
     <div class="container-fluid">
       <div class="top-main-header d-flex align-items-center">
         <div class="admin-logo">
-          <img src="{{ asset('assets/img/corporate/Oudhyana_img/logo.png') }}">
-        </div>
+    <img src="{{ asset('assets/images/lapavone-dashboard-logo.png') }}" style="height:20px;">
+</div>
         <div class="ml-auto">
 
           <div class="btn-group">

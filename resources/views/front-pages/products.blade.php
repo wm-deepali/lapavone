@@ -1,675 +1,162 @@
 @extends('layouts.app')
 @section('content')
 
-    <main>
-        <!-- 1. Luxury Inner Banner / Hero Section -->
-        <section class="aq-catpage-hero">
-            <div class="aq-hero-glow"></div>
-            <div class="aq-floating-gift-box aq-floating-shape-1">
-                <i class="fa-solid fa-gift"></i>
+    <div class="shopall-page-wrapper">
+
+        <!-- CATEGORY HERO BANNER -->
+        <section class="shopall-hero-banner"
+            @if($category->horizontal_image)
+                style="background-image: url('{{ asset('storage/' . $category->horizontal_image) }}');
+                       background-size: cover; background-position: center; position: relative;"
+            @endif
+        >
+            @if($category->horizontal_image)
+                <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);"></div>
+            @endif
+            <div class="lp-container" style="position:relative;z-index:1;">
+                <div class="shopall-breadcrumbs">
+                    <a href="{{ url('/') }}" style="color:inherit;">Home</a>  /
+                    {{ $category->name }}
+                </div>
+                <h1 class="shopall-hero-title">{{ $category->name }}</h1>
+                @if($category->description)
+                    <p style="margin-top:8px;opacity:.85;font-size:15px;max-width:520px;">
+                        {{ $category->description }}
+                    </p>
+                @endif
             </div>
-            <div class="aq-floating-gift-box aq-floating-shape-2">
-                <i class="fa-solid fa-gem"></i>
-            </div>
-            <div class="aq-catpage-hero-content">
-                <h1 class="aq-catpage-title">{{ $category->name ?? $pageTitle ?? '' }}</h1>
-                <div class="aq-catpage-breadcrumbs">
-                    <a href="{{ route('home') }}">Home</a>
-                    <span>/</span>
-                    <span>{{ $category->name ?? $pageTitle ?? 'Product Listing' }}</span>
+        </section>
+
+        <!-- CONTROLS BAR -->
+        <section class="controls-section">
+            <div class="lp-container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+
+                <!-- Subcategory Filter Tabs -->
+                <div class="filter-group d-flex flex-wrap gap-2" id="filter-tabs">
+                    <button
+                        class="filter-tab {{ !request('subcategory') ? 'active' : '' }}"
+                        onclick="applyFilter('')">
+                        All
+                    </button>
+                    @foreach($subcategories as $sub)
+                        <button
+                            class="filter-tab {{ request('subcategory') == $sub->id ? 'active' : '' }}"
+                            onclick="applyFilter('{{ $sub->id }}')">
+                            {{ $sub->name }}
+                        </button>
+                    @endforeach
+                </div>
+
+                <!-- Sort -->
+                <div class="sort-group">
+                    <span class="sort-label">Sort By:</span>
+                    <div class="sort-select-wrapper">
+                        <select id="sort-select" class="sort-select" onchange="applySort(this.value)">
+                            <option value="featured"   {{ request('sort') === 'featured'   || !request('sort') ? 'selected' : '' }}>Featured</option>
+                            <option value="price-asc"  {{ request('sort') === 'price-asc'  ? 'selected' : '' }}>Price: Low to High</option>
+                            <option value="price-desc" {{ request('sort') === 'price-desc' ? 'selected' : '' }}>Price: High to Low</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </section>
 
+        <!-- PRODUCT GRID -->
+        <section class="catalog-section">
+            <div class="lp-container">
 
-
-        <!-- 3. Interactive Catalog Viewport (Sidebar + Product Catalog) -->
-        <section class="aq-catpage-main-layout" id="aq-catalog-section">
-            <div class="container">
-                <div class="row">
-                    <!-- Left Sidebar Filter Console -->
-                    <div class="col-lg-3 mb-4 mb-lg-0">
-                        <div class="aq-filter-sidebar">
-                            <button class="aq-filter-close-btn" id="aq-mobile-filter-close"
-                                aria-label="Close Mobile Filters"
-                                onclick="document.querySelector('.aq-filter-sidebar').classList.remove('active'); document.querySelector('.body-overlay').classList.remove('opened'); document.body.style.overflow='';"><i
-                                    class="fa-solid fa-xmark"></i></button>
-                            <!-- Widget Search -->
-                            <div class="aq-sidebar-search">
-                                <input type="text" id="aq-sidebar-search-input" placeholder="Search within results..." />
-                                <i class="fa-solid fa-magnifying-glass"></i>
-                            </div>
-
-                            {{-- Widget: Price Range --}}
-                            {{-- Hidden on the price-band landing page itself, since the page is --}}
-                            {{-- already locked to one band. Stacking the generic slider on top --}}
-                            {{-- of the band would only ever narrow it further, which is confusing UX. --}}
-                            @if($contextType !== 'price')
-                                <div class="aq-filter-widget">
-                                    <button class="aq-filter-header" type="button">
-                                        <span>Price Range</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </button>
-                                    <div class="aq-filter-content">
-                                        <div class="aq-price-slider-wrap">
-                                            <input type="range" class="aq-price-range-slider" id="priceRange" min="200"
-                                                max="10000" step="100" value="10000" />
-                                            <div class="aq-price-inputs">
-                                                <div class="aq-price-box">Min: ₹200</div>
-                                                <div class="aq-price-box" id="maxPriceLabel">Max: ₹10,000</div>
-                                            </div>
-                                        </div>
+                @if($products->isEmpty())
+                    <div style="text-align:center;padding:60px 20px;color:#888;">
+                        <p style="font-size:18px;">No products found in this category.</p>
+                    </div>
+                @else
+                    <div class="row g-4 justify-content-center" id="catalog-grid">
+                        @foreach($products as $product)
+                            @php
+                                $defaultImg = $product->images->firstWhere('image_type', 'default');
+                                $hoverImg   = $product->images->firstWhere('image_type', 'hover');
+                            @endphp
+                            <div class="col-6 col-md-4">
+                                <div class="product-card is-visible"
+                                     onclick="window.location.href='{{ route('shop.product', $product->slug) }}'">
+                                    <div class="product-image-wrap">
+                                        <img src="{{ $defaultImg ? asset('storage/' . $defaultImg->image) : asset('assets/images/placeholder.png') }}"
+                                             alt="{{ $product->name }}"
+                                             class="product-image-primary" loading="lazy">
+                                        <img src="{{ $hoverImg ? asset('storage/' . $hoverImg->image) : ($defaultImg ? asset('storage/' . $defaultImg->image) : asset('assets/images/placeholder.png')) }}"
+                                             alt="{{ $product->name }} Hover"
+                                             class="product-image-secondary" loading="lazy">
                                     </div>
-                                </div>
-                            @endif
-
-                            {{-- Widget: Category-specific Attributes (Fabric, etc.) --}}
-                            {{-- Only available on a category landing page, since these come from --}}
-                            {{-- the category_attributes pivot for the currently locked category. --}}
-                            @if($category)
-                                @foreach($category->categoryAttributes as $categoryAttribute)
-
-                                    @if($categoryAttribute->show_in_filter)
-
-                                        <div class="aq-filter-widget">
-
-                                            <button class="aq-filter-header" type="button">
-                                                <span>{{ $categoryAttribute->attribute->name }}</span>
-                                                <i class="fa-solid fa-chevron-down"></i>
+                                    <div class="product-info">
+                                        <div class="product-details">
+                                            <div class="product-name">{{ $product->name }}</div>
+                                            <div class="product-price-card">₹{{ number_format($product->price, 0) }}</div>
+                                        </div>
+                                        <div class="product-actions">
+                                            <button class="action-btn btn-wishlist" aria-label="Add to Wishlist"
+                                                    onclick="event.stopPropagation();">
+                                                <svg class="wishlist-icon-default" width="20" height="20" viewBox="0 0 24 24"
+                                                     fill="none" stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                                </svg>
+                                                <svg class="wishlist-icon-active" style="display:none;" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="#dc3545" stroke="#dc3545" stroke-width="1.2"
+                                                     stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                                </svg>
                                             </button>
-
-                                            <div class="aq-filter-content">
-
-                                                <ul class="aq-filter-list">
-
-                                                    @foreach($categoryAttribute->attribute->values as $value)
-
-                                                        <li class="aq-filter-item"
-                                                            data-filter-type="attribute"
-                                                            data-attribute-id="{{ $categoryAttribute->attribute->id }}"
-                                                            data-value-id="{{ $value->id }}">
-
-                                                            <div class="aq-filter-checkbox">
-                                                                <i class="fa-solid fa-check"></i>
-                                                            </div>
-
-                                                            <span class="aq-filter-label">
-                                                                {{ $value->value }}
-                                                            </span>
-
-                                                        </li>
-
-                                                    @endforeach
-
-                                                </ul>
-
-                                            </div>
-
+                                            <button class="action-btn btn-cart" aria-label="Add to Cart"
+                                                    onclick="event.stopPropagation();">
+                                                <svg class="plus-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                                     stroke="#666" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                                </svg>
+                                                <svg class="cart-icon" style="display:none;" width="20" height="20"
+                                                     viewBox="0 0 24 24" fill="none" stroke="#1F5552" stroke-width="1.5"
+                                                     stroke-linecap="round" stroke-linejoin="round">
+                                                    <circle cx="9" cy="21" r="1"></circle>
+                                                    <circle cx="20" cy="21" r="1"></circle>
+                                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                                                </svg>
+                                            </button>
                                         </div>
-
-                                    @endif
-
-                                @endforeach
-                            @endif
-
-                            {{-- Widget: Premium Brands / Collections --}}
-                            {{-- Hidden on the collection landing page itself, since the page is --}}
-                            {{-- already locked to one collection. --}}
-                            @if($contextType !== 'collection')
-                                <div class="aq-filter-widget">
-                                    <button class="aq-filter-header" type="button">
-                                        <span>Collections</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </button>
-                                    <div class="aq-filter-content">
-                                        <ul class="aq-filter-list">
-                                            @foreach($collections as $collection)
-                                                <li class="aq-filter-item" data-filter-type="collection"
-                                                    data-id="{{ $collection->id }}">
-
-                                                    <div class="aq-filter-checkbox">
-                                                        <i class="fa-solid fa-check"></i>
-                                                    </div>
-
-                                                    <span class="aq-filter-label">
-                                                        {{ $collection->name }}
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
                                     </div>
                                 </div>
-                            @endif
-
-                            {{-- Widget: Shop By Occasion --}}
-                            {{-- Hidden on the occasion landing page itself, since the page is --}}
-                            {{-- already locked to one occasion. --}}
-                            @if($contextType !== 'occasion')
-                                <div class="aq-filter-widget">
-                                    <button class="aq-filter-header" type="button">
-                                        <span>Shop By Occasion</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </button>
-                                    <div class="aq-filter-content">
-                                        <ul class="aq-filter-list">
-                                            @foreach($occasions as $occasion)
-                                                <li class="aq-filter-item" data-filter-type="occasion"
-                                                    data-id="{{ $occasion->id }}">
-
-                                                    <div class="aq-filter-checkbox">
-                                                        <i class="fa-solid fa-check"></i>
-                                                    </div>
-
-                                                    <span class="aq-filter-label">
-                                                        {{ $occasion->title }}
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Widget: Category --}}
-                            {{-- Only shown on non-category pages (collection / occasion / attribute / price), --}}
-                            {{-- letting the visitor narrow an otherwise category-wide listing down --}}
-                            {{-- to one category. Single-select: choosing a category clears any other. --}}
-                            @if($contextType !== 'category')
-                                <div class="aq-filter-widget">
-                                    <button class="aq-filter-header" type="button">
-                                        <span>Category</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </button>
-                                    <div class="aq-filter-content">
-                                        <ul class="aq-filter-list">
-                                            @foreach($categories as $cat)
-                                                <li class="aq-filter-item" data-filter-type="category"
-                                                    data-id="{{ $cat->id }}">
-
-                                                    <div class="aq-filter-checkbox">
-                                                        <i class="fa-solid fa-check"></i>
-                                                    </div>
-
-                                                    <span class="aq-filter-label">
-                                                        {{ $cat->name }}
-                                                    </span>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <!-- Clear all CTA -->
-                            <button type="button" class="aq-btn-black w-100 mt-20" id="aq-clear-filters-btn"
-                                style="border-radius:12px; font-size:13px; padding:10px;">
-                                Reset All Filters
-                            </button>
-                        </div>
-
-                        {{-- Visual subcategory card grid: only meaningful on a category landing page, --}}
-                        {{-- since $subcategories is the current category's own children. --}}
-                        @if($category)
-                            <div class="aq-category-grid-section-main">
-
-                                <section class="aq-category-grid-section">
-
-                                    <button class="aq-filter-header mb-20 px-4" type="button">
-                                        <span>Category</span>
-
-                                    </button>
-                                    <div class="container">
-
-                                        <div class="aq-category-grid">
-                                            @foreach($subcategories as $subcategory)
-                                                <a href="{{ route('products.listing', $category->slug) }}?subcategory={{ $subcategory->slug }}"
-                                                    class="aq-category-card {{ $loop->first ? 'active' : '' }}">
-
-                                                    <div class="aq-category-card-thumb">
-                                                        <img src="{{ asset('storage/' . $subcategory->image) }}"
-                                                            alt="{{ $subcategory->name }}">
-                                                    </div>
-
-                                                    <h4 class="aq-category-card-title">
-                                                        {{ $subcategory->name }}
-                                                    </h4>
-
-                                                    <span class="aq-category-card-count">
-                                                        {{ $subcategory->sub_category_products_count }} Products
-                                                    </span>
-                                                </a>
-                                            @endforeach
-
-                                        </div>
-
-                                    </div>
-                                </section>
-
                             </div>
-                        @endif
+                        @endforeach
                     </div>
+                @endif
 
-                    <!-- Right Product Grid -->
-                    <div class="col-lg-9">
-                        <!-- Header filter summary bar -->
-                        <div class="aq-layout-header">
-                            <span class="aq-layout-header-title" id="aq-active-category-title">
-                                @if($category)
-                                    {{ request('subcategory')
-                                        ? $subcategories->firstWhere('slug', request('subcategory'))?->name
-                                        : $category->name
-                                    }} Collection
-                                @else
-                                    {{ $pageTitle }} Collection
-                                @endif
-                            </span>
-                            <div class="aq-layout-header-options">
-                                <button type="button" class="btn btn-outline-dark d-lg-none" id="aq-mobile-filter-open-btn"
-                                    style="border-radius: 8px; font-size: 13px; padding: 6px 12px; border: 1px solid #ddd;"
-                                    onclick="document.querySelector('.aq-filter-sidebar').classList.add('active'); document.querySelector('.body-overlay').classList.add('opened'); document.body.style.overflow='hidden';">
-                                    <i class="fa-solid fa-filter"></i> Filters
-                                </button>
-                                <span class="d-none d-sm-inline"
-                                    style="font-family: Inter, sans-serif; font-size: 13px; color: #666;"
-                                    id="aq-product-results-count">Showing {{ $products->total() }} Products</span>
-                                <select class="aq-sort-select">
-                                    <option value="popularity">Sort By: Popularity</option>
-                                    <option value="price-low">Price: Low to High</option>
-                                    <option value="price-high">Price: High to Low</option>
-                                    <option value="newest">Sort By: Newest</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Product Cards Grid -->
-
-                        <div class="aq-product-grid" id="aq-product-catalog-grid">
-                            @include('front-pages.partials.product-grid')
-                        </div>
-
-                        <div id="aq-pagination-wrapper" class="mt-4">
-                            {{ $products->appends(request()->query())->links() }}
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
 
-
-
-        <!-- 6. Bottom Sticky Category Link Area (For SEO/Footer Links) -->
-        <section class="aq-footer-categories-section">
-            <div class="container">
-                <div class="aq-footer-cat-container">
-                    <div class="aq-footer-cat-group">
-                        <span class="aq-footer-cat-label">Shop by Recipient</span>
-                        <div class="aq-footer-cat-links">
-                            @foreach($menuCategories as $footerCategory)
-                                <a href="{{ route('products.listing', $footerCategory->slug) }}" class="aq-footer-cat-link">
-                                    {{ $footerCategory->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="aq-footer-cat-group">
-                        <span class="aq-footer-cat-label">Shop by Occasion</span>
-                        <div class="aq-footer-cat-links">
-                            @foreach($headerOccasions->take(10) as $occasion)
-                                <a href="{{ route('occasions.listing', $occasion->slug) }}" class="aq-footer-cat-link">
-                                    {{ $occasion->title }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
+    </div>
 
     <script>
-
-        document.addEventListener("DOMContentLoaded", function () {
-            // Sticky scrolled header transition to green background on scroll
-            window.addEventListener('scroll', () => {
-                const header = document.querySelector('.header-sticky');
-                if (header) {
-                    if (window.scrollY > 80) {
-                        header.classList.add('scrolled-green');
-                    } else {
-                        header.classList.remove('scrolled-green');
-                    }
+        // Reads current URL and rebuilds it with updated query params
+        function buildUrl(params) {
+            const url = new URL(window.location.href);
+            Object.entries(params).forEach(([key, val]) => {
+                if (val === '' || val === null) {
+                    url.searchParams.delete(key);
+                } else {
+                    url.searchParams.set(key, val);
                 }
             });
-
-            // Sidebar accordion collapsible toggle listener
-            const filterHeaders = document.querySelectorAll(".aq-filter-header");
-            filterHeaders.forEach(header => {
-                header.addEventListener("click", function () {
-                    this.classList.toggle("collapsed");
-                    const content = this.nextElementSibling;
-                    if (content) {
-                        if (content.style.maxHeight) {
-                            content.style.maxHeight = null;
-                        } else {
-                            content.style.maxHeight = content.scrollHeight + "px";
-                        }
-                    }
-                });
-
-                // Initialize default height
-                const content = header.nextElementSibling;
-                if (content) {
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-            });
-
-            // Context locked on this page: category | collection | occasion | attribute | price
-            const contextType = "{{ $contextType }}";
-            const contextId = {{ $contextModel->id ?? 'null' }};
-            const contextPriceMin = {{ isset($priceBand['min']) ? $priceBand['min'] : 'null' }};
-            const contextPriceMax = {{ isset($priceBand['max']) ? $priceBand['max'] : 'null' }};
-
-            function applyFilters() {
-
-                let collections = [];
-                let occasions = [];
-                let categoryIds = [];
-                let attributeValues = [];
-
-                document.querySelectorAll(
-                    '.aq-filter-item.active[data-filter-type="collection"]'
-                ).forEach(item => {
-                    collections.push(item.dataset.id);
-                });
-
-                document.querySelectorAll(
-                    '.aq-filter-item.active[data-filter-type="occasion"]'
-                ).forEach(item => {
-                    occasions.push(item.dataset.id);
-                });
-
-                document.querySelectorAll(
-                    '.aq-filter-item.active[data-filter-type="category"]'
-                ).forEach(item => {
-                    categoryIds.push(item.dataset.id);
-                });
-
-                document.querySelectorAll(
-                    '.aq-filter-item.active[data-filter-type="attribute"]'
-                ).forEach(item => {
-                    attributeValues.push(item.dataset.valueId);
-                });
-
-                const search =
-                    document.getElementById('aq-sidebar-search-input')?.value || '';
-
-                const maxPrice =
-                    document.getElementById('priceRange')?.value || '';
-
-                const sortBy =
-                    document.querySelector('.aq-sort-select')?.value || '';
-
-                fetch("{{ route('products.filter') }}", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        context_type: contextType,
-                        context_id: contextId,
-                        context_price_min: contextPriceMin,
-                        context_price_max: contextPriceMax,
-                        category_id: categoryIds[0] || null,
-                        collections,
-                        occasions,
-                        attribute_values: attributeValues,
-                        search,
-                        max_price: maxPrice,
-                        sort_by: sortBy
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-
-                        document.getElementById(
-                            'aq-product-catalog-grid'
-                        ).innerHTML = data.html;
-                        document.getElementById(
-                            'aq-pagination-wrapper'
-                        ).innerHTML = data.pagination;
-
-                        document.getElementById(
-                            'aq-product-results-count'
-                        ).innerHTML = `Showing ${data.count} Products`;
-                    });
-            }
-
-            const filterItems = document.querySelectorAll(".aq-filter-item");
-            filterItems.forEach(item => {
-
-                item.addEventListener("click", function () {
-
-                    // Category widget is single-select: picking one clears the rest.
-                    if (this.dataset.filterType === "category") {
-                        const wasActive = this.classList.contains("active");
-                        document.querySelectorAll(
-                            '.aq-filter-item[data-filter-type="category"]'
-                        ).forEach(el => el.classList.remove("active"));
-                        if (!wasActive) {
-                            this.classList.add("active");
-                        }
-                    } else {
-                        this.classList.toggle("active");
-                    }
-
-                    applyFilters();
-
-                });
-
-            });
-
-            const priceSlider = document.getElementById("priceRange");
-            const maxPriceLabel = document.getElementById("maxPriceLabel");
-            // Price slider dynamic value display
-            if (priceSlider) {
-                priceSlider.addEventListener("input", function () {
-
-                    maxPriceLabel.innerText =
-                        "Max: ₹" + parseInt(this.value).toLocaleString('en-IN');
-
-                    applyFilters();
-
-                });
-            }
-
-
-            // Search filtering listener
-            const searchInput = document.getElementById("aq-sidebar-search-input");
-            if (searchInput) {
-
-                let searchTimeout;
-
-                searchInput.addEventListener("input", function () {
-
-                    clearTimeout(searchTimeout);
-
-                    searchTimeout = setTimeout(() => {
-
-                        applyFilters();
-
-                    }, 500);
-
-                });
-
-            }
-
-            const sortSelect = document.querySelector('.aq-sort-select');
-
-            if (sortSelect) {
-
-                sortSelect.addEventListener('change', function () {
-
-                    applyFilters();
-
-                });
-
-            }
-
-            // Reset filters logic
-            const clearBtn = document.getElementById("aq-clear-filters-btn");
-            if (clearBtn) {
-
-                clearBtn.addEventListener("click", function () {
-
-                    if (priceSlider) {
-                        priceSlider.value = 10000;
-                        maxPriceLabel.innerText = "Max: ₹10,000";
-                    }
-
-                    if (searchInput) {
-                        searchInput.value = "";
-                    }
-
-                    filterItems.forEach(item => {
-                        item.classList.remove("active");
-                    });
-
-                    const sortSelect =
-                        document.querySelector('.aq-sort-select');
-
-                    if (sortSelect) {
-                        sortSelect.selectedIndex = 0;
-                    }
-
-                    applyFilters();
-
-                });
-
-            }
-
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            function initProductHoverSliders() {
-                document.querySelectorAll('.aq-product-card').forEach(card => {
-                    const mediaItems = Array.from(card.querySelectorAll('.aq-product-media-wrapper > img, .aq-product-media-wrapper > video'));
-                    const dots = card.querySelectorAll('.aq-media-dot');
-                    let hoverInterval;
-                    let currentIndex = 0;
-
-                    card.addEventListener('mouseenter', () => {
-                        if (mediaItems.length <= 1) return;
-
-                        // Immediately show second image on hover
-                        currentIndex = 1;
-                        updateMedia();
-
-                        // Then cycle every 2 seconds
-                        hoverInterval = setInterval(() => {
-                            currentIndex = (currentIndex + 1) % mediaItems.length;
-                            updateMedia();
-                        }, 2000);
-                    });
-
-                    card.addEventListener('mouseleave', () => {
-                        clearInterval(hoverInterval);
-                        currentIndex = 0;
-                        updateMedia();
-                    });
-
-                    function updateMedia() {
-                        mediaItems.forEach((item, index) => {
-                            item.style.opacity = index === currentIndex ? '1' : '0';
-
-                            // Play/Pause video logic
-                            if (item.tagName === 'VIDEO') {
-                                if (index === currentIndex) {
-                                    item.play().catch(e => console.log('Autoplay prevented'));
-                                } else {
-                                    item.pause();
-                                }
-                            }
-                        });
-
-                        dots.forEach((dot, index) => {
-                            if (index === currentIndex) {
-                                dot.classList.add('active');
-                            } else {
-                                dot.classList.remove('active');
-                            }
-                        });
-                    }
-                });
-            }
-
-            initProductHoverSliders();
-
-            // Re-init if new products are loaded (optional, for dynamic rendering)
-            const grid = document.getElementById('aq-product-catalog-grid');
-            if (grid) {
-                const observer = new MutationObserver(initProductHoverSliders);
-                observer.observe(grid, { childList: true });
-            }
-            // Close filter sidebar when body overlay is clicked
-            const bodyOverlay = document.querySelector('.body-overlay');
-            const filterSidebar = document.querySelector('.aq-filter-sidebar');
-            if (bodyOverlay && filterSidebar) {
-                bodyOverlay.addEventListener('click', function () {
-                    filterSidebar.classList.remove('active');
-                    bodyOverlay.classList.remove('opened');
-                    document.body.style.overflow = '';
-                });
-            }
-        });
-
-        function addToCart(productId, minQty) {
-
-            $.ajax({
-                url: "{{ route('cart.add') }}",
-                type: "POST",
-                data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    product_id: productId,
-                    quantity: minQty
-                },
-                success: function (response) {
-
-                    if (response.status) {
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Success',
-                            text: response.message,
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                        $('.cart-count').text(response.cart_count);
-
-                    } else {
-
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: 'Unable to add product.'
-                        });
-
-                    }
-                },
-                error: function (xhr) {
-
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: xhr.responseJSON?.message ?? 'Something went wrong.'
-                    });
-
-                }
-            });
+            return url.toString();
         }
 
+        // Clicking a subcategory tab — keeps current sort, resets to that subcategory
+        function applyFilter(subcategoryId) {
+            window.location.href = buildUrl({ subcategory: subcategoryId });
+        }
+
+        // Changing sort dropdown — keeps current subcategory filter, updates sort
+        function applySort(sortValue) {
+            window.location.href = buildUrl({ sort: sortValue === 'featured' ? '' : sortValue });
+        }
     </script>
 
 @endsection

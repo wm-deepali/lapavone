@@ -155,11 +155,11 @@
 
                                 <div class="toggle-row">
                                     <div>
-                                        <div class="toggle-label">Show on Home Page</div>
-                                        <div class="toggle-sub">Display in homepage FAQ section</div>
+                                        <div class="toggle-label">Show on Product Page</div>
+                                        <div class="toggle-sub">Display in Product Page FAQ section</div>
                                     </div>
                                     <label class="toggle-switch">
-                                        <input type="checkbox" name="show_home" id="show_home">
+                                        <input type="checkbox" name="show_on_product_page" id="show_on_product_page">
                                         <span class="toggle-track"></span>
                                     </label>
                                 </div>

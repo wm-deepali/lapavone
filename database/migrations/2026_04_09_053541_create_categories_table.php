@@ -18,9 +18,11 @@ class CreateCategoriesTable extends Migration
             $table->string('meta_title')->nullable();
             $table->text('meta_description')->nullable();
 
-            $table->string('image')->nullable();
+            // Images
+            $table->string('square_image')->nullable();
+            $table->string('horizontal_image')->nullable();
 
-            // 🔥 parent-child relation
+            // Parent category
             $table->unsignedBigInteger('parent_id')->nullable();
 
             $table->boolean('is_popular')->default(0);
@@ -32,7 +34,6 @@ class CreateCategoriesTable extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // foreign key (optional but recommended)
             $table->foreign('parent_id')
                 ->references('id')
                 ->on('categories')

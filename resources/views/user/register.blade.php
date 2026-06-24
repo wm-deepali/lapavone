@@ -1,213 +1,89 @@
-@extends('layouts.app')
+@extends('layouts.user-auth-app')
 @section('content')
 
-    <main class="aq-auth-page">
-        <!-- Hero Section -->
-        <section class="aq-catpage-hero">
-            <div class="aq-hero-glow"></div>
-            <div class="aq-floating-gift-box aq-floating-shape-1">
-                <i class="fa-solid fa-user-plus"></i>
-            </div>
-            <div class="aq-catpage-hero-content">
-                <h1 class="aq-catpage-title">Register with Us</h1>
-                <div class="aq-catpage-breadcrumbs">
-                    <span class="text-white opacity-75">SIGN UP</span>
+    <!-- Main Register Section with Background Image -->
+        <section class="login-fullscreen-section">
+            <div class="login-card">
+                <h1 class="login-title">REGISTER</h1>
+
+                <div class="login-decorative-divider">
+                    <img src="{{ asset('assets/images/login_card_innericon.png')}}" alt="La Pavone Emblem"
+                        class="login-decorative-icon" onerror="this.style.display='none'">
                 </div>
-            </div>
-        </section>
 
-        <!-- Auth Section -->
-        <section class="aq-auth-section">
-            <div class="container">
-                <div class="row justify-content-center">
-                    <div class="col-xl-10 col-lg-12">
-                        <div class="aq-auth-container">
+                <form class="login-form" id="register-form" action="profile.html">
+                    <!-- Step 1: Enter Mobile Number -->
+                    <div id="step-mobile" class="form-step">
+                        <div class="form-group mb-3">
+                            <label class="visually-hidden" for="mobile">Mobile Number</label>
+                            <input type="tel" id="mobile" class="form-control" placeholder="Enter Mobile Number"
+                                required pattern="[0-9]{10}">
+                            <div class="invalid-feedback text-start" id="mobile-error"
+                                style="display: none; color: #dc3545; font-size: 13px; margin-top: 5px; font-family: 'Outfit', sans-serif;">
+                                Please enter a valid 10-digit mobile number.</div>
+                        </div>
+                        <button type="button" id="btn-send-otp" class="login-submit-btn w-100 m-0">Send OTP</button>
+                    </div>
 
-                            <!-- Left: Benefits / Info -->
-                            <div class="col-lg-5 aq-auth-left">
-                                <div class="aq-auth-left-bg"></div>
-                                <div class="aq-auth-left-content">
-                                    <div class="mb-40">
-                                        <h3 class="font-family-heading"
-                                            style="color: var(--aq-color-maroon); font-size: 28px; font-weight: 700; margin-bottom: 10px;">
-                                            Register Now</h3>
-                                        <p style="color: #555; font-size: 16px;">Welcome! Register to avail the best deals
-                                            and unlock superior discounts!</p>
-                                    </div>
-
-                                    <div class="aq-auth-benefits-list mt-40">
-                                        <div class="aq-auth-benefit-item">
-                                            <div class="aq-auth-benefit-icon">
-                                                <i class="fa-solid fa-crown"></i>
-                                            </div>
-                                            <div class="aq-auth-benefit-text">
-                                                <h5>Zero Membership Fees</h5>
-                                                <p>Access Oudhyana VIP without any subscription charges.</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="aq-auth-benefit-item">
-                                            <div class="aq-auth-benefit-icon">
-                                                <i class="fa-solid fa-tags"></i>
-                                            </div>
-                                            <div class="aq-auth-benefit-text">
-                                                <h5>Lowest Price Guaranteed</h5>
-                                                <p>Explore unbeatable prices and unmatchable value on premium Chikankari.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div class="aq-auth-benefit-item">
-                                            <div class="aq-auth-benefit-icon">
-                                                <i class="fa-solid fa-shield"></i>
-                                            </div>
-                                            <div class="aq-auth-benefit-text">
-                                                <h5>100% Secure & Spam Free</h5>
-                                                <p>Guaranteed data protection & spam-free inbox.</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Right: Form -->
-                            <div class="col-lg-7 aq-auth-right">
-                                <h3 class="font-family-heading aq-auth-form-title">Create an Account</h3>
-                                <p class="aq-auth-form-subtitle">Enter your details to get started</p>
-                                @if(session('success'))
-                                    <div class="alert alert-success mb-3">
-                                        {{ session('success') }}
-                                    </div>
-                                @endif
-                                @if ($errors->any())
-                                    <div class="alert alert-danger mb-3">
-                                        <ul class="mb-0">
-                                            @foreach ($errors->all() as $error)
-                                                <li>{{ $error }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-                                <form id="aqRegisterForm" action="{{ route('user.register.store') }}" method="POST"
-                                    class="aq-contact-page">
-                                    @csrf
-
-                                    <div class="row g-3 mb-4">
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i class="fa-regular fa-user position-absolute aq-contact-input-icon"></i>
-                                                <input type="text" name="name" class="form-control aq-contact-input"
-                                                    required minlength="2" maxlength="100" pattern="[A-Za-z\s]+"
-                                                    placeholder="Full Name" />
-                                                @error('name')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i
-                                                    class="fa-regular fa-envelope position-absolute aq-contact-input-icon"></i>
-                                                <input type="email" name="email" class="form-control aq-contact-input"
-                                                    required maxlength="255" placeholder="Email Address" />
-                                                @error('email')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i class="fa-solid fa-phone position-absolute aq-contact-input-icon"></i>
-                                                <input type="tel" name="mobile" class="form-control aq-contact-input"
-                                                    required maxlength="10" pattern="[6-9]{1}[0-9]{9}"
-                                                    placeholder="Mobile Number" />
-                                                @error('mobile')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i
-                                                    class="fa-solid fa-phone-volume position-absolute aq-contact-input-icon"></i>
-                                                <input type="tel" name="alternate_mobile"
-                                                    class="form-control aq-contact-input" required maxlength="10"
-                                                    pattern="[6-9]{1}[0-9]{9}" placeholder="Alternate Number" />
-                                                @error('alternate_mobile')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i class="fa-solid fa-lock position-absolute aq-contact-input-icon"></i>
-                                                <input type="password" name="password" class="form-control aq-contact-input"
-                                                    required minlength="8" placeholder="Password (Min 8 Characters)" />
-                                                @error('password')
-                                                    <small class="text-danger">{{ $message }}</small>
-                                                @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="position-relative">
-                                                <i class="fa-solid fa-lock position-absolute aq-contact-input-icon"></i>
-                                                <input type="password" name="password_confirmation"
-                                                    class="form-control aq-contact-input" required minlength="8"
-                                                    placeholder="Confirm Password" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-4">
-                                        <label class="aq-custom-check">
-                                            <input type="checkbox" id="registerTerms" required checked>
-                                            <span class="checkmark"></span>
-                                            I accept Oudhyana's <a href="term-condition.html">Privacy Policy</a> <span
-                                                class="mx-1">&amp;</span> <a href="term-condition.html">T&Cs</a>.
-                                        </label>
-                                    </div>
-
-                                    <button type="submit" class="aq-contact-btn-submit w-100 mb-4"
-                                        style="background: var(--aq-color-maroon); color: #fff; padding: 15px; border-radius: 8px; border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; margin-top: 10px;">
-                                        <span>Create Account</span>
-                                        <i class="fa-solid fa-arrow-right ml-10"></i>
-                                    </button>
-
-                                    <!-- Divider -->
-                                    <div class="d-flex align-items-center mb-4">
-                                        <hr class="flex-grow-1 m-0" style="border-color: #ddd;">
-                                        <span class="mx-3 text-muted"
-                                            style="font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Or
-                                            Register with</span>
-                                        <hr class="flex-grow-1 m-0" style="border-color: #ddd;">
-                                    </div>
-
-                                    <!-- Google Auth Button -->
-                                    <a href="{{ route('google.login') }}" type="button"
-                                        class="w-100 d-flex justify-content-center align-items-center"
-                                        style="background: #fff; color: #555; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-weight: 600; font-size: 15px; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"
-                                            alt="Google" style="width: 20px; margin-right: 10px;">
-                                        Sign up with Google
-                                    </a>
-                                </form>
-
-                                <!-- <div class="aq-auth-alt-link">
-                                                        <a href="#"><i class="fa-solid fa-globe mr-5"></i> Click here for International
-                                                            Users</a>
-                                                    </div> -->
-                                <div class="aq-auth-alt-link mt-15">
-                                    Already have an account? <a href="{{ route('user.login') }}">Login here</a>
-                                </div>
-                            </div>
-
+                    <!-- Step 2: Enter OTP -->
+                    <div id="step-otp" class="form-step" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label class="visually-hidden" for="otp">Enter OTP</label>
+                            <input type="text" id="otp" class="form-control" placeholder="Enter OTP" required
+                                maxlength="6">
+                            <div class="invalid-feedback text-start" id="otp-error"
+                                style="display: none; color: #dc3545; font-size: 13px; margin-top: 5px; font-family: 'Outfit', sans-serif;">
+                                Invalid OTP. Please enter '1234' to verify.</div>
+                        </div>
+                        <button type="button" id="btn-verify-otp" class="login-submit-btn w-100 m-0">Verify OTP</button>
+                        <div class="text-end mt-2">
+                            <a href="#" id="btn-resend-otp"
+                                style="font-family: 'Outfit', sans-serif; font-size: 12px; color: #1F5552; text-decoration: underline;">Resend
+                                OTP</a>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Step 2.5: Choose Registration or Guest -->
+                    <div id="step-choice" class="form-step" style="display: none; text-align: center;">
+                        <h4 style="font-family: 'Cinzel', serif; color: #1F5552; margin-bottom: 20px;">Verification Successful</h4>
+                        <p style="font-family: 'Outfit', sans-serif; font-size: 14px; color: #444; margin-bottom: 30px;">How would you like to proceed?</p>
+                        
+                        <button type="button" id="btn-choice-guest" class="login-submit-btn w-100 mb-3" style="margin: 0;">Guest Login</button>
+                        <button type="button" id="btn-choice-register" class="login-submit-btn w-100" style="margin: 0; background-color: transparent; color: #1F5552; border: 1px solid #1F5552;">Register</button>
+                    </div>
+
+                    <!-- Step 3: Registration Profile Details -->
+                    <div id="step-details" class="form-step" style="display: none;">
+                        <div class="form-group mb-3">
+                            <label class="visually-hidden" for="fullname">Full Name</label>
+                            <input type="text" id="fullname" class="form-control" placeholder="Full Name" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="visually-hidden" for="email">Email Id</label>
+                            <input type="email" id="email" class="form-control" placeholder="Email Id" required>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="visually-hidden" for="password">Enter Password</label>
+                            <input type="password" id="password" class="form-control" placeholder="Enter Password"
+                                required>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between mt-4 mb-3 login-options">
+                            <div class="form-check m-0 p-0">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <button type="submit" class="login-submit-btn m-0" style="width: 70%;">Register</button>
+                        </div>
+                    </div>
+                </form>
+
+                <p class="login-register-link mt-2">
+                    Already have an account? <a href="login.html">Login</a>
+                </p>
             </div>
         </section>
-    </main>
-
 
 @endsection

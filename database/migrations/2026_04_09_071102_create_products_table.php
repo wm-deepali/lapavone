@@ -27,15 +27,21 @@ return new class extends Migration {
 
             $table->string('slug')->unique();
 
+            $table->string('weight')->nullable();
+
             $table->string('sku')->nullable();
 
             $table->string('product_code')->nullable();
 
-            $table->text('short_description')->nullable();
+            $table->text('sub_title')->nullable();
 
             $table->longText('description')->nullable();
 
-            $table->longText('delivery_returns')->nullable();
+            $table->longText('product_notes')->nullable();
+            
+            $table->longText('how_to_use')->nullable();
+
+            $table->longText('the_story')->nullable();
 
             $table->decimal('mrp', 12, 2)->default(0);
 

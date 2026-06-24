@@ -202,11 +202,13 @@
 
                 <!-- Category identity pill in header -->
                 <div class="cat-identity">
-                    @if($category->image)
-                        <img src="{{ asset('storage/' . $category->image) }}" class="cat-identity-thumb" alt="{{ $category->name }}">
-                    @else
-                        <div class="cat-identity-placeholder"><i class="fa fa-folder"></i></div>
-                    @endif
+                   @if($category->square_image)
+    <img src="{{ asset('storage/' . $category->square_image) }}" class="cat-identity-thumb">
+@else
+    <div class="cat-identity-placeholder">
+        <i class="fa fa-folder"></i>
+    </div>
+@endif
                     <div>
                         <div class="cat-identity-name">{{ $category->name }}</div>
                         <div class="cat-identity-id">ID #{{ $category->id }}</div>
@@ -308,41 +310,87 @@
                     <div>
 
                         <!-- Image -->
-                        <div class="section-card">
-                            <div class="section-card-header">
-                                <h5>Image</h5>
-                            </div>
-                            <div class="section-card-body">
+                     <div class="section-card">
+    <div class="section-card-header">
+        <h5>Images</h5>
+    </div>
 
-                                @if($category->image)
-                                    <div class="current-image-wrap" id="currentImageWrap">
-                                        <img src="{{ asset('storage/' . $category->image) }}" alt="{{ $category->name }}">
-                                        <div class="current-image-info">
-                                            <strong>Current image</strong>
-                                            Upload a new file below to replace it.
-                                        </div>
-                                    </div>
-                                @endif
+    <div class="section-card-body">
 
-                                <div class="file-upload-area" id="uploadArea">
-                                    <input type="file" name="image" accept="image/*" id="imageInput">
-                                    <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
-                                    <p>{{ $category->image ? 'Replace image' : 'Upload image' }}</p>
-                                    <small>PNG, JPG, WEBP — max 2 MB</small>
-                                </div>
+        {{-- Square Image --}}
+        <div class="field-group">
+            <label class="field-label">Square Image</label>
 
-                                <div id="newPreviewWrap">
-                                    <img id="previewImg" src="" alt="New image preview">
-                                    <div>
-                                        <button type="button" onclick="clearNewImage()">
-                                            <i class="fa fa-times"></i> Remove
-                                        </button>
-                                    </div>
-                                </div>
+            @if($category->square_image)
+                <div class="current-image-wrap" id="currentSquareWrap">
+                    <img src="{{ asset('storage/'.$category->square_image) }}">
+                    <div class="current-image-info">
+                        <strong>Current Square Image</strong>
+                        Upload a new file to replace it.
+                    </div>
+                </div>
+            @endif
 
-                            </div>
-                        </div>
+            <div class="file-upload-area" id="squareUploadArea">
+                <input type="file" name="square_image" id="squareImageInput">
+                <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
+                <p>Replace square image</p>
+                <small>500×500 recommended</small>
+            </div>
 
+            <div id="squarePreviewWrap" style="display:none;margin-top:12px;text-align:center">
+                <img id="squarePreviewImg"
+                     style="max-width:100%;border-radius:12px;border:1px solid var(--border)">
+                <div>
+                    <button type="button" onclick="clearSquareImage()">
+                        <i class="fa fa-times"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        {{-- Horizontal Image --}}
+        <div class="field-group">
+
+            <label class="field-label">Horizontal Image</label>
+
+            @if($category->horizontal_image)
+                <div class="current-image-wrap" id="currentHorizontalWrap">
+                    <img src="{{ asset('storage/'.$category->horizontal_image) }}">
+                    <div class="current-image-info">
+                        <strong>Current Horizontal Image</strong>
+                        Upload a new file to replace it.
+                    </div>
+                </div>
+            @endif
+
+            <div class="file-upload-area" id="horizontalUploadArea">
+                <input type="file" name="horizontal_image" id="horizontalImageInput">
+                <div class="upload-icon"><i class="fa fa-cloud-upload"></i></div>
+                <p>Replace horizontal image</p>
+                <small>1200×600 recommended</small>
+            </div>
+
+            <div id="horizontalPreviewWrap"
+                 style="display:none;margin-top:12px;text-align:center">
+
+                <img id="horizontalPreviewImg"
+                     style="max-width:100%;border-radius:12px;border:1px solid var(--border)">
+
+                <div>
+                    <button type="button"
+                            onclick="clearHorizontalImage()">
+                        <i class="fa fa-times"></i> Remove
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
                         <!-- Settings -->
                         <div class="section-card">
                             <div class="section-card-header">
@@ -382,18 +430,6 @@
                                         <option value="1" {{ $category->is_featured  ? 'selected' : '' }}>Yes</option>
                                     </select>
                                 </div>
-
-                                <div class="toggle-row">
-                                    <div>
-                                        <div class="toggle-label">Show In Navbar</div>
-                                        <div class="toggle-sub">Display in top navigation</div>
-                                    </div>
-                                    <select name="show_in_navbar" class="field-select-sm">
-                                        <option value="0" {{ !$category->show_in_navbar ? 'selected' : '' }}>No</option>
-                                        <option value="1" {{ $category->show_in_navbar  ? 'selected' : '' }}>Yes</option>
-                                    </select>
-                                </div>
-
                             </div>
                         </div>
 
@@ -443,27 +479,69 @@ document.querySelector('form').addEventListener('submit', function () {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Updating…';
 });
+function setupPreview(inputId, previewWrapId, previewImgId, uploadAreaId, currentWrapId)
+{
+    document.getElementById(inputId).addEventListener('change', function () {
 
-// New image preview
-document.getElementById('imageInput').addEventListener('change', function () {
-    const file = this.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-        document.getElementById('previewImg').src = e.target.result;
-        document.getElementById('newPreviewWrap').style.display = 'block';
-        document.getElementById('uploadArea').style.display = 'none';
-        const cur = document.getElementById('currentImageWrap');
-        if (cur) cur.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-});
+        const file = this.files[0];
 
-function clearNewImage() {
-    document.getElementById('imageInput').value = '';
-    document.getElementById('newPreviewWrap').style.display = 'none';
-    document.getElementById('uploadArea').style.display = 'block';
-    const cur = document.getElementById('currentImageWrap');
-    if (cur) cur.style.display = 'flex';
+        if (!file) return;
+
+        const reader = new FileReader();
+
+        reader.onload = function (e)
+        {
+            document.getElementById(previewImgId).src = e.target.result;
+
+            document.getElementById(previewWrapId).style.display = 'block';
+
+            document.getElementById(uploadAreaId).style.display = 'none';
+
+            let current = document.getElementById(currentWrapId);
+
+            if(current)
+                current.style.display='none';
+        };
+
+        reader.readAsDataURL(file);
+    });
 }
+
+
+setupPreview(
+    'squareImageInput',
+    'squarePreviewWrap',
+    'squarePreviewImg',
+    'squareUploadArea',
+    'currentSquareWrap'
+);
+
+setupPreview(
+    'horizontalImageInput',
+    'horizontalPreviewWrap',
+    'horizontalPreviewImg',
+    'horizontalUploadArea',
+    'currentHorizontalWrap'
+);
+
+function clearSquareImage()
+{
+    squareImageInput.value='';
+    squarePreviewWrap.style.display='none';
+    squareUploadArea.style.display='block';
+
+    if(currentSquareWrap)
+        currentSquareWrap.style.display='flex';
+}
+
+function clearHorizontalImage()
+{
+    horizontalImageInput.value='';
+    horizontalPreviewWrap.style.display='none';
+    horizontalUploadArea.style.display='block';
+
+    if(currentHorizontalWrap)
+        currentHorizontalWrap.style.display='flex';
+}
+
 </script>

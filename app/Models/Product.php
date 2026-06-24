@@ -20,10 +20,12 @@ class Product extends Model
         'sku',
         'product_code',
 
-        'short_description',
+        'sub_title',
+        'weight',
         'description',
-        'delivery_returns',
-        'fabric_care',
+        'product_notes',
+        'how_to_use',
+        'the_story',
 
         'mrp',
         'discount_type',
@@ -63,47 +65,38 @@ class Product extends Model
         return $this->belongsTo(Category::class, 'subcategory_id');
     }
 
+
+    public function defaultImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('image_type', 'default');
+    }
+
+    public function hoverImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('image_type', 'hover');
+    }
+
+    public function bannerImages()
+    {
+        return $this->hasMany(ProductImage::class)->where('image_type', 'banner');
+    }
+
+    public function storyImage()
+    {
+        return $this->hasMany(ProductImage::class)->where('image_type', 'story');
+    }
+
+    // Update the existing accessor
     public function getDisplayImageAttribute()
     {
-        $default = $this->images()
-            ->where('is_default', 1)
-            ->first();
-
-        if ($default) {
-            return asset('storage/' . $default->image);
-        }
-
-        $image = $this->images()->first();
-
-        return $image
-            ? asset('storage/' . $image->image)
-            : null;
+        $img = $this->defaultImage ?? $this->images()->first();
+        return $img ? asset('storage/' . $img->image) : null;
     }
 
-    public function attributeValues()
-    {
-        return $this->hasMany(ProductAttributeValue::class);
-    }
-
-    public function variants()
-    {
-        return $this->hasMany(ProductVariant::class);
-    }
 
     public function images()
     {
         return $this->hasMany(ProductImage::class);
-    }
-
-    // OCCASIONS
-    public function occasions()
-    {
-        return $this->belongsToMany(
-            GiftingOccasion::class,
-            'occasion_product',
-            'product_id',
-            'occasion_id'
-        );
     }
 
     public function collections()
@@ -143,5 +136,30 @@ class Product extends Model
     {
         return $this->hasMany(ProductReview::class)->where('status', 'approved');
     }
+
+
+    public function attributeValues()
+    {
+        return $this->hasMany(ProductAttributeValue::class);
+    }
+
+    public function variants()
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+
+    // OCCASIONS
+    public function occasions()
+    {
+        return $this->belongsToMany(
+            GiftingOccasion::class,
+            'occasion_product',
+            'product_id',
+            'occasion_id'
+        );
+    }
+
+
 
 }

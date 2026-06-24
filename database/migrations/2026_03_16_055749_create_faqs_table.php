@@ -15,7 +15,7 @@ return new class extends Migration {
 
             $table->text('answer');
 
-            $table->boolean('show_home')->default(0);
+            $table->boolean('show_on_product_page')->default(0);
 
             $table->boolean('status')->default(1);
 
