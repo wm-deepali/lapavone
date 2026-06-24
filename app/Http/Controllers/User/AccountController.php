@@ -10,40 +10,35 @@ use Illuminate\Validation\Rules\Password;
 
 class AccountController extends Controller
 {
-    public function index()
+
+    public function profile()
     {
-        return view('user.account-details');
+        $customer = auth('customer')->user()->load('addresses.city', 'addresses.state');
+        return view('user.profile', compact('customer'));
     }
 
-    public function updateProfile(Request $request)
+
+    public function update(Request $request)
     {
         $customer = auth('customer')->user();
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'max:50'],
+            'last_name' => ['required', 'string', 'max:50'],
             'email' => ['required', 'email', 'unique:customers,email,' . $customer->id],
             'mobile' => ['required', 'string', 'max:15'],
-            'dob' => ['nullable', 'date', 'before:today'],
-            'gender' => ['nullable', 'in:male,female,other,prefer_not'],
-            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,svg', 'max:2048'],
+            'dob' => ['nullable', 'date'],
+            'gender' => ['nullable', 'in:male,female,other'],
         ]);
 
-        if ($request->hasFile('avatar')) {
-            $data['avatar'] = $request->file('avatar')
-                ->store('customers/avatars', 'public');
-        }
+        $customer->name = trim($data['first_name'] . ' ' . $data['last_name']);
+        $customer->email = $data['email'];
+        $customer->mobile = $data['mobile'];
+        $customer->dob = $data['dob'] ?? null;
+        $customer->gender = $data['gender'] ?? null;
+        $customer->save();
 
-        $customer->update($data);
-
-        \App\Models\Notification::create([
-            'customer_id' => $customer->id,
-            'title' => 'Profile Updated',
-            'message' => 'Your account profile has been updated successfully.',
-            'icon' => 'fa-user',
-            'color' => 'system-icon',
-        ]);
-
-        return back()->with('success', 'Profile updated successfully.');
+        return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
     }
 
     public function updatePassword(Request $request)

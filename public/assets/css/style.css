@@ -575,11 +575,11 @@ body {
 }
 
 .la-pavone-wrapper .product-category-hover {
-    position: absolute;
+    /*position: absolute;*/
     top: 100%;
     left: 0;
     color: var(--lp-muted);
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 400;
     margin-top: 4px;
     opacity: 0;
@@ -592,6 +592,30 @@ body {
 .la-pavone-wrapper .product-card:hover .product-category-hover {
     opacity: 1;
     transform: translateY(0);
+}
+.la-pavone-wrapper .product-category-hover2 {
+    /*position: absolute;*/
+    top: 100%;
+    right: 0;
+    color: var(--lp-muted);
+    font-size: 16px;
+    font-weight: 400;
+    margin-top: 4px;
+    opacity: 0;
+    transform: translateY(-5px);
+    transition: opacity 300ms ease, transform 300ms ease;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.la-pavone-wrapper .product-card:hover .product-category-hover2 {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.productcard_bottom{
+        display: flex;
+    justify-content: space-between;
 }
 
 .la-pavone-wrapper .product-info {
@@ -4222,6 +4246,25 @@ section.similar-fragrances-section {
     color: #ffffff;
 }
 
+
+.cart-page-wrapper #apply-coupon-btn {
+    padding: 10px 24px;
+    border: 1px solid #1F5552;
+    color: #1F5552;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    background: transparent;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cart-page-wrapper #apply-coupon-btn:hover {
+    background-color: #1F5552;
+    color: #ffffff !important;
+}
+
+
 /* Modals need wrapper specificity because they live at top body level */
 .la-pavone-wrapper #couponsModal .modal-content {
     border-radius: 16px;
@@ -4435,6 +4478,8 @@ section.similar-fragrances-section {
     padding: 24px 0 24px;
     color: #ffffff;
     border-bottom: 1px solid rgba(35, 75, 70, 0.08);
+    min-height: 540px;
+    height: 540px;
 }
 
 .shopall-page-wrapper .shopall-breadcrumbs {

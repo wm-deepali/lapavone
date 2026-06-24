@@ -55,7 +55,7 @@ class OrderController extends Controller
 
         $returnReasons = \App\Models\ReturnReason::where('is_active', 1)->orderBy('sort_order')->get();
 
-        return view('user.orders.index', compact('orders', 'returnReasons'));
+        return view('user.orders.index', compact('orders', 'returnReasons', 'customer'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -67,11 +67,13 @@ class OrderController extends Controller
      */
     public function show(int $id)
     {
+        $customer = $this->customer();
+
         $order = $this->findOrder($id);
 
         $returnReasons = \App\Models\ReturnReason::where('is_active', 1)->orderBy('sort_order')->get();
 
-        return view('user.orders.show', compact('order', 'returnReasons'));
+        return view('user.orders.show', compact('order', 'returnReasons', 'customer'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -259,10 +261,13 @@ class OrderController extends Controller
                 $newQty = min($cartItem->quantity + $item->quantity, $product->stock);
                 $cartItem->update(['quantity' => $newQty]);
             } else {
+                $quantity = min($item->quantity, $product->stock);
+
                 $cart->items()->create([
                     'product_id' => $product->id,
-                    'quantity' => min($item->quantity, $product->stock),
+                    'quantity' => $quantity,
                     'price' => $product->price,
+                    'total' => $quantity * $product->price,
                 ]);
             }
 
@@ -280,6 +285,6 @@ class OrderController extends Controller
             $message .= ' Unavailable: ' . implode(', ', $skipped) . '.';
         }
 
-        return redirect()->route('cart.index')->with('success', $message);
+        return redirect()->route('cart')->with('success', $message);
     }
 }

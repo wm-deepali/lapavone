@@ -27,11 +27,12 @@
         <div class="carousel-wrapper">
             <div class="carousel-controls">
                 <button class="carousel-btn" id="btn-prev" aria-label="Previous">
-                    <img src="assets/images/products/prives.png" alt="Previous">
-                </button>
-                <button class="carousel-btn" id="btn-next" aria-label="Next">
-                    <img src="assets/images/products/next.png" alt="Next">
-                </button>
+    <img src="{{ asset('assets/images/products/prives.png') }}" alt="Previous">
+</button>
+
+<button class="carousel-btn" id="btn-next" aria-label="Next">
+    <img src="{{ asset('assets/images/products/next.png') }}" alt="Next">
+</button>
             </div>
             <div class="carousel-track" id="product-track">
     @foreach($featuredProducts as $product)
@@ -52,21 +53,32 @@
             <div class="product-info">
                 <div class="product-details">
                     <div class="product-name">{{ $product->name }}</div>
-                    <div class="product-category-hover">
-                        {{ $product->sub_title ?? ($product->category->name ?? '') }}
-                    </div>
+                   
+                  
                 </div>
                 <div class="product-actions">
                     <button class="action-btn btn-wishlist" aria-label="Add to Wishlist"
                             onclick="event.stopPropagation();">
                         <img src="{{ asset('assets/images/products/wishlist.png') }}" alt="Wishlist">
                     </button>
-                    <button class="action-btn btn-cart" aria-label="Add to Cart"
-                            onclick="event.stopPropagation();">
-                        <img src="{{ asset('assets/images/products/add_to_cart.png') }}" alt="Add to Cart">
-                    </button>
+                     <button class="action-btn btn-cart" data-product-id="{{ $product->id }}"
+                                    aria-label="Add to Cart">
+                                    <img src="{{ asset('assets/images/products/add_to_cart.png') }}" alt="Add to Cart">
+                                </button>
                 </div>
+                
+                
             </div>
+            
+             <div class="productcard_bottom">
+                          <div class="product-category-hover">
+                        {{ $product->sub_title ?? ($product->category->name ?? '') }}
+                    </div>
+                    
+                     <div class="product-category-hover2">
+                        ₹{{ number_format($product->price, 2) }}
+                        </div>
+                    </div>
         </div>
     @endforeach
 </div>
@@ -148,12 +160,65 @@
             @if($audio->audio_file)
                 <source src="{{ asset('storage/'.$audio->audio_file) }}" type="audio/mpeg">
             @else
-                <source src="assets/images/home_footer_audio.mpeg" type="audio/mpeg">
+                <source src="{{ asset('assets/images/home_footer_audio.mpeg')}}" type="audio/mpeg">
             @endif
         </audio>
     </section>
 
 
+ <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).on('click', '.btn-cart', function (e) {
 
+            e.preventDefault();
+            e.stopPropagation();
+
+            let button = $(this);
+            let productId = button.data('product-id');
+
+            $.ajax({
+                url: "{{ route('cart.add') }}",
+                type: "POST",
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    product_id: productId,
+                    quantity: 1
+                },
+
+                success: function (response) {
+
+                    if ($('.cart-count').length) {
+                        $('.cart-count').text(response.cart_count);
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added to Cart',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                },
+
+                error: function (xhr) {
+
+                    let message = 'Something went wrong';
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        message = xhr.responseJSON.message;
+                    }
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: message
+                    });
+                }
+
+            });
+
+        });
+
+    </script>
 
 @endsection

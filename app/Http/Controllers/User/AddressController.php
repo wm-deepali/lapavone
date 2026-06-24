@@ -41,7 +41,7 @@ class AddressController extends Controller
 
         $states = State::orderBy('name')->get();
 
-        return view('user.address.index', compact('addresses', 'states'));
+        return view('user.addresses', compact('addresses', 'states', 'customer'));
     }
 
     // ─────────────────────────────────────────────────────────────────────────

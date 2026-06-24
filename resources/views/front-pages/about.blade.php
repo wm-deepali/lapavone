@@ -43,7 +43,7 @@
 
         <!-- 4. FULL IMAGE SECTION -->
         <section class="about-full-img-section">
-            <img src="assets/images/about_img2.png" alt="La Pavone Archway" class="about-full-img">
+            <img src="{{ asset('assets/images/about_img2.png')}}" alt="La Pavone Archway" class="about-full-img">
         </section>
 
         <!-- 5. BOTTOM CARDS SECTION -->
@@ -52,7 +52,7 @@
         <section class="about-cards-section" id="horizontal-scroll-section">
             <div class="about-cards-sticky">
                 <div class="about-cards-bg-wrapper">
-                    <img src="assets/images/Testimonials 1.png" alt="Background" class="about-cards-bg">
+                    <img src="{{ asset('assets/images/Testimonials 1.png')}}" alt="Background" class="about-cards-bg">
                 </div>
                 <div class="about-cards-container" id="horizontal-scroll-container">
                     <div class="about-card">
@@ -82,7 +82,7 @@
         <section class="about-hero-section">
             <div class="about-hero-wrapper">
                 <video class="about-hero-bg" autoplay loop muted playsinline>
-                    <source src="assets/images/about_banner.mp4" type="video/mp4">
+                    <source src="{{ asset('assets/images/about_banner.mp4')}}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
                 <div class="about-hero-content">

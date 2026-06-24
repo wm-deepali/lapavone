@@ -157,12 +157,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    cartBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            btn.classList.toggle('active');
-        });
-    });
+    // cartBtns.forEach(btn => {
+    //     btn.addEventListener('click', (e) => {
+    //         e.preventDefault();
+    //         btn.classList.toggle('active');
+    //     });
+    // });
 
 
     // 6. AUDIO BEHAVIOR FOR BANNER 3

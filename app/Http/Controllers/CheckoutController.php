@@ -31,42 +31,41 @@ class CheckoutController extends Controller
 
     public function checkout()
     {
-        // $customer = auth('customer')->user();
+        $customer = auth('customer')->user();
 
-        // $cart = Cart::with([
-        //     'items.product.images',
-        //     'items.product.category',
-        //     'items.variant.values.attributeValue.attribute',
-        // ])
-        //     ->where('user_id', $customer->id)
-        //     ->first();
+        $cart = Cart::with([
+            'items.product.images',
+            'items.product.category',
+        ])
+            ->where('user_id', $customer->id)
+            ->first();
 
-        // if ($cart) {
-        //     $cart->recalculateTotals();
-        //     $cart->refresh();
-        // }
+        if ($cart) {
+            $cart->recalculateTotals();
+            $cart->refresh();
+        }
 
-        // $customer = auth('customer')->user();
+        $customer = auth('customer')->user();
 
-        // $addresses = $customer->addresses()
-        //     ->with(['state', 'city'])
-        //     ->orderByDesc('is_default')
-        //     ->get();
+        $addresses = $customer->addresses()
+            ->with(['state', 'city'])
+            ->orderByDesc('is_default')
+            ->get();
 
-        // $defaultAddress = $addresses->firstWhere('is_default', true);
+        $defaultAddress = $addresses->firstWhere('is_default', true);
 
-        // $states = State::orderBy('name')
-        //     ->get();
+        $states = State::orderBy('name')
+            ->get();
 
         return view(
             'front-pages.checkout',
-            // compact(
-            //     'cart',
-            //     'customer',
-            //     'addresses',
-            //     'defaultAddress',
-            //     'states'
-            // )
+            compact(
+                'cart',
+                'customer',
+                'addresses',
+                'defaultAddress',
+                'states'
+            )
         );
     }
 
@@ -74,27 +73,51 @@ class CheckoutController extends Controller
     {
         $customer = auth('customer')->user();
 
-        CustomerAddress::where(
-            'customer_id',
-            $customer->id
-        )->update([
-                    'is_default' => 0
-                ]);
+        if ($request->address_id) {
 
-        CustomerAddress::create([
-            'customer_id' => $customer->id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'address_line_1' => $request->address_line_1,
-            'address_line_2' => $request->address_line_2,
-            'country' => 'India',
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
-            'pincode' => $request->pincode,
-            'address_type' => $request->address_type ?? 'home',
-            'is_default' => 1,
-        ]);
+            CustomerAddress::where(
+                'id',
+                $request->address_id
+            )->update([
+
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'phone' => $request->phone,
+                        'address_line_1' => $request->address_line_1,
+                        'address_line_2' => $request->address_line_2,
+                        'state_id' => $request->state_id,
+                        'city_id' => $request->city_id,
+                        'pincode' => $request->pincode,
+                        'address_type' => $request->address_type
+
+                    ]);
+
+        } else {
+
+
+            CustomerAddress::where(
+                'customer_id',
+                $customer->id
+            )->update([
+                        'is_default' => 0
+                    ]);
+
+            CustomerAddress::create([
+                'customer_id' => $customer->id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address_line_1' => $request->address_line_1,
+                'address_line_2' => $request->address_line_2,
+                'country' => 'India',
+                'state_id' => $request->state_id,
+                'city_id' => $request->city_id,
+                'pincode' => $request->pincode,
+                'address_type' => $request->address_type ?? 'home',
+                'is_default' => 1,
+            ]);
+
+        }
 
         $cart = Cart::where('user_id', $customer->id)->first();
 
@@ -149,6 +172,7 @@ class CheckoutController extends Controller
 
     public function placeOrder(Request $request)
     {
+        
         $customer = auth('customer')->user();
 
         $request->validate([
@@ -326,7 +350,6 @@ class CheckoutController extends Controller
                     'order_id' => $order->id,
 
                     'product_id' => $item->product_id,
-                    'variant_id' => $item->variant_id,
 
                     'product_name' =>
                         $item->product->name ?? 'Product',
@@ -427,20 +450,19 @@ class CheckoutController extends Controller
             $api = new Api(
                 $keyId,
                 $keySecret
-            );
-
+                );
             $razorpayOrder = $api->order->create([
-
+                
                 'receipt' => $order->order_number,
-
+                
                 'amount' =>
-                    round($order->grand_total * 100),
-
+                round($order->grand_total * 100),
+                
                 'currency' => 'INR',
-
+                
                 'payment_capture' => 1
-            ]);
-
+                ]);
+                
             $order->update([
                 'razorpay_order_id' =>
                     $razorpayOrder['id']

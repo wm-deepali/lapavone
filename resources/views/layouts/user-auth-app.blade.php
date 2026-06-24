@@ -4,8 +4,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | La Pavone</title>
-    <meta name="description" content="Sign in to your La Pavone account.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        require_once app_path('Helpers/seo.php');
+        $seo = getSeo();
+    @endphp
+
+    <title>
+        {{ $seo->meta_title ?? $general?->site_name ?? config('app.name') }}
+    </title>
+
+    <meta name="description" content="{{ $seo->meta_description ?? $general?->tagline }}">
+
+    @if($seo && $seo->scripts)
+        {!! $seo->scripts !!}
+    @endif
+
+    <link rel="icon" href="{{ $general?->favicon
+    ? asset('storage/' . $general->favicon)
+    : asset('favicon.ico') }}">
+
 
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,10 +32,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Google Fonts: Cinzel for Luxury Headings & Outfit for UI -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
     <!-- Custom CSS -->
-     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 
     <style>
         .google-login-btn {
@@ -33,11 +53,13 @@
             transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             outline: none;
         }
+
         .google-login-btn:hover {
             background-color: rgba(35, 75, 70, 0.04);
             border-color: rgba(35, 75, 70, 0.4);
             transform: translateY(-1px);
         }
+
         .google-login-btn img {
             width: 18px;
             height: 18px;
@@ -52,50 +74,89 @@
         <nav class="lp-navbar" style="position: relative; z-index: 10; background: #fff;">
             <div class="lp-container lp-nav-content">
                 <div class="nav-brand">
-                    <a href="index.html"><img src="{{ asset('assets/images/logo.png')}}" alt="La Pavone"></a>
+                    <a href="{{ route('home') }}"><img src="{{ $general?->logo
+    ? asset('storage/' . $general->logo)
+    : asset('assets/images/logo.png') }}" alt="{{ $general?->site_name ?? config('app.name') }}"></a>
                 </div>
 
                 <ul class="nav-links">
                     <li class="nav-item" id="nav-shop-all">
-                        <a href="shopall.html">Shop All</a>
-                        <!-- Mega Menu -->
+                        <a href="#">Shop All</a>
+
                         <div class="mega-menu" id="mega-menu">
                             <div class="mega-menu-inner">
+
+                                {{-- Left side categories --}}
                                 <ul class="mega-menu-list left-list">
-                                    <li><a href="shopall.html?filter=men">Men</a></li>
-                                    <li><a href="shopall.html?filter=women">Women</a></li>
-                                    <li><a href="shopall.html?filter=unisex">Unisex</a></li>
+
+                                    @foreach($headerCategories as $category)
+                                        <li class="mega-menu-item {{ $loop->first ? 'active' : '' }}"
+                                            data-target="cat-{{ $category->id }}">
+                                            <a href="{{ route('shop.category', $category->slug) }}">
+                                                {{ $category->name }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+
                                 </ul>
+
                                 <div class="mega-menu-divider"></div>
-                                <ul class="mega-menu-list right-list">
-                                    <li><a href="shopall.html">Fragrance Family</a></li>
-                                    <li><a href="shopall.html?filter=everyday">Everyday</a></li>
-                                    <li><a href="shopall.html?filter=oud">Oud</a></li>
-                                    <li><a href="shopall.html?filter=amber">Amber</a></li>
-                                    <li><a href="shopall.html?filter=signature">Signature</a></li>
-                                </ul>
+
+                                {{-- Right side subcategories --}}
+                                <div class="mega-menu-right-panels" style="display:flex;flex:1">
+
+                                    @foreach($headerCategories as $category)
+
+                                        <ul class="mega-menu-list right-list {{ $loop->first ? 'active-panel' : '' }}"
+                                            id="cat-{{ $category->id }}" {{ !$loop->first ? 'style=display:none' : '' }}>
+
+                                            @foreach($category->children as $subCategory)
+
+                                                <li>
+                                                    <a
+                                                        href="{{ route('shop.category', $category->slug) }}?subcategory={{ $subCategory->id }}">
+                                                        {{ $subCategory->name }}
+                                                    </a>
+                                                </li>
+
+                                            @endforeach
+
+                                        </ul>
+
+                                    @endforeach
+
+                                </div>
+
                             </div>
                         </div>
                     </li>
-                    <li class="nav-item"><a href="shopall.html">New</a></li>
-                    <li class="nav-item"><a href="about.html">About La Pavone</a></li>
+                    @foreach($headerCollections as $collection)
+                        <li class="nav-item">
+                            <a href="{{ route('shop.collection', $collection->slug) }}">
+                                {{ $collection->name }}
+                            </a>
+                        </li>
+                    @endforeach
+                    <li class="nav-item"><a href="{{ route('about-us') }}">About La Pavone</a></li>
                 </ul>
 
+
                 <div class="nav-icons">
-                                        <button aria-label="Search">
+                    <button aria-label="Search">
                         <img src="{{ asset('assets/images/menu_search.png')}}" alt="Search">
                     </button>
-                    <a href="wishlist.html" aria-label="Wishlist">
+                    <a href="#" aria-label="Wishlist">
                         <img src="{{ asset('assets/images/menu_wishlist.png')}}" alt="Wishlist">
                     </a>
-                    <a href="login.html" aria-label="Account">
+                    <a href="{{ route('user.login') }}" aria-label="Account">
                         <img src="{{ asset('assets/images/menu_user.png')}}" alt="Account">
                     </a>
-                    <a href="cart.html" aria-label="Cart">
+                    <a href="{{ route('cart') }}" aria-label="Cart">
                         <img src="{{ asset('assets/images/menu_cart.png')}}" alt="Cart">
                     </a>
                     <button class="mobile-nav-toggle" aria-label="Toggle Menu">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -110,24 +171,26 @@
 
 
         <!-- 9. FOOTER -->
-    <!-- Simplified Custom Login Footer -->
+        <!-- Simplified Custom Login Footer -->
         <footer class="login-simple-footer">
             <div class="lp-container">
                 <div class="footer-links-row">
                     <span class="footer-copyright">&copy;2026, La Pavone</span>
                     <div class="footer-nav">
-                            <a href="#" class="footer-link">Privacy Policy</a>
-                            <a href="terms-conditions.html" class="footer-link">Terms & Conditions</a>
-                            <a href="faq.html" class="footer-link">FAQs</a>
-                            <a href="blog.html" class="footer-link">Blogs</a>
-                            <a href="#" class="footer-link">Shipping & Refund Policy</a>
-                            <a href="contact.html" class="footer-link">Contact Us</a>
-                        </div>
+                        <a href="{{ route('about-us') }}" class="footer-link">About Us</a>
+                        <a href="{{ route('contact-us') }}" class="footer-link">Contact Us</a>
+                        <a href="{{ route('faqs') }}" class="footer-link">FAQs</a>
+                        <a href="{{ route('blogs') }}" class="footer-link">Blogs</a>
+                        @foreach($footerPages as $page)
+                            <a href="{{ route('dynamic.page', \Illuminate\Support\Str::slug($page->page_name)) }}">
+                                {{ $page->heading }}</a>
+                        @endforeach
+                    </div>
                 </div>
                 <div class="footer-address">
-                    Infinite Horizon<br>
-                    A-162, Bhagat Singh Colony<br>
-                    Bhiwadi, Rajasthan
+                    @if(!empty($general?->business_address))
+                        <p>{{ $general->business_address }}</p>
+                    @endif
                 </div>
             </div>
         </footer>
@@ -135,107 +198,11 @@
 
     <!-- Bootstrap 5.3 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-   <script src="{{ asset('assets/js/main.js')}}"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('assets/js/main.js')}}"></script>
 
-    <!-- Step-by-Step Login JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const stepMobile = document.getElementById('step-mobile');
-            const stepOtp = document.getElementById('step-otp');
 
-            const mobileInput = document.getElementById('mobile');
-            const otpInput = document.getElementById('otp');
-
-            const btnSendOtp = document.getElementById('btn-send-otp');
-            const btnVerifyOtp = document.getElementById('btn-verify-otp');
-            const btnResendOtp = document.getElementById('btn-resend-otp');
-            const btnBack = document.getElementById('btn-back');
-
-            const mobileError = document.getElementById('mobile-error');
-            const otpError = document.getElementById('otp-error');
-            
-            const googleBtn = document.querySelector('.google-login-btn');
-
-            // Send OTP Action
-            btnSendOtp.addEventListener('click', () => {
-                const mobileValue = mobileInput.value.trim();
-                const mobileRegex = /^[0-9]{10}$/; // Basic 10-digit check
-
-                if (mobileRegex.test(mobileValue)) {
-                    mobileError.style.display = 'none';
-                    mobileInput.classList.remove('is-invalid');
-                    
-                    // Proceed to OTP step
-                    stepMobile.style.display = 'none';
-                    stepOtp.style.display = 'block';
-                    
-                    console.log('Mock OTP sent. Code: 1234');
-                } else {
-                    mobileError.style.display = 'block';
-                    mobileInput.classList.add('is-invalid');
-                }
-            });
-
-            // Verify OTP Action
-            btnVerifyOtp.addEventListener('click', () => {
-                const otpValue = otpInput.value.trim();
-
-                // Mock verification: accept '1234'
-                if (otpValue === '1234') {
-                    otpError.style.display = 'none';
-                    otpInput.classList.remove('is-invalid');
-
-                    // Success - Redirect to Profile page
-                    window.location.href = 'profile.html';
-                } else {
-                    otpError.style.display = 'block';
-                    otpInput.classList.add('is-invalid');
-                }
-            });
-
-            // Back Action
-            btnBack.addEventListener('click', (e) => {
-                e.preventDefault();
-                stepOtp.style.display = 'none';
-                stepMobile.style.display = 'block';
-                otpInput.value = '';
-                otpError.style.display = 'none';
-                otpInput.classList.remove('is-invalid');
-            });
-
-            // Resend OTP Action
-            btnResendOtp.addEventListener('click', (e) => {
-                e.preventDefault();
-                otpInput.value = '';
-                otpError.style.display = 'none';
-                otpInput.classList.remove('is-invalid');
-                alert('A new OTP has been sent to your mobile number. (Use "1234" to verify)');
-            });
-
-            // Google Login Button Mock Action
-            if (googleBtn) {
-                googleBtn.addEventListener('click', () => {
-                    // Redirect to Profile on Google sign-in
-                    window.location.href = 'profile.html';
-                });
-            }
-
-            // Support Enter key triggers
-            mobileInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    btnSendOtp.click();
-                }
-            });
-
-            otpInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    btnVerifyOtp.click();
-                }
-            });
-        });
-    </script>
 </body>
 
 </html>

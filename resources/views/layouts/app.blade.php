@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csxrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     @php
         require_once app_path('Helpers/seo.php');
         $seo = getSeo();
@@ -88,7 +89,7 @@
 
                                                 <li>
                                                     <a
-                                                      href="{{ route('shop.category', $category->slug) }}?subcategory={{ $subCategory->id }}">
+                                                        href="{{ route('shop.category', $category->slug) }}?subcategory={{ $subCategory->id }}">
                                                         {{ $subCategory->name }}
                                                     </a>
                                                 </li>
@@ -163,9 +164,10 @@
                     <div class="footer-links-row">
                         <span class="footer-copyright">&copy;2026, La Pavone</span>
                         <div class="footer-nav">
+                            <a href="{{ route('about-us') }}" class="footer-link">About Us</a>
+                            <a href="{{ route('contact-us') }}" class="footer-link">Contact Us</a>
                             <a href="{{ route('faqs') }}" class="footer-link">FAQs</a>
                             <a href="{{ route('blogs') }}" class="footer-link">Blogs</a>
-                            <a href="{{ route('contact-us') }}" class="footer-link">Contact Us</a>
                             @foreach($footerPages as $page)
                                 <a href="{{ route('dynamic.page', \Illuminate\Support\Str::slug($page->page_name)) }}">
                                     {{ $page->heading }}</a>
@@ -184,7 +186,8 @@
 
     <!-- Bootstrap 5.3 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
     <script src="{{ asset('assets/js/main.js')}}"></script>
 </body>

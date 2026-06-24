@@ -3,109 +3,173 @@
 
     <div class="dashboard-page-wrapper">
 
-     <!-- DASHBOARD SECTION -->
+        <!-- DASHBOARD SECTION -->
         <section class="dashboard-section">
             <div class="lp-container">
                 <div class="dashboard-layout">
-                    <!-- Dashboard Sidebar -->
-                    <aside class="dashboard-sidebar">
-                        <div class="user-profile-header">
-                            <h2 class="user-name">Bilal Khilji</h2>
-                            <p class="user-member-since">Member since 2026</p>
-                        </div>
-                        <nav class="dashboard-nav">
-                            <a href="orders.html" class="dashboard-nav-item">
-                                <img src="assets/images/dashbord_oder.png" alt="Orders">
-                                <span>Orders</span>
-                            </a>
-                            <a href="wishlist.html" class="dashboard-nav-item">
-                                <img src="assets/images/dashbord_wishlist.png" alt="Wishlist">
-                                <span>Wishlist</span>
-                            </a>
-                            <a href="addresses.html" class="dashboard-nav-item">
-                                <img src="assets/images/dashbord_location.png" alt="Addresses">
-                                <span>Addresses</span>
-                            </a>
-                            <a href="profile.html" class="dashboard-nav-item active">
-                                <img src="assets/images/dashbord_profile.png" alt="Profile">
-                                <span>Profile</span>
-                            </a>
-                            <hr class="dashboard-nav-divider">
-                            <a href="#" class="dashboard-nav-item logout-item">
-                                <img src="assets/images/dashbord_logout.png" alt="Logout">
-                                <span>Logout</span>
-                            </a>
-                        </nav>
-                    </aside>
+
+                    @include('user._sidebar')
+
 
                     <!-- Dashboard Main Content -->
                     <main class="dashboard-main">
-                        <button class="dashboard-sidebar-toggle"><i class="fa-solid fa-bars"></i> Menu</button>
+                        <button class="dashboard-sidebar-toggle">
+                            <i class="fa-solid fa-bars"></i> Menu
+                        </button>
+
                         <div class="orders-header dashboard-content-header">
                             <h1 class="orders-title">MY PROFILE</h1>
                             <p class="orders-subtitle">Manage your personal information and security</p>
                         </div>
-                        
+
                         <div class="profile-details-wrapper">
+
+                            {{-- Personal Information Card --}}
                             <div class="profile-card">
                                 <h3 class="profile-card-title">Personal Information</h3>
-                                <form class="profile-form">
+
+                                <form action="{{ route('user.profile.update') }}" method="POST" id="profile-form" class="profile-form">
+                                    @csrf
+                                    @method('PUT')
+
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>First Name</label>
-                                            <input type="text" value="Bilal" class="lp-input" readonly>
+                                            <input type="text" name="first_name"
+                                                value="{{ old('first_name', $customer->first_name) }}"
+                                                class="lp-input profile-field" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label>Last Name</label>
-                                            <input type="text" value="Khilji" class="lp-input" readonly>
+                                            <input type="text" name="last_name"
+                                                value="{{ old('last_name', $customer->last_name) }}"
+                                                class="lp-input profile-field" readonly>
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>Email Address</label>
-                                            <input type="email" value="bilal.khilji@example.com" class="lp-input" readonly>
+                                            <input type="email" name="email" value="{{ old('email', $customer->email) }}"
+                                                class="lp-input profile-field" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label>Phone Number</label>
-                                            <input type="tel" value="+91 98765 43210" class="lp-input" readonly>
+                                            <input type="tel" name="mobile" value="{{ old('mobile', $customer->mobile) }}"
+                                                class="lp-input profile-field" readonly>
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>Date of Birth</label>
-                                            <input type="text" value="15 June 1995" class="lp-input" readonly>
+                                            <input type="date" name="dob"
+                                                value="{{ old('dob', $customer->dob ? \Carbon\Carbon::parse($customer->dob)->format('Y-m-d') : '') }}"
+                                                class="lp-input profile-field" readonly>
                                         </div>
                                         <div class="form-group">
                                             <label>Gender</label>
-                                            <input type="text" value="Male" class="lp-input" readonly>
+                                            <select name="gender" class="lp-input profile-field" disabled>
+                                                <option value="">— Select —</option>
+                                                @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $val => $label)
+                                                    <option value="{{ $val }}" {{ old('gender', $customer->gender) === $val ? 'selected' : '' }}>
+                                                        {{ $label }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                         </div>
                                     </div>
-                                    <div class="form-actions">
-                                        <button type="button" class="lp-btn lp-btn-solid">Edit Details</button>
+
+                                    <div class="form-actions" id="form-actions">
+                                        {{-- Default state: Edit button --}}
+                                        <button type="button" class="lp-btn lp-btn-solid" id="edit-btn">Edit
+                                            Details</button>
+
+                                        {{-- Editing state: Save + Cancel (hidden by default) --}}
+                                        <button type="submit" class="lp-btn lp-btn-solid d-none" id="save-btn">Save
+                                            Changes</button>
+                                        <button type="button" class="lp-btn lp-btn-outline d-none"
+                                            id="cancel-btn">Cancel</button>
                                     </div>
+
                                 </form>
                             </div>
 
+                            <script>
+                                const editBtn = document.getElementById('edit-btn');
+                                const saveBtn = document.getElementById('save-btn');
+                                const cancelBtn = document.getElementById('cancel-btn');
+                                const fields = document.querySelectorAll('.profile-field');
+
+                                // Store original values to restore on cancel
+                                const originalValues = {};
+                                fields.forEach(f => originalValues[f.name] = f.value);
+
+                                editBtn.addEventListener('click', () => {
+                                    fields.forEach(f => {
+                                        if (f.tagName === 'SELECT') f.disabled = false;
+                                        else f.removeAttribute('readonly');
+                                    });
+                                    editBtn.classList.add('d-none');
+                                    saveBtn.classList.remove('d-none');
+                                    cancelBtn.classList.remove('d-none');
+                                });
+
+                                cancelBtn.addEventListener('click', () => {
+                                    fields.forEach(f => {
+                                        if (f.tagName === 'SELECT') f.disabled = true;
+                                        else f.setAttribute('readonly', true);
+                                        f.value = originalValues[f.name];
+                                    });
+                                    saveBtn.classList.add('d-none');
+                                    cancelBtn.classList.add('d-none');
+                                    editBtn.classList.remove('d-none');
+                                });
+                            </script>
+
+                            {{-- Default Shipping Address Card --}}
                             <div class="profile-card">
                                 <h3 class="profile-card-title">Default Shipping Address</h3>
-                                <div class="address-display">
-                                    <p class="address-name">Bilal Khilji</p>
-                                    <p class="address-line">A-152, Bhagat Singh Colony</p>
-                                    <p class="address-line">Bhiwadi, Rajasthan 301019</p>
-                                    <p class="address-line">India</p>
-                                    <p class="address-phone">T: +91 98765 43210</p>
-                                </div>
+
+                                @php
+                                    $defaultAddress = $customer->addresses->firstWhere('is_default', true);
+                                @endphp
+
+                                @if ($defaultAddress)
+                                    <div class="address-display">
+                                        <p class="address-name">{{ $defaultAddress->name }}</p>
+
+                                        <p class="address-line">{{ $defaultAddress->address_line_1 }}</p>
+
+                                        @if ($defaultAddress->address_line_2)
+                                            <p class="address-line">{{ $defaultAddress->address_line_2 }}</p>
+                                        @endif
+
+                                        <p class="address-line">
+                                            {{ $defaultAddress->city?->name }},
+                                            {{ $defaultAddress->state?->name }}
+                                            {{ $defaultAddress->pincode }}
+                                        </p>
+
+                                        <p class="address-line">India</p>
+
+                                        <p class="address-phone">T: {{ $defaultAddress->phone }}</p>
+                                    </div>
+                                @else
+                                    <p class="text-muted">No default address set.</p>
+                                @endif
+
                                 <div class="form-actions mt-3">
-                                    <button type="button" class="lp-btn lp-btn-outline">Manage Addresses</button>
+                                    <a href="{{ route('user.addresses') }}" class="lp-btn lp-btn-outline">Manage
+                                        Addresses</a>
                                 </div>
                             </div>
+
                         </div>
                     </main>
+
                 </div>
             </div>
         </section>
-        
-    </div>
 
+    </div>
 
 @endsection

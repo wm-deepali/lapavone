@@ -16,14 +16,12 @@ class CartController extends Controller
     {
         $request->validate([
             'product_id' => 'required|exists:products,id',
-            'variant_id' => 'nullable|exists:product_variants,id',
             'quantity' => 'nullable|integer|min:1',
         ]);
 
         $product = Product::findOrFail($request->product_id);
 
         $quantity = $request->quantity ?? $product->min_qty;
-        $variantId = $request->variant_id;
 
         /*
         |--------------------------------------------------------------------------
@@ -70,14 +68,6 @@ class CartController extends Controller
         $price = $product->price;
         $stock = $product->stock;
 
-        if ($variantId) {
-
-            $variant = ProductVariant::findOrFail($variantId);
-
-            $price = $variant->price;
-            $stock = $variant->stock;
-        }
-
         if ($stock < $product->min_qty) {
 
             return response()->json([
@@ -102,7 +92,6 @@ class CartController extends Controller
 
         $item = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
-            ->where('variant_id', $variantId)
             ->first();
 
         if ($item) {
@@ -126,7 +115,6 @@ class CartController extends Controller
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'variant_id' => $variantId,
                 'quantity' => $quantity,
                 'price' => $price,
                 'total' => $price * $quantity,
@@ -158,7 +146,6 @@ class CartController extends Controller
                 'items.product.images',
                 'items.product.category',
                 'items.product.subcategory',
-                'items.variant.values.attributeValue.attribute',
             ])
                 ->where('user_id', auth('customer')->id())
                 ->first();
@@ -169,7 +156,6 @@ class CartController extends Controller
                 'items.product.images',
                 'items.product.category',
                 'items.product.subcategory',
-                'items.variant.values.attributeValue.attribute',
             ])
                 ->where('session_id', session()->getId())
                 ->first();
@@ -394,6 +380,61 @@ class CartController extends Controller
 
         return response()->json([
             'status' => true
+        ]);
+    }
+
+
+    public function availableCoupons()
+    {
+        $cart = auth('customer')->check()
+            ? Cart::where('user_id', auth('customer')->id())->first()
+            : Cart::where('session_id', session()->getId())->first();
+
+        $subtotal = $cart ? $cart->subtotal : 0;
+
+        $coupons = Coupon::where('status', 1)
+            ->where(function ($q) {
+                $q->whereNull('start_date')
+                    ->orWhere('start_date', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('end_date')
+                    ->orWhere('end_date', '>=', now());
+            })
+            ->get()
+            ->map(function ($coupon) use ($subtotal) {
+
+                // Build a human-readable description
+                if ($coupon->discount_type === 'percentage') {
+                    $desc = 'Get <strong>' . $coupon->discount_value . '% OFF</strong>';
+
+                    if ($coupon->maximum_discount) {
+                        $desc .= ' (up to ₹' . number_format($coupon->maximum_discount, 0) . ')';
+                    }
+                } else {
+                    $desc = 'Get flat <strong>₹' . number_format($coupon->discount_value, 0) . ' OFF</strong>';
+                }
+
+                if ($coupon->minimum_order_amount) {
+                    $desc .= ' on orders above ₹' . number_format($coupon->minimum_order_amount, 0) . '.';
+                } else {
+                    $desc .= ' on any order.';
+                }
+
+                // Flag if cart doesn't meet minimum
+                $eligible = !$coupon->minimum_order_amount || $subtotal >= $coupon->minimum_order_amount;
+
+                return [
+                    'code' => $coupon->code,
+                    'description' => $desc,
+                    'eligible' => $eligible,
+                    'min_amount' => $coupon->minimum_order_amount,
+                ];
+            });
+
+        return response()->json([
+            'status' => true,
+            'coupons' => $coupons,
         ]);
     }
 

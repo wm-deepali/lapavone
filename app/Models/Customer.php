@@ -64,4 +64,22 @@ class Customer extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+
+    // In Customer model
+    public function getFirstNameAttribute(): string
+    {
+        return explode(' ', $this->name, 2)[0];
+    }
+
+    public function getLastNameAttribute(): string
+    {
+        $parts = explode(' ', $this->name, 2);
+        return $parts[1] ?? '';
+    }
+
+    public function cart()
+    {
+        return $this->hasOne(Cart::class, 'user_id');
+    }
+
 }

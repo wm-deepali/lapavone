@@ -6,7 +6,7 @@
         <!-- 1. Hero Section -->
         <section class="contact-hero-split">
             <div class="contact-hero-left">
-                <img src="assets/images/contact_hero.png" alt="Contact Hero">
+                <img src="{{ asset('assets/images/contact_hero.png')}}" alt="Contact Hero">
             </div>
             <div class="contact-hero-right">
                 <div class="contact-hero-content">

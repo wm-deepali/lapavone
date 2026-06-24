@@ -238,14 +238,6 @@ class FrontController extends Controller
         return view('front-pages.product-detail', compact('product', 'similarProducts', 'faqs'));
     }
 
-
-    public function thankYou($id)
-    {
-        return view(
-            'front-pages.thank-you'
-        );
-    }
-
     public function faqs(Request $request)
     {
         $faqs = Faq::where('status', 1)->get();
@@ -291,20 +283,20 @@ class FrontController extends Controller
     public function dynamicPage($slug)
     {
         // match slug with page_name
-        $page = DynamicPage::where('status', 1)
-            ->get()
-            ->first(function ($p) use ($slug) {
-                return Str::slug($p->page_name) === $slug;
-            });
+        // $page = DynamicPage::where('status', 1)
+        //     ->get()
+        //     ->first(function ($p) use ($slug) {
+        //         return Str::slug($p->page_name) === $slug;
+        //     });
 
-        if (!$page) {
-            abort(404);
-        }
+        // if (!$page) {
+        //     abort(404);
+        // }
 
         return view(
             'front-pages.dynamic-page'
             ,
-            compact('page')
+            // compact('page')
         );
     }
 

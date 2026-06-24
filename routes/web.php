@@ -46,6 +46,8 @@ use App\Http\Controllers\Admin\{
     BannerSectionController,
     TestimonialSectionController,
     AudioSectionController,
+    SmsSettingController,
+    NotificationTemplateController
 
 
 };
@@ -68,18 +70,17 @@ Route::middleware('maintenance.mode')->group(function () {
     Route::controller(FrontController::class)->group(function () {
         Route::view('/invoice', 'front-pages.invoice');
         Route::view('/terms-conditions', 'front-pages.terms-conditions');
-        Route::view('/wishlist', 'user.wishlist')->name('wishlist');
-        Route::view('/profile', 'user.profile');
+
+
         Route::view('/orders', 'user.orders');
         Route::view('/order-details', 'user.order-details');
-        Route::view('/addresses', 'user.addresses');
 
 
         Route::get('/', 'home')->name('home');
         Route::get('/search-suggestions', 'searchSuggestions')->name('search.suggestions');
 
         Route::get('/category/{category:slug}', 'category')->name('shop.category');
-        Route::get('/collection/{collection:slug}',  'collection')->name('shop.collection');
+        Route::get('/collection/{collection:slug}', 'collection')->name('shop.collection');
 
         Route::get('/product/{product:slug}', 'productDetail')->name('shop.product');
 
@@ -90,7 +91,6 @@ Route::middleware('maintenance.mode')->group(function () {
         Route::get('/contact-us', 'contactUs')->name('contact-us');
         Route::get('/faqs', 'faqs')->name('faqs');
         Route::get('/page/{slug}', 'dynamicPage')->name('dynamic.page');
-        Route::get('/thank-you/{id}', 'thankYou')->name('thank-you');
         Route::get('/why-us', 'whyUs')->name('why-us');
 
         Route::post('/contact-submit', 'submitContact')->name('contact.submit');
@@ -110,30 +110,31 @@ Route::middleware('maintenance.mode')->group(function () {
         Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
         Route::get('/cart', [CartController::class, 'cart'])->name('cart');
         Route::delete('/cart/remove/{id}', [CartController::class, 'remove'])->name('cart.remove');
-        Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update.quantity');
-        Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply.coupon');
-        Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove.coupon');
+        Route::post('/cart/update-quantity', [CartController::class, 'updateQuantity'])->name('cart.update-quantity');
+        Route::post('/cart/apply-coupon', [CartController::class, 'applyCoupon'])->name('cart.apply-coupon');
+        Route::post('/cart/remove-coupon', [CartController::class, 'removeCoupon'])->name('cart.remove-coupon');
+        Route::get('/cart/available-coupons', [CartController::class, 'availableCoupons'])->name('cart.available-coupons');
 
-        // Route::middleware('customer')->group(function () {
+        Route::middleware('customer')->group(function () {
 
-        Route::get('/checkout', [CheckoutController::class, 'checkout'])
-            ->name('checkout');
+            Route::get('/checkout', [CheckoutController::class, 'checkout'])
+                ->name('checkout');
 
-        Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
+            Route::post('/address/store', [CheckoutController::class, 'storeAddress'])->name('address.store');
 
-        Route::post('/checkout/change-default-address', [CheckoutController::class, 'changeDefaultAddress'])
-            ->name('checkout.change-default-address');
+            Route::post('/checkout/change-default-address', [CheckoutController::class, 'changeDefaultAddress'])
+                ->name('checkout.change-default-address');
 
-        Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])
-            ->name('checkout.place-order');
+            Route::post('/checkout/place-order', [CheckoutController::class, 'placeOrder'])
+                ->name('checkout.place-order');
 
-        Route::post('/payment/razorpay/success', [CheckoutController::class, 'razorpaySuccess'])
-            ->name('checkout.razorpay.success');
+            Route::post('/payment/razorpay/success', [CheckoutController::class, 'razorpaySuccess'])
+                ->name('checkout.razorpay.success');
 
-        Route::get('/order-success/{order}', [CheckoutController::class, 'orderSuccess'])
-            ->name('order.success');
+            Route::get('/order-success/{order}', [CheckoutController::class, 'orderSuccess'])
+                ->name('order.success');
 
-        // });
+        });
 
 
     });
@@ -147,31 +148,37 @@ Route::middleware('maintenance.mode')->group(function () {
 
         Route::get('/register', [CustomerAuthController::class, 'registerForm'])->name('register');
         Route::post('/register', [CustomerAuthController::class, 'register'])->name('register.store');
+        Route::post('/send-otp', [CustomerAuthController::class, 'sendOtp']);
+        Route::post('/verify-otp', [CustomerAuthController::class, 'verifyOtp']);
+        Route::post('/guest-login', [CustomerAuthController::class, 'guestLogin']);
+
         Route::get('/login', [CustomerAuthController::class, 'loginForm'])->name('login');
         Route::post('/login', [CustomerAuthController::class, 'login'])->name('login.store');
+        Route::post('/send-login-otp', [CustomerAuthController::class, 'sendLoginOtp']);
+        Route::post('/verify-login-otp', [CustomerAuthController::class, 'verifyLoginOtp']);
 
         Route::middleware('customer')->group(function () {
 
-            Route::view('/dashboard', 'user.dashboard')->name('dashboard.index');
-            Route::get('orders', [App\Http\Controllers\User\OrderController::class, 'index'])->name('orders.index');
+            Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
+            Route::put('/profile', [AccountController::class, 'update'])->name('profile.update');
+
+
+            Route::get('orders', [App\Http\Controllers\User\OrderController::class, 'index'])->name('orders');
             Route::get('orders/{order}', [App\Http\Controllers\User\OrderController::class, 'show'])->name('orders.show');
             Route::get('orders/{order}/invoice', [App\Http\Controllers\User\OrderController::class, 'invoice'])->name('orders.invoice');
             Route::post('orders/return', [App\Http\Controllers\User\OrderController::class, 'submitReturn'])->name('orders.return');
             Route::get('orders/{order}/reorder', [App\Http\Controllers\User\OrderController::class, 'reorder'])->name('orders.reorder');
 
             // Addresses
-            Route::get('addresses', [App\Http\Controllers\User\AddressController::class, 'index'])->name('address.index');
-            Route::post('addresses', [App\Http\Controllers\User\AddressController::class, 'store'])->name('address.store');
-            Route::get('addresses/{address}/edit', [App\Http\Controllers\User\AddressController::class, 'edit'])->name('address.edit');
-            Route::put('addresses/{address}', [App\Http\Controllers\User\AddressController::class, 'update'])->name('address.update');
-            Route::delete('addresses/{address}', [App\Http\Controllers\User\AddressController::class, 'destroy'])->name('address.destroy');
-            Route::patch('addresses/{address}/default', [App\Http\Controllers\User\AddressController::class, 'setDefault'])->name('address.default');
-            Route::get('addresses/cities', [App\Http\Controllers\User\AddressController::class, 'cities'])->name('address.cities');
+            Route::get('/addresses', [App\Http\Controllers\User\AddressController::class, 'index'])->name('addresses.index');
+            Route::post('/addresses', [App\Http\Controllers\User\AddressController::class, 'store'])->name('addresses.store');
+            Route::get('/addresses/{id}/edit', [App\Http\Controllers\User\AddressController::class, 'edit'])->name('addresses.edit');
+            Route::put('/addresses/{id}', [App\Http\Controllers\User\AddressController::class, 'update'])->name('addresses.update');
+            Route::delete('/addresses/{id}', [App\Http\Controllers\User\AddressController::class, 'destroy'])->name('addresses.destroy');
+            Route::patch('/addresses/{id}/default', [App\Http\Controllers\User\AddressController::class, 'setDefault'])->name('addresses.default');
+            Route::get('/addresses/cities', [App\Http\Controllers\User\AddressController::class, 'cities'])->name('addresses.cities');
 
-            Route::get('/account-details', [AccountController::class, 'index'])->name('account.details');
-            Route::put('/account/profile', [AccountController::class, 'updateProfile'])->name('profile.update');
-            Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('password.update');
-            Route::delete('/account', [AccountController::class, 'deleteAccount'])->name('account.delete');
+            Route::view('/wishlist', 'user.wishlist')->name('wishlist');
 
             Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
             Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
@@ -304,6 +311,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings/general', [AdminSettingController::class, 'generalSettingStore'])->name('settings.general.store');
         Route::post('/settings/courier/store', [AdminSettingController::class, 'courierStore'])->name('couriers.store');
         Route::delete('/settings/courier/{courier}', [AdminSettingController::class, 'courierDelete'])->name('couriers.delete');
+        Route::post('/sms-settings', [SmsSettingController::class, 'store'])->name('sms-settings.store');
+        Route::post('/templates', [NotificationTemplateController::class, 'store'])->name('templates.store');
 
         // Orders routes
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');

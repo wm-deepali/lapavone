@@ -70,9 +70,12 @@
                                     <span class="product-size">{{ $product->weight }}ml</span>
                                 @endif
                             </h1>
-                            @if($product->sub_title)
-                                <p class="product-subtitle">{{ $product->sub_title }}</p>
-                            @endif
+                                 <p class="product-subtitle">
+                                    {{ $product->category->name }}
+                                    @if($product->sub_title)
+                                        | {{ $product->sub_title }}
+                                    @endif
+                                </p>
                         </div>
 
                         <div class="details-right">
@@ -229,5 +232,50 @@
         </section>
 
     </div>
+     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).on('click', '.btn-add-bag', function () {
+
+            let button = $(this);
+            let productId = button.data('product-id');
+
+            $.ajax({
+                url: "{{ route('cart.add') }}",
+                type: "POST",
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    product_id: productId,
+                    quantity: 1
+                },
+                success: function (response) {
+
+                    if (response.status) {
+
+                        button.find('.bag-default').hide();
+                        button.find('.bag-active').css('display', 'flex');
+
+                        // Update cart count if header count exists
+                        $('.cart-count').text(response.cart_count);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function (xhr) {
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops!',
+                        text: xhr.responseJSON.message
+                    });
+                }
+            });
+
+        });
+    </script>
 
 @endsection
