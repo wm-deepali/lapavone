@@ -619,6 +619,50 @@
             .inv-grid {
                 grid-template-columns: 1fr;
             }
+
+        }
+
+        .theme-color-picker {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .theme-color-picker input[type="color"] {
+            width: 58px;
+            height: 58px;
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            background: #fff;
+            padding: 4px;
+            overflow: hidden;
+            transition: .2s ease;
+        }
+
+        .theme-color-picker input[type="color"]:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(48, 61, 137, .12);
+        }
+
+        .theme-color-picker input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 10px;
+        }
+
+        .theme-color-picker input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .theme-color-code {
+            padding: 10px 14px;
+            background: #f8f9fb;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: .04em;
         }
     </style>
 
@@ -739,8 +783,24 @@
 
                                 <div class="field-group">
                                     <label class="field-label">The Story</label>
-                                    <textarea name="the_story"
-                                        class="field-textarea">{{ old('the_story') }}</textarea>
+                                    <textarea name="the_story" class="field-textarea">{{ old('the_story') }}</textarea>
+                                </div>
+
+                                <div class="field-group">
+                                    <label class="field-label">Detail Page Theme Color</label>
+
+                                    <div class="theme-color-picker">
+                                        <input type="color" name="detail_page_color" id="detail_page_color"
+                                            value="{{ old('detail_page_color', '#B8832F') }}">
+
+                                        <span class="theme-color-code">
+                                            {{ old('detail_page_color', '#B8832F') }}
+                                        </span>
+                                    </div>
+
+                                    <div class="field-hint">
+                                        Used for headings on this product page.
+                                    </div>
                                 </div>
 
                             </div>
@@ -830,7 +890,7 @@
                                 <div class="field-hint" style="margin-bottom:10px;">
                                     Multiple allowed — these appear on the product detail page.
                                 </div>
-                                
+
                                 <div class="file-upload-area">
                                     <input type="file" id="banner_images" name="banner_images[]" multiple
                                         accept="image/*">
@@ -841,21 +901,21 @@
                                 <div id="bannerPreviewContainer"
                                     style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
 
-                                    {{-- ── Story Image ─────────────────────────────────── --}}
-<div style="margin-top:20px;">
-    <label class="field-label">Story Image</label>
-    <div class="field-hint" style="margin-bottom:10px;">
-        Displayed in "The Story" section on the product page.
-    </div>
-    <div class="file-upload-area">
-        <input type="file" id="story_image" name="story_image" accept="image/*"
-               onchange="previewSingle(this,'story-preview')">
-        <div class="upload-icon"><i class="fa fa-image"></i></div>
-        <p>Click to upload</p>
-        <small>PNG, JPG, WEBP — 2 MB max</small>
-    </div>
-    <div id="story-preview" style="margin-top:10px;"></div>
-</div>
+                                {{-- ── Story Image ─────────────────────────────────── --}}
+                                <div style="margin-top:20px;">
+                                    <label class="field-label">Story Image</label>
+                                    <div class="field-hint" style="margin-bottom:10px;">
+                                        Displayed in "The Story" section on the product page.
+                                    </div>
+                                    <div class="file-upload-area">
+                                        <input type="file" id="story_image" name="story_image" accept="image/*"
+                                            onchange="previewSingle(this,'story-preview')">
+                                        <div class="upload-icon"><i class="fa fa-image"></i></div>
+                                        <p>Click to upload</p>
+                                        <small>PNG, JPG, WEBP — 2 MB max</small>
+                                    </div>
+                                    <div id="story-preview" style="margin-top:10px;"></div>
+                                </div>
 
                             </div>
                         </div>

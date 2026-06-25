@@ -142,6 +142,7 @@ class ProductController extends Controller
                 'product_notes' => $request->product_notes,
                 'how_to_use' => $request->how_to_use,
                 'the_story' => $request->the_story,
+                'detail_page_color' => $request->detail_page_color ?? '#B8832F',
 
                 'mrp' => $request->mrp !== null && $request->mrp !== '' ? $request->mrp : 0,
                 'discount_type' => $request->discount_type ?: 'amount',
@@ -409,6 +410,7 @@ class ProductController extends Controller
                 'product_notes' => $request->product_notes,
                 'how_to_use' => $request->how_to_use,
                 'the_story' => $request->the_story,
+                'detail_page_color' => $request->detail_page_color ?? '#B8832F',
 
                 'mrp' => $request->mrp !== null && $request->mrp !== '' ? $request->mrp : 0,
                 'discount_type' => $request->discount_type ?: 'amount',

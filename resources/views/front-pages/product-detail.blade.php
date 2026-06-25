@@ -70,12 +70,12 @@
                                     <span class="product-size">{{ $product->weight }}ml</span>
                                 @endif
                             </h1>
-                                 <p class="product-subtitle">
-                                    {{ $product->category->name }}
-                                    @if($product->sub_title)
-                                        | {{ $product->sub_title }}
-                                    @endif
-                                </p>
+                            <p class="product-subtitle" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
+                                {{ $product->category->name }}
+                                @if($product->sub_title)
+                                    | {{ $product->sub_title }}
+                                @endif
+                            </p>
                         </div>
 
                         <div class="details-right">
@@ -101,7 +101,8 @@
 
                         @if($product->description)
                             <div class="accordion-item">
-                                <div class="accordion-header">DESCRIPTION <i class="fa-solid fa-chevron-down"></i></div>
+                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
+                                    DESCRIPTION <i class="fa-solid fa-chevron-down"></i></div>
                                 <div class="accordion-body" style="display:block;" <p>
                                     {!!  $product->description !!} </p>
                                 </div>
@@ -110,7 +111,8 @@
 
                         @if($product->product_notes)
                             <div class="accordion-item">
-                                <div class="accordion-header">NOTES <i class="fa-solid fa-chevron-down"></i></div>
+                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
+                                    NOTES <i class="fa-solid fa-chevron-down"></i></div>
                                 <div class="accordion-body">
                                     <p>{!! $product->product_notes !!}</p>
                                 </div>
@@ -119,7 +121,8 @@
 
                         @if($product->how_to_use)
                             <div class="accordion-item">
-                                <div class="accordion-header">HOW TO USE <i class="fa-solid fa-chevron-down"></i></div>
+                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">HOW
+                                    TO USE <i class="fa-solid fa-chevron-down"></i></div>
                                 <div class="accordion-body">
                                     <p>{!!  $product->how_to_use !!}</p>
                                 </div>
@@ -232,7 +235,7 @@
         </section>
 
     </div>
-     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
         $(document).on('click', '.btn-add-bag', function () {
 

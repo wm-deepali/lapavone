@@ -26,6 +26,7 @@ class Product extends Model
         'product_notes',
         'how_to_use',
         'the_story',
+        'detail_page_color',
 
         'mrp',
         'discount_type',
