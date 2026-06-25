@@ -4,7 +4,7 @@
     @php
         $bannerImages = $product->images->where('image_type', 'banner')->values();
         $defaultImg = $product->images->firstWhere('image_type', 'default');
-        $storyImg = $product->images->firstWhere('image_type', 'story'); // ← add
+        $storyImg = $product->images->firstWhere('image_type', 'story');
 
         if ($bannerImages->isEmpty() && $defaultImg) {
             $bannerImages = collect([$defaultImg]);
@@ -16,6 +16,77 @@
             $notes = is_array($decoded) ? $decoded : null;
         }
     @endphp
+
+    <style>
+        /* ── Qty Controls ── */
+        .qty-controls {
+            border: 1.5px solid #1F5552;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            align-items: center;
+        }
+
+        .qty-btn {
+            background: transparent;
+            border: none;
+            color: #1F5552;
+            font-size: 22px;
+            font-weight: 500;
+            width: 40px;
+            height: 44px;
+            cursor: pointer;
+            transition: background 0.15s;
+            line-height: 1;
+        }
+
+        .qty-btn:hover {
+            background: #e8f1f0;
+        }
+
+        .qty-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .qty-value {
+            display: inline-block;
+            min-width: 36px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            color: #1F5552;
+        }
+
+        /* ── View Cart Button ── */
+        .btn-view-cart {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border: 1.5px solid #1F5552;
+            border-radius: 8px;
+            color: #1F5552;
+            font-size: 15px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.2s;
+            background: transparent;
+        }
+
+        .btn-view-cart:hover {
+            background: #e8f1f0;
+            color: #1F5552;
+        }
+
+        /* ── Add To Bag Wrapper ── */
+        .add-to-bag-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+    </style>
 
     <div class="product-page-wrapper">
 
@@ -80,20 +151,41 @@
 
                         <div class="details-right">
                             <div class="product-price">₹{{ number_format($product->price, 2) }}</div>
-                            <button class="btn-add-bag" data-product-id="{{ $product->id }}">
-                                <span class="bag-default" style="display: flex; align-items: center; gap: 8px;">
-                                    <img src="{{ asset('assets/images/products/add_to_cart.png') }}" alt="Bag"
-                                        class="bag-icon"> Add To Bag
-                                </span>
-                                <span class="bag-active" style="display: none; align-items: center; gap: 8px;">
-                                    <svg class="cart-icon" width="16" height="16" viewBox="0 0 24 24" fill="#1F5552"
-                                        stroke="#1F5552" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+
+                            {{-- ── Add To Bag / Qty Controls / View Cart ── --}}
+                            <div class="add-to-bag-wrapper">
+
+                                {{-- Step 1: Add To Bag button --}}
+                                <button class="btn-add-bag" id="add-to-bag-btn" data-product-id="{{ $product->id }}">
+                                    <span style="display: flex; align-items: center; gap: 8px;">
+                                        <img src="{{ asset('assets/images/products/add_to_cart.png') }}" alt="Bag"
+                                            class="bag-icon">
+                                        Add To Bag
+                                    </span>
+                                </button>
+
+                                {{-- Step 2: Qty Controls — cart_item_id JS mein store hoga --}}
+                                <div class="qty-controls" id="qty-controls" style="display: none;">
+                                    <button class="qty-btn" type="button" id="qty-minus">−</button>
+                                    <span class="qty-value" id="qty-display">1</span>
+                                    <button class="qty-btn" type="button" id="qty-plus">+</button>
+                                </div>
+
+                                {{-- Step 2: View Cart button --}}
+                                <a href="{{ route('cart') }}" class="btn-view-cart" id="view-cart-btn"
+                                    style="display: none;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="9" cy="21" r="1"></circle>
                                         <circle cx="20" cy="21" r="1"></circle>
                                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                                    </svg> In Bag
-                                </span>
-                            </button>
+                                    </svg>
+                                    View Cart
+                                </a>
+
+                            </div>
+                            {{-- ── /Add To Bag ── --}}
+
                         </div>
                     </div>
 
@@ -102,9 +194,10 @@
                         @if($product->description)
                             <div class="accordion-item">
                                 <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
-                                    DESCRIPTION <i class="fa-solid fa-chevron-down"></i></div>
-                                <div class="accordion-body" style="display:block;" <p>
-                                    {!!  $product->description !!} </p>
+                                    DESCRIPTION <i class="fa-solid fa-chevron-down"></i>
+                                </div>
+                                <div class="accordion-body" style="display:block;">
+                                    <p>{!! $product->description !!}</p>
                                 </div>
                             </div>
                         @endif
@@ -112,7 +205,8 @@
                         @if($product->product_notes)
                             <div class="accordion-item">
                                 <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
-                                    NOTES <i class="fa-solid fa-chevron-down"></i></div>
+                                    NOTES <i class="fa-solid fa-chevron-down"></i>
+                                </div>
                                 <div class="accordion-body">
                                     <p>{!! $product->product_notes !!}</p>
                                 </div>
@@ -121,10 +215,11 @@
 
                         @if($product->how_to_use)
                             <div class="accordion-item">
-                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">HOW
-                                    TO USE <i class="fa-solid fa-chevron-down"></i></div>
+                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
+                                    HOW TO USE <i class="fa-solid fa-chevron-down"></i>
+                                </div>
                                 <div class="accordion-body">
-                                    <p>{!!  $product->how_to_use !!}</p>
+                                    <p>{!! $product->how_to_use !!}</p>
                                 </div>
                             </div>
                         @endif
@@ -141,7 +236,6 @@
                     <h2 class="story-heading">THE STORY</h2>
                     <p class="story-text">{!! nl2br(e($product->the_story)) !!}</p>
                 </div>
-                {{-- Use dedicated story image, fallback to second banner, fallback to default --}}
                 @php $displayStoryImg = $storyImg ?? $bannerImages->skip(1)->first() ?? $defaultImg; @endphp
                 @if($displayStoryImg)
                     <div class="story-img-container">
@@ -188,10 +282,19 @@
                                             <div class="product-price-card">₹{{ number_format($similar->price, 0) }}</div>
                                         </div>
                                         <div class="product-actions">
-                                            <button class="action-btn btn-wishlist" aria-label="Add to Wishlist"
-                                                onclick="event.stopPropagation();">
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666"
-                                                    stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                                            <button
+                                                class="action-btn btn-wishlist {{ in_array($product->id, $wishlistProductIds ?? []) ? 'active' : '' }}"
+                                                data-product-id="{{ $product->id }}" aria-label="Add to Wishlist">
+                                                <svg class="wishlist-icon-default" width="20" height="20" viewBox="0 0 24 24"
+                                                    fill="none" stroke="#666" stroke-width="1.2" stroke-linecap="round"
+                                                    stroke-linejoin="round">
+                                                    <path
+                                                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+                                                    </path>
+                                                </svg>
+                                                <svg class="wishlist-icon-active" style="display:none;" width="20" height="20"
+                                                    viewBox="0 0 24 24" fill="#dc3545" stroke="#dc3545" stroke-width="1.2"
+                                                    stroke-linecap="round" stroke-linejoin="round">
                                                     <path
                                                         d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
                                                     </path>
@@ -228,57 +331,241 @@
                             <div class="faq-body">{{ $faq->answer }}</div>
                         </div>
                     @empty
-                        {{-- fallback: section simply won't show if no FAQs --}}
+                        {{-- No FAQs --}}
                     @endforelse
                 </div>
             </div>
         </section>
 
     </div>
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
-        $(document).on('click', '.btn-add-bag', function () {
+        $(function () {
 
-            let button = $(this);
-            let productId = button.data('product-id');
+            /*
+            |------------------------------------------------------------------
+            | State variables
+            | cartItemId → cart.add response se milega, updateQuantity ke liye
+            | currentQty → UI mein dikhane ke liye
+            | isUpdating → plus/minus double-click rokne ke liye
+            |------------------------------------------------------------------
+            */
+            let cartItemId = null;
+            let currentQty = 1;
+            let isUpdating = false;
+
+            const $addBtn = $('#add-to-bag-btn');
+            const $qtyControls = $('#qty-controls');
+            const $viewCart = $('#view-cart-btn');
+            const $qtyDisplay = $('#qty-display');
+            const $qtyMinus = $('#qty-minus');
+            const $qtyPlus = $('#qty-plus');
+
+            /*
+            |------------------------------------------------------------------
+            | Helper: Add ke baad UI switch
+            |------------------------------------------------------------------
+            */
+            function showQtyState(qty, itemId) {
+                cartItemId = itemId;
+                currentQty = qty;
+                $qtyDisplay.text(currentQty);
+                $addBtn.hide();
+                $qtyControls.css('display', 'flex');
+                $viewCart.css('display', 'inline-flex');
+                $qtyMinus.prop('disabled', currentQty <= 1);
+            }
+
+            /*
+            |------------------------------------------------------------------
+            | ADD TO BAG
+            | Route  : cart.add
+            | Sends  : product_id, quantity
+            | Gets   : status, message, cart_count, cart_total, cart_item_id ← key
+            |------------------------------------------------------------------
+            */
+            $addBtn.on('click', function () {
+
+                $addBtn.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('cart.add') }}",
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        product_id: $addBtn.data('product-id'),
+                        quantity: 1,
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            // cart_item_id store karo — updateQuantity ko chahiye
+                            showQtyState(1, response.cart_item_id);
+                            $('.cart-count').text(response.cart_count);
+                            Swal.fire({
+                                icon: 'success',
+                                title: response.message,
+                                timer: 1500,
+                                showConfirmButton: false,
+                            });
+                        } else {
+                            $addBtn.prop('disabled', false);
+                            Swal.fire({ icon: 'warning', title: response.message });
+                        }
+                    },
+                    error: function (xhr) {
+                        $addBtn.prop('disabled', false);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: xhr.responseJSON?.message ?? 'Something went wrong.',
+                        });
+                    },
+                });
+            });
+
+            /*
+            |------------------------------------------------------------------
+            | QTY MINUS
+            | Route  : cart.update-quantity
+            | Sends  : item_id (cartItemId), action: 'minus'
+            | Gets   : status, quantity, item_total, total_mrp, cart_total, cart_count
+            |------------------------------------------------------------------
+            */
+            $qtyMinus.on('click', function () {
+                if (isUpdating || currentQty <= 1) return;
+                callUpdateQty('minus');
+            });
+
+            /*
+            |------------------------------------------------------------------
+            | QTY PLUS
+            | Route  : cart.update-quantity
+            | Sends  : item_id (cartItemId), action: 'plus'
+            | Gets   : status, quantity, item_total, total_mrp, cart_total, cart_count
+            |------------------------------------------------------------------
+            */
+            $qtyPlus.on('click', function () {
+                if (isUpdating) return;
+                callUpdateQty('plus');
+            });
+
+            /*
+            |------------------------------------------------------------------
+            | AJAX: updateQuantity — controller expect karta hai item_id + action
+            |------------------------------------------------------------------
+            */
+            function callUpdateQty(action) {
+
+                isUpdating = true;
+                $qtyMinus.prop('disabled', true);
+                $qtyPlus.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('cart.update-quantity') }}",
+                    type: 'POST',
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        item_id: cartItemId,   // ← CartController@updateQuantity expects item_id
+                        action: action,        // ← 'plus' ya 'minus'
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            currentQty = response.quantity;
+                            $qtyDisplay.text(currentQty);
+                            $qtyMinus.prop('disabled', currentQty <= 1);
+                            $qtyPlus.prop('disabled', false);
+                            // cart_count ab controller mein add kar diya hai
+                            $('.cart-count').text(response.cart_count);
+                        } else {
+                            // Stock limit ya min_qty hit
+                            $qtyMinus.prop('disabled', currentQty <= 1);
+                            $qtyPlus.prop('disabled', false);
+                            Swal.fire({
+                                icon: 'warning',
+                                title: response.message ?? 'Limit reached',
+                                timer: 1800,
+                                showConfirmButton: false,
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        $qtyMinus.prop('disabled', currentQty <= 1);
+                        $qtyPlus.prop('disabled', false);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: xhr.responseJSON?.message ?? 'Quantity update failed.',
+                        });
+                    },
+                    complete: function () {
+                        isUpdating = false;
+                    },
+                });
+            }
+
+        });
+
+        $(document).on('click', '.btn-wishlist', function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $btn = $(this);
+            const $icon = $btn.find('.wishlist-icon');
+            const productId = $btn.data('product-id');
+
+            if ($btn.data('loading')) return;
+            $btn.data('loading', true).prop('disabled', true);
 
             $.ajax({
-                url: "{{ route('cart.add') }}",
-                type: "POST",
+                url: "{{ route('wishlist.add') }}",
+                type: 'POST',
                 data: {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    _token: "{{ csrf_token() }}",
                     product_id: productId,
-                    quantity: 1
                 },
                 success: function (response) {
 
+                    if (response.wishlist_count !== undefined) {
+                        $('.wishlist-count').text(response.wishlist_count);
+                    }
+
                     if (response.status) {
 
-                        button.find('.bag-default').hide();
-                        button.find('.bag-active').css('display', 'flex');
-
-                        // Update cart count if header count exists
-                        $('.cart-count').text(response.cart_count);
+                        $btn.addClass('active');
+                        $icon.css('opacity', '0.6');
 
                         Swal.fire({
                             icon: 'success',
-                            title: response.message,
+                            title: 'Success',
+                            text: response.message,
                             timer: 1500,
-                            showConfirmButton: false
+                            showConfirmButton: false,
                         });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'warning',   // or 'error'
+                            title: 'Wishlist',
+                            text: response.message,
+                        });
+
                     }
                 },
                 error: function (xhr) {
+                    const msg = xhr.responseJSON?.message ?? 'Something went wrong.';
+                    Swal.fire({ icon: 'error', title: 'Oops!', text: msg });
 
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Oops!',
-                        text: xhr.responseJSON.message
-                    });
-                }
+                },
+                complete: function () {
+                    $btn.data('loading', false).prop('disabled', false);
+                },
             });
-
         });
+
+
     </script>
 
 @endsection

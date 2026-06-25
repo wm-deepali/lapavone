@@ -158,7 +158,7 @@
                                 @endif
 
                                 <div class="form-actions mt-3">
-                                    <a href="{{ route('user.addresses') }}" class="lp-btn lp-btn-outline">Manage
+                                    <a href="{{ route('user.addresses.index') }}" class="lp-btn lp-btn-outline">Manage
                                         Addresses</a>
                                 </div>
                             </div>

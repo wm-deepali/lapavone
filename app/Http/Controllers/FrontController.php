@@ -7,6 +7,7 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ContactBranch;
 use App\Models\ContactEnquiry;
+use App\Models\DynamicPage;
 use App\Models\Faq;
 use App\Models\GiftingOccasion;
 use App\Models\Product;
@@ -24,6 +25,7 @@ use App\Models\Collection;
 use App\Models\Setting;
 use App\Models\Attribute;
 use App\Models\AttributeValue;
+use Illuminate\Support\Str;
 
 class FrontController extends Controller
 {
@@ -283,20 +285,20 @@ class FrontController extends Controller
     public function dynamicPage($slug)
     {
         // match slug with page_name
-        // $page = DynamicPage::where('status', 1)
-        //     ->get()
-        //     ->first(function ($p) use ($slug) {
-        //         return Str::slug($p->page_name) === $slug;
-        //     });
+        $page = DynamicPage::where('status', 1)
+            ->get()
+            ->first(function ($p) use ($slug) {
+                return Str::slug($p->page_name) === $slug;
+            });
 
-        // if (!$page) {
-        //     abort(404);
-        // }
+        if (!$page) {
+            abort(404);
+        }
 
         return view(
             'front-pages.dynamic-page'
             ,
-            // compact('page')
+            compact('page')
         );
     }
 

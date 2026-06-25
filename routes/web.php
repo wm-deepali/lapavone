@@ -68,13 +68,6 @@ Route::middleware('maintenance.mode')->group(function () {
 
 
     Route::controller(FrontController::class)->group(function () {
-        Route::view('/invoice', 'front-pages.invoice');
-        Route::view('/terms-conditions', 'front-pages.terms-conditions');
-
-
-        Route::view('/orders', 'user.orders');
-        Route::view('/order-details', 'user.order-details');
-
 
         Route::get('/', 'home')->name('home');
         Route::get('/search-suggestions', 'searchSuggestions')->name('search.suggestions');
@@ -139,23 +132,39 @@ Route::middleware('maintenance.mode')->group(function () {
 
     });
 
-    Route::get('/auth/google', [CustomerAuthController::class, 'redirectToGoogle'])
-        ->name('google.login');
-
+    // Google OAuth
+    Route::get('/auth/google', [CustomerAuthController::class, 'redirectToGoogle'])->name('auth.google');
     Route::get('/auth/google/callback', [CustomerAuthController::class, 'handleGoogleCallback']);
+
 
     Route::prefix('user')->name('user.')->group(function () {
 
+        Route::get('/login', [CustomerAuthController::class, 'loginForm'])->name('login');
         Route::get('/register', [CustomerAuthController::class, 'registerForm'])->name('register');
-        Route::post('/register', [CustomerAuthController::class, 'register'])->name('register.store');
+        Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
+
+        // Register flow
         Route::post('/send-otp', [CustomerAuthController::class, 'sendOtp']);
         Route::post('/verify-otp', [CustomerAuthController::class, 'verifyOtp']);
+        Route::post('/register', [CustomerAuthController::class, 'register']);
         Route::post('/guest-login', [CustomerAuthController::class, 'guestLogin']);
 
-        Route::get('/login', [CustomerAuthController::class, 'loginForm'])->name('login');
-        Route::post('/login', [CustomerAuthController::class, 'login'])->name('login.store');
+
+        // Login: mobile OTP path
         Route::post('/send-login-otp', [CustomerAuthController::class, 'sendLoginOtp']);
         Route::post('/verify-login-otp', [CustomerAuthController::class, 'verifyLoginOtp']);
+
+        // Login: email + password path (JSON response, used by fetch)
+        Route::post('/login-email', [CustomerAuthController::class, 'loginEmail']);
+
+        // Register: trust mobile coming from login page (no-OTP bridge)
+        Route::post('/trust-login-mobile', [CustomerAuthController::class, 'trustLoginMobile']);
+        Route::post('/trust-login-mobile-check', [CustomerAuthController::class, 'trustLoginMobileCheck']);
+
+        // Forgot password flow
+        Route::post('/send-password-reset-otp', [CustomerAuthController::class, 'sendPasswordResetOtp']);
+        Route::post('/verify-password-reset-otp', [CustomerAuthController::class, 'verifyPasswordResetOtp']);
+        Route::post('/reset-password', [CustomerAuthController::class, 'resetPassword']);
 
         Route::middleware('customer')->group(function () {
 

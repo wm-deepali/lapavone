@@ -150,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const wishlistBtns = document.querySelectorAll('.btn-wishlist');
     const cartBtns = document.querySelectorAll('.btn-cart, .btn-add-bag');
 
-    wishlistBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            btn.classList.toggle('active');
-        });
-    });
+    // wishlistBtns.forEach(btn => {
+    //     btn.addEventListener('click', (e) => {
+    //         e.preventDefault();
+    //         btn.classList.toggle('active');
+    //     });
+    // });
 
     // cartBtns.forEach(btn => {
     //     btn.addEventListener('click', (e) => {

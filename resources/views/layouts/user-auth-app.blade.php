@@ -145,14 +145,21 @@
                     <button aria-label="Search">
                         <img src="{{ asset('assets/images/menu_search.png')}}" alt="Search">
                     </button>
-                    <a href="#" aria-label="Wishlist">
+                     <a href="{{ route('user.wishlist') }}" class="cart-icon" aria-label="Wishlist">
                         <img src="{{ asset('assets/images/menu_wishlist.png')}}" alt="Wishlist">
+                          <span class="wishlist-count">
+                            {{ $wishlistCount }}
+                        </span>
                     </a>
                     <a href="{{ route('user.login') }}" aria-label="Account">
                         <img src="{{ asset('assets/images/menu_user.png')}}" alt="Account">
                     </a>
-                    <a href="{{ route('cart') }}" aria-label="Cart">
-                        <img src="{{ asset('assets/images/menu_cart.png')}}" alt="Cart">
+                  <a href="{{ route('cart') }}" class="cart-icon" aria-label="Cart">
+                        <img src="{{ asset('assets/images/menu_cart.png') }}" alt="Cart">
+
+                        <span class="cart-count">
+                            {{ $globalCartCount }}
+                        </span>
                     </a>
                     <button class="mobile-nav-toggle" aria-label="Toggle Menu">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -195,7 +202,74 @@
             </div>
         </footer>
     </div>
+<style>
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
 
+        .cart-icon {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-icon img {
+            width: 22px;
+            height: 22px;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+
+            width: 20px;
+            height: 20px;
+
+            border-radius: 50%;
+            background: #b78b2d;
+            /* gold */
+            color: #fff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+            border: 2px solid #fff;
+        }
+
+         .wishlist-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+
+            width: 20px;
+            height: 20px;
+
+            border-radius: 50%;
+            background: #b78b2d;
+            /* gold */
+            color: #fff;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+            border: 2px solid #fff;
+        }
+
+    </style>
     <!-- Bootstrap 5.3 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>

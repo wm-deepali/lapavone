@@ -112,7 +112,7 @@ class CartController extends Controller
 
         } else {
 
-            CartItem::create([
+            $item = CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
                 'quantity' => $quantity,
@@ -135,6 +135,7 @@ class CartController extends Controller
             'message' => 'Product added to cart successfully.',
             'cart_count' => $cart->items()->sum('quantity'),
             'cart_total' => $cart->grand_total,
+            'cart_item_id' => $item->id,   // ← blade JS ko item_id chahiye updateQuantity ke liye
         ]);
     }
 
@@ -270,6 +271,7 @@ class CartController extends Controller
             'item_total' => $item->total,
             'total_mrp' => $totalMrp,
             'cart_total' => $cart->grand_total,
+            'cart_count' => $cart->items()->sum('quantity'),  // ← header count ke liye
         ]);
     }
 

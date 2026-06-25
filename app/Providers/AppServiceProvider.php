@@ -2,15 +2,13 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Cart;
 use Illuminate\Support\Facades\View;
 use App\Models\DynamicPage;
-use App\Models\Announcement;
 use App\Models\Collection;
-use App\Models\GiftingOccasion;
 use App\Models\Category;
-use App\Models\Attribute;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,16 +27,34 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', function ($view) {
 
-            $sessionId = session()->getId();
+            if (Auth::guard('customer')->check()) {
 
-            $cart = Cart::with([
-                'items.product.images',
-                'items'
-            ])
-                ->where('session_id', $sessionId)
-                ->first();
+                $cart = Cart::with('items')
+                    ->where('user_id', Auth::guard('customer')->id())
+                    ->first();
 
-            $count = $cart ? $cart->items->count() : 0;
+                $wishlistItems = \App\Models\Wishlist::where(
+                    'customer_id',
+                    Auth::guard('customer')->id()
+                )->pluck('product_id');
+
+            } else {
+
+                $cart = Cart::with('items')
+                    ->where('session_id', session()->getId())
+                    ->first();
+
+                $wishlistItems = \App\Models\Wishlist::where(
+                    'session_id',
+                    session()->getId()
+                )->pluck('product_id');
+            }
+
+            $count = $cart
+                ? $cart->items->sum('quantity')
+                : 0;
+
+            $wishlistCount = $wishlistItems->count();
 
 
             $headerCategories = Category::with('children')
@@ -47,42 +63,32 @@ class AppServiceProvider extends ServiceProvider
                 ->orderBy('sort_order')
                 ->get();
 
-                $collections = Collection::where('show_in_navigation', 1)
-    ->where('status', 1)
-    ->orderBy('sort_order')
-    ->get();
+            $collections = Collection::where('show_in_navigation', 1)
+                ->where('status', 1)
+                ->orderBy('sort_order')
+                ->get();
 
 
             $pages = DynamicPage::where('status', 1)->get();
 
             $general = \App\Models\Setting::first();
 
+
+
             $view->with(
                 [
                     'globalCartCount' => $count,
-                    'miniCart' => $cart,
                     'headerCollections' => $collections,
                     'headerCategories' => $headerCategories,
                     'general' => $general,
-                    'footerPages' => $pages
+                    'footerPages' => $pages,
+                    'wishlistCount' => $wishlistCount,
+                    'wishlistProductIds' => $wishlistItems->toArray(),
                 ]
             );
         });
 
 
-
-
-        View::composer('*', function ($view) {
-
-            $wishlistCount = \App\Models\Wishlist::where(
-                'session_id',
-                session()->getId()
-            )->count();
-            $view->with(
-                'wishlistCount',
-                $wishlistCount
-            );
-        });
 
 
 

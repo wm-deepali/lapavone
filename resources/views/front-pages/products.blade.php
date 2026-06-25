@@ -84,12 +84,14 @@
                                         <div class="product-details">
                                             <div class="product-name"
                                                 onclick="window.location.href='{{ route('shop.product', $product->slug) }}'">
-                                                {{ $product->name }}</div>
+                                                {{ $product->name }}
+                                            </div>
                                             <div class="product-price-card">₹{{ number_format($product->price, 0) }}</div>
                                         </div>
                                         <div class="product-actions">
-                                            <button class="action-btn btn-wishlist" aria-label="Add to Wishlist"
-                                                onclick="event.stopPropagation();">
+                                            <button
+                                                class="action-btn btn-wishlist {{ in_array($product->id, $wishlistProductIds ?? []) ? 'active' : '' }}"
+                                                data-product-id="{{ $product->id }}" aria-label="Add to Wishlist">
                                                 <svg class="wishlist-icon-default" width="20" height="20" viewBox="0 0 24 24"
                                                     fill="none" stroke="#666" stroke-width="1.2" stroke-linecap="round"
                                                     stroke-linejoin="round">
@@ -215,6 +217,66 @@
             });
 
         });
+
+        $(document).on('click', '.btn-wishlist', function (e) {
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            const $btn = $(this);
+            const $icon = $btn.find('.wishlist-icon');
+            const productId = $btn.data('product-id');
+
+            if ($btn.data('loading')) return;
+            $btn.data('loading', true).prop('disabled', true);
+
+            $.ajax({
+                url: "{{ route('wishlist.add') }}",
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    product_id: productId,
+                },
+                success: function (response) {
+
+                    if (response.wishlist_count !== undefined) {
+                        $('.wishlist-count').text(response.wishlist_count);
+                    }
+
+                    if (response.status) {
+
+                        $btn.addClass('active');
+                        $icon.css('opacity', '0.6');
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false,
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: 'warning',   // or 'error'
+                            title: 'Wishlist',
+                            text: response.message,
+                        });
+
+                    }
+                },
+                error: function (xhr) {
+                    const msg = xhr.responseJSON?.message ?? 'Something went wrong.';
+                    Swal.fire({ icon: 'error', title: 'Oops!', text: msg });
+
+                },
+                complete: function () {
+                    $btn.data('loading', false).prop('disabled', false);
+                },
+            });
+        });
+
 
     </script>
 @endsection

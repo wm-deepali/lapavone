@@ -129,14 +129,6 @@
       </thead>
       <tbody>
         @foreach($order->items as $item)
-          @php
-            $variantLabel = '';
-            if ($item->variant) {
-              $variantLabel = $item->variant->values
-                ->map(fn($v) => $v->attributeValue->attribute->name . ': ' . $v->attributeValue->value)
-                ->join(', ');
-            }
-          @endphp
           <tr>
             <td style="padding:10px 10px 10px 0;width:40px;vertical-align:top;">
               @if(isset($productImages[$item->id]))

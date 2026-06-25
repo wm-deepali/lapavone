@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Frontend\Auth;
 
+use App\Helpers\MailHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\SmtpSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -13,12 +17,15 @@ use App\Models\Wishlist;
 
 class CustomerAuthController extends Controller
 {
+    // ──────────────────────────────────────────────────────────────────────────
+    // VIEWS
+    // ──────────────────────────────────────────────────────────────────────────
+
     public function loginForm()
     {
         if (Auth::guard('customer')->check()) {
             return redirect()->route('user.profile');
         }
-
         return view('user.login');
     }
 
@@ -27,17 +34,95 @@ class CustomerAuthController extends Controller
         if (Auth::guard('customer')->check()) {
             return redirect()->route('user.profile');
         }
-
         return view('user.register');
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // REGISTER FLOW
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function sendOtp(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|regex:/^[6-9]\d{9}$/'
+        ]);
+
+        $otp = rand(100000, 999999);
+
+        session([
+            'register_mobile' => $request->mobile,
+            'register_otp' => $otp,
+        ]);
+
+        $this->sendSms($request->mobile, $otp);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent successfully',
+        ]);
+    }
+
+    public function verifyOtp(Request $request)
+    {
+        $request->validate(['otp' => 'required']);
+
+        if ($request->otp == session('register_otp')) {
+            session(['otp_verified' => true]);
+            return response()->json([
+                'status' => true,
+                'message' => 'OTP verified successfully.',
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid OTP.',
+        ]);
+    }
+
+    /**
+     * Called by register page on arrival via ?from=login.
+     * verifyLoginOtp() already set otp_verified + register_mobile in the session,
+     * so this just confirms those session keys are intact and returns the mobile.
+     */
+    public function trustLoginMobileCheck(Request $request)
+    {
+        if (session('otp_verified') && session('register_mobile')) {
+            return response()->json([
+                'status' => true,
+                'mobile' => session('register_mobile'),
+            ]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Session expired. Please start again.',
+        ]);
+    }
+
+    /** @deprecated Legacy endpoint kept for backwards compatibility. */
+    public function trustLoginMobile(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|regex:/^[6-9]\d{9}$/'
+        ]);
+
+        if (session('otp_verified') && session('register_mobile') === $request->mobile) {
+            return response()->json(['status' => true]);
+        }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Session expired. Please start again.',
+        ]);
     }
 
     public function register(Request $request)
     {
         if (!session('otp_verified')) {
-
             return response()->json([
                 'status' => false,
-                'message' => 'OTP verification required.'
+                'message' => 'OTP verification required.',
             ]);
         }
 
@@ -62,68 +147,263 @@ class CustomerAuthController extends Controller
         ]);
 
         Auth::guard('customer')->login($customer);
-
         $this->mergeGuestCart($customer);
         $this->mergeGuestWishlist($customer);
 
-        session()->forget([
-            'register_mobile',
-            'register_otp',
-            'otp_verified'
-        ]);
+        session()->forget(['register_mobile', 'register_otp', 'otp_verified']);
 
         return response()->json([
             'status' => true,
             'message' => 'Registration successful.',
-            'redirect' => route('user.profile')
+            'redirect' => route('user.profile'),
         ]);
     }
 
-
-    public function login(Request $request)
+    public function guestLogin(Request $request)
     {
-        $credentials = $request->validate([
+        if (!session('otp_verified')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Please verify OTP first.',
+            ]);
+        }
+
+        $mobile = session('register_mobile');
+
+        $customer = Customer::firstOrCreate(
+            ['mobile' => $mobile],
+            [
+                'name' => 'Guest User',
+                'email' => null,
+                'alternate_mobile' => '9999999999',
+                'password' => bcrypt(str()->random(10)),
+            ]
+        );
+
+        Auth::guard('customer')->login($customer);
+        $this->mergeGuestCart($customer);
+        $this->mergeGuestWishlist($customer);
+
+        session()->forget(['register_mobile', 'register_otp', 'otp_verified']);
+
+        return response()->json([
+            'status' => true,
+            'redirect' => route('home'),
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // LOGIN FLOW – Mobile OTP
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function sendLoginOtp(Request $request)
+    {
+        $request->validate([
+            'mobile' => 'required|regex:/^[6-9]\d{9}$/'
+        ]);
+
+        $customer = Customer::where('mobile', $request->mobile)->first();
+
+        $otp = rand(100000, 999999);
+
+        session([
+            'login_mobile' => $request->mobile,
+            'login_otp' => $otp,
+            'login_is_new' => !$customer, // true if user does NOT exist yet
+        ]);
+
+        $this->sendSms($request->mobile, $otp);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent successfully',
+        ]);
+    }
+
+    public function verifyLoginOtp(Request $request)
+    {
+        $request->validate(['otp' => 'required']);
+
+        if ($request->otp != session('login_otp')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP.',
+            ]);
+        }
+
+        // ── New user: transfer session to register flow and send them to register page ──
+        if (session('login_is_new')) {
+            session([
+                'register_mobile' => session('login_mobile'),
+                'otp_verified' => true,
+            ]);
+            session()->forget(['login_mobile', 'login_otp', 'login_is_new']);
+
+            return response()->json([
+                'status' => true,
+                'not_registered' => true,
+                'redirect' => route('user.register') . '?from=login',
+            ]);
+        }
+
+        // ── Existing user: log them in ──────────────────────────────────────
+        $customer = Customer::where('mobile', session('login_mobile'))->first();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Customer not found.',
+            ]);
+        }
+
+        Auth::guard('customer')->login($customer);
+        $this->mergeGuestCart($customer);
+        $this->mergeGuestWishlist($customer);
+
+        session()->forget(['login_mobile', 'login_otp', 'login_is_new']);
+
+        return response()->json([
+            'status' => true,
+            'redirect' => route('user.profile'),
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // LOGIN FLOW – Email + Password
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function loginEmail(Request $request)
+    {
+        $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        $remember = $request->boolean('remember');
+        $customer = Customer::where('email', $request->email)->first();
 
-        if (Auth::guard('customer')->attempt($credentials, $remember)) {
-
-            $customer = Auth::guard('customer')->user();
-
-            $this->mergeGuestCart($customer);
-            $this->mergeGuestWishlist($customer);
-
-            $request->session()->regenerate();
-
-            return redirect()
-                ->route('user.profile')
-                ->with('success', 'Login successful.');
+        if (!$customer || !Hash::check($request->password, $customer->password)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid email or password.',
+            ]);
         }
 
-        return back()
-            ->withInput()
-            ->withErrors([
-                'email' => 'Invalid email or password.',
-            ]);
+        Auth::guard('customer')->login($customer);
+        $this->mergeGuestCart($customer);
+        $this->mergeGuestWishlist($customer);
+
+        $request->session()->regenerate();
+
+        return response()->json([
+            'status' => true,
+            'redirect' => route('user.profile'),
+        ]);
     }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // FORGOT PASSWORD FLOW
+    // ──────────────────────────────────────────────────────────────────────────
+
+    public function sendPasswordResetOtp(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $customer = Customer::where('email', $request->email)->first();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'No account found with this email address.',
+            ]);
+        }
+
+        $otp = rand(100000, 999999);
+
+        session([
+            'reset_email' => $request->email,
+            'reset_otp' => $otp,
+        ]);
+
+        // Send OTP via email
+        $this->sendEmailOtp($request->email, $otp);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP sent to your email address.',
+        ]);
+    }
+
+    public function verifyPasswordResetOtp(Request $request)
+    {
+        $request->validate(['otp' => 'required']);
+
+        if ($request->otp != session('reset_otp')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Invalid OTP.',
+            ]);
+        }
+
+        session(['reset_otp_verified' => true]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP verified.',
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        if (!session('reset_otp_verified')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP verification required.',
+            ]);
+        }
+
+        $request->validate(
+            [
+                'password' => ['required', 'min:8', 'confirmed'],
+            ],
+            [
+                'password.confirmed' => 'Passwords do not match.',
+            ]
+        );
+
+        $customer = Customer::where('email', session('reset_email'))->first();
+
+        if (!$customer) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Account not found.',
+            ]);
+        }
+
+        $customer->update(['password' => bcrypt($request->password)]);
+
+        session()->forget(['reset_email', 'reset_otp', 'reset_otp_verified']);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password reset successfully.',
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // GOOGLE OAUTH
+    // ──────────────────────────────────────────────────────────────────────────
 
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
     }
 
-
     public function handleGoogleCallback()
     {
         $googleUser = Socialite::driver('google')->user();
 
         $customer = Customer::firstOrCreate(
-            [
-                'email' => $googleUser->email,
-            ],
+            ['email' => $googleUser->email],
             [
                 'name' => $googleUser->name,
                 'google_id' => $googleUser->id,
@@ -135,69 +415,103 @@ class CustomerAuthController extends Controller
         );
 
         Auth::guard('customer')->login($customer);
-
         $this->mergeGuestCart($customer);
         $this->mergeGuestWishlist($customer);
 
         return redirect()->route('home');
     }
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // LOGOUT
+    // ──────────────────────────────────────────────────────────────────────────
+
     public function logout(Request $request)
     {
         Auth::guard('customer')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
         return redirect()->route('user.login');
     }
 
-    private function mergeGuestCart(Customer $customer)
+    // ──────────────────────────────────────────────────────────────────────────
+    // HELPERS
+    // ──────────────────────────────────────────────────────────────────────────
+
+    private function sendSms(string $mobile, int $otp): void
     {
-        $guestCart = Cart::where(
-            'session_id',
-            session()->getId()
-        )->first();
+        $message = "{$otp} is the One Time Password(OTP) to verify your MOB number at Web Mingo, This OTP is Usable only once and is valid for 10 min,PLS DO NOT SHARE THE OTP WITH ANYONE";
+        $dlt_id = '1307161465983326774';
+        $pe_id = '1301160576431389865';
+        $authkey = '133780AWLy8zZpC690b124aP1';
+
+        $params = [
+            'authkey' => $authkey,
+            'mobiles' => $mobile,
+            'sender' => 'WMINGO',
+            'message' => urlencode($message),
+            'route' => '4',
+            'country' => '91',
+            'DLT_TE_ID' => $dlt_id,
+            'PE_ID' => $pe_id,
+        ];
+
+        $url = 'http://sms.webmingo.in/api/sendhttp.php?' . http_build_query($params);
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+
+    private function sendEmailOtp(string $email, int $otp): void
+    {
+        // Using Laravel's Mail facade with a simple raw message.
+        // Replace with a Mailable class if you have a branded template.
+        $smtpSetting = SmtpSetting::first();
+
+        if ($smtpSetting) {
+            MailHelper::configure();
+            Mail::raw(
+                "{$otp} is your OTP to reset your password on La Pavone. "
+                . "This OTP is valid for 10 minutes. Do not share it with anyone.",
+                function ($message) use ($email) {
+                    $message->to($email)
+                        ->subject('La Pavone – Password Reset OTP');
+                }
+            );
+        }
+    }
+
+    private function mergeGuestCart(Customer $customer): void
+    {
+        $guestCart = Cart::where('session_id', session()->getId())->first();
 
         if (!$guestCart) {
             return;
         }
 
         $userCart = Cart::firstOrCreate(
-            [
-                'user_id' => $customer->id
-            ],
-            [
-                'session_id' => session()->getId(),
-                'total_amount' => 0
-            ]
+            ['user_id' => $customer->id],
+            ['session_id' => session()->getId(), 'total_amount' => 0]
         );
 
         if ($guestCart->id == $userCart->id) {
-
-            $userCart->update([
-                'user_id' => $customer->id
-            ]);
-
+            $userCart->update(['user_id' => $customer->id]);
             return;
         }
 
         foreach ($guestCart->items as $item) {
-
             $existingItem = CartItem::where('cart_id', $userCart->id)
                 ->where('product_id', $item->product_id)
                 ->first();
 
             if ($existingItem) {
-
                 $existingItem->quantity += $item->quantity;
-                $existingItem->total =
-                    $existingItem->quantity * $existingItem->price;
-
+                $existingItem->total = $existingItem->quantity * $existingItem->price;
                 $existingItem->save();
-
             } else {
-
                 CartItem::create([
                     'cart_id' => $userCart->id,
                     'product_id' => $item->product_id,
@@ -208,39 +522,25 @@ class CustomerAuthController extends Controller
             }
         }
 
-        $userCart->update([
-            'total_amount' => $userCart->items()->sum('total')
-        ]);
-
+        $userCart->update(['total_amount' => $userCart->items()->sum('total')]);
         $guestCart->items()->delete();
         $guestCart->delete();
     }
 
-    private function mergeGuestWishlist(Customer $customer)
+    private function mergeGuestWishlist(Customer $customer): void
     {
-        $guestWishlistItems = Wishlist::where(
-            'session_id',
-            session()->getId()
-        )->get();
+        $guestItems = Wishlist::where('session_id', session()->getId())->get();
 
-        if ($guestWishlistItems->isEmpty()) {
+        if ($guestItems->isEmpty()) {
             return;
         }
 
-        foreach ($guestWishlistItems as $item) {
-
-            $exists = Wishlist::where(
-                'customer_id',
-                $customer->id
-            )
-                ->where(
-                    'product_id',
-                    $item->product_id
-                )
+        foreach ($guestItems as $item) {
+            $exists = Wishlist::where('customer_id', $customer->id)
+                ->where('product_id', $item->product_id)
                 ->exists();
 
             if (!$exists) {
-
                 Wishlist::create([
                     'customer_id' => $customer->id,
                     'session_id' => null,
@@ -250,214 +550,6 @@ class CustomerAuthController extends Controller
             }
         }
 
-        Wishlist::where(
-            'session_id',
-            session()->getId()
-        )->delete();
+        Wishlist::where('session_id', session()->getId())->delete();
     }
-
-
-    public function sendOtp(Request $request)
-    {
-        $request->validate([
-            'mobile' => 'required|regex:/^[6-9]\d{9}$/'
-        ]);
-
-        $otp = rand(100000, 999999);
-
-        session([
-            'register_mobile' => $request->mobile,
-            'register_otp' => $otp
-        ]);
-
-        $message = "{$otp} is the One Time Password(OTP) to verify your MOB number at Web Mingo, This OTP is Usable only once and is valid for 10 min,PLS DO NOT SHARE THE OTP WITH ANYONE";
-        $dlt_id = '1307161465983326774';
-        $pe_id = '1301160576431389865';
-        $authkey = '133780AWLy8zZpC690b124aP1';
-
-        $params = [
-            'authkey' => $authkey,
-            'mobiles' => $request->mobile,
-            'sender' => 'WMINGO',
-            'message' => urlencode($message),
-            'route' => '4',
-            'country' => '91',
-            'DLT_TE_ID' => $dlt_id,
-            'PE_ID' => $pe_id
-        ];
-
-        $url = "http://sms.webmingo.in/api/sendhttp.php?" . http_build_query($params);
-
-        // Send SMS using cURL
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-        $output = curl_exec($ch);
-        $curl_error = curl_error($ch);
-        curl_close($ch);
-
-
-        return response()->json([
-            'status' => true,
-            'message' => 'OTP sent successfully'
-        ]);
-    }
-
-
-    public function verifyOtp(Request $request)
-    {
-        $request->validate([
-            'otp' => 'required'
-        ]);
-
-        if ($request->otp == session('register_otp')) {
-
-            session([
-                'otp_verified' => true
-            ]);
-
-            return response()->json([
-                'status' => true,
-                'message' => 'OTP verified successfully.'
-            ]);
-        }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Invalid OTP'
-        ]);
-    }
-
-    public function guestLogin(Request $request)
-    {
-        if (!session('otp_verified')) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Please verify OTP first.'
-            ]);
-        }
-
-        $mobile = session('register_mobile');
-
-        $customer = Customer::firstOrCreate(
-            [
-                'mobile' => $mobile
-            ],
-            [
-                'name' => 'Guest User',
-                'email' => null,
-                'alternate_mobile' => '9999999999',
-                'password' => bcrypt(str()->random(10))
-            ]
-        );
-
-        Auth::guard('customer')->login($customer);
-
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
-
-        return response()->json([
-            'status' => true,
-            'redirect' => route('home')
-        ]);
-    }
-
-    public function sendLoginOtp(Request $request)
-    {
-        $request->validate([
-            'mobile' => 'required|regex:/^[6-9]\d{9}$/'
-        ]);
-
-        $customer = Customer::where('mobile', $request->mobile)->first();
-
-        if (!$customer) {
-            return response()->json([
-                'status' => false,
-                'message' => 'No account found with this mobile number.'
-            ]);
-        }
-
-        $otp = rand(100000, 999999);
-
-        session([
-            'login_mobile' => $request->mobile,
-            'login_otp' => $otp,
-        ]);
-
-        $message = "{$otp} is the One Time Password(OTP) to verify your MOB number at Web Mingo, This OTP is Usable only once and is valid for 10 min,PLS DO NOT SHARE THE OTP WITH ANYONE";
-        $dlt_id = '1307161465983326774';
-        $pe_id = '1301160576431389865';
-        $authkey = '133780AWLy8zZpC690b124aP1';
-
-        $params = [
-            'authkey' => $authkey,
-            'mobiles' => $request->mobile,
-            'sender' => 'WMINGO',
-            'message' => urlencode($message),
-            'route' => '4',
-            'country' => '91',
-            'DLT_TE_ID' => $dlt_id,
-            'PE_ID' => $pe_id
-        ];
-
-        $url = "http://sms.webmingo.in/api/sendhttp.php?" . http_build_query($params);
-
-        // Send SMS using cURL
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-        $output = curl_exec($ch);
-        $curl_error = curl_error($ch);
-        curl_close($ch);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'OTP sent successfully'
-        ]);
-    }
-
-    public function verifyLoginOtp(Request $request)
-    {
-        $request->validate([
-            'otp' => 'required'
-        ]);
-
-        if ($request->otp != session('login_otp')) {
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid OTP'
-            ]);
-        }
-
-        $customer = Customer::where(
-            'mobile',
-            session('login_mobile')
-        )->first();
-
-        if (!$customer) {
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Customer not found.'
-            ]);
-        }
-
-        Auth::guard('customer')->login($customer);
-
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
-
-        session()->forget([
-            'login_mobile',
-            'login_otp'
-        ]);
-
-        return redirect()->route('user.profile');
-    }
-
 }

@@ -129,14 +129,6 @@
       <div class="section-title">Items In Your Shipment</div>
 
       @foreach($order->items as $item)
-        @php
-          $variantLabel = '';
-          if ($item->variant) {
-            $variantLabel = $item->variant->values
-              ->map(fn($v) => $v->attributeValue->attribute->name . ': ' . $v->attributeValue->value)
-              ->join(', ');
-          }
-        @endphp
         <div class="item-row">
           <div class="item-img-cell">
             @if(isset($productImages[$item->id]))
@@ -147,9 +139,6 @@
           </div>
           <div class="item-detail-cell">
             <div class="item-name">{{ $item->product_name }}</div>
-            @if($variantLabel)
-              <div class="item-meta">{{ $variantLabel }}</div>
-            @endif
             <div class="item-meta">Qty: {{ $item->quantity }}</div>
           </div>
           <div class="item-price-cell">₹ {{ number_format($item->total, 2) }}</div>
