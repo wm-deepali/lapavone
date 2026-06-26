@@ -738,20 +738,6 @@
                                                 $thumb = $item->product->display_image;
                                             }
 
-                                            // Variant label: "Size: L · Color: Red"
-                                            $variantLabel = null;
-                                            if ($item->variant && $item->variant->values->isNotEmpty()) {
-                                                $variantLabel = $item->variant->values
-                                                    ->map(function ($v) {
-
-                                                        return optional($v->attributeValue?->attribute)->name .
-                                                            ': ' .
-                                                            ($v->attributeValue->value ?? '');
-
-                                                    })
-                                                    ->join(' · ');
-                                            }
-
                                             $lineTotal = $item->price * $item->quantity;
                                         @endphp
                                         <tr>
@@ -767,8 +753,8 @@
                                                         <div class="product-name-cell">
                                                             {{ $item->product_name ?? ($item->product->name ?? 'Product') }}
                                                         </div>
-                                                        @if($variantLabel)
-                                                            <div class="product-variant">{{ $variantLabel }}</div>
+                                                        @if($item->product?->weight)
+                                                            <div class="product-variant">{{  $item->product?->weight }}ml</div>
                                                         @endif
                                                         @if($item->sku ?? ($item->product->sku ?? null))
                                                             <div class="product-sku">

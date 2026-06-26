@@ -19,6 +19,7 @@ class WishlistController extends Controller
 
     public function index()
     {
+        $customer = auth('customer')->user();
         $wishlists = Wishlist::current()
             ->with([
                 'product.category',
@@ -28,7 +29,7 @@ class WishlistController extends Controller
             ->latest()
             ->get();
 
-        return view('user.wishlist', compact('wishlists'));
+        return view('user.wishlist', compact('wishlists', 'customer'));
     }
 
     /*
@@ -87,6 +88,7 @@ class WishlistController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Removed from wishlist.',
+                'wishlist_count' => Wishlist::current()->count(),
             ]);
         }
 
@@ -102,21 +104,32 @@ class WishlistController extends Controller
 
     public function moveToCart(Request $request, Product $product)
     {
-        // Add to cart
-        $cartItem = CartItem::firstOrCreate(
-            [
-                'customer_id' => auth('customer')->check()
-                    ? auth('customer')->id()
-                    : null,
-                'session_id' => auth('customer')->check()
-                    ? null
-                    : session()->getId(),
-                'product_id' => $product->id,
-            ],
-            ['quantity' => 1]
+        // Get or create cart
+        $cart = \App\Models\Cart::firstOrCreate(
+            auth('customer')->check()
+            ? [
+                'user_id' => auth('customer')->id(),
+            ]
+            : [
+                'session_id' => session()->getId(),
+            ]
         );
 
-        // If it already existed bump the quantity by 1
+        // Get or create cart item
+        $cartItem = CartItem::firstOrCreate(
+            [
+                'cart_id' => $cart->id,
+                'product_id' => $product->id,
+            ],
+            [
+                'quantity' => 1,
+                'price' => $product->price,
+                'total' => $product->price,
+
+            ]
+        );
+
+        // Increase quantity if already exists
         if (!$cartItem->wasRecentlyCreated) {
             $cartItem->increment('quantity');
         }
@@ -124,15 +137,21 @@ class WishlistController extends Controller
         // Remove from wishlist
         Wishlist::removeProduct($product);
 
+        // Recalculate cart totals (if your Cart model has this method)
+        if (method_exists($cart, 'recalculateTotals')) {
+            $cart->recalculateTotals();
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
                 'message' => "{$product->name} moved to cart.",
+                'cart_count' => $cart->items()->sum('quantity'),
+                'wishlist_count' => Wishlist::current()->count(),
             ]);
         }
 
         return back()->with('success', "{$product->name} moved to your cart.");
     }
-
 
 }

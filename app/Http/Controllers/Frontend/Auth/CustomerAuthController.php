@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend\Auth;
 
 use App\Helpers\MailHelper;
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetOtpMail;
 use App\Models\Customer;
 use App\Models\SmtpSetting;
 use Illuminate\Http\Request;
@@ -465,23 +466,22 @@ class CustomerAuthController extends Controller
         curl_close($ch);
     }
 
+
     private function sendEmailOtp(string $email, int $otp): void
     {
-        // Using Laravel's Mail facade with a simple raw message.
-        // Replace with a Mailable class if you have a branded template.
         $smtpSetting = SmtpSetting::first();
 
-        if ($smtpSetting) {
-            MailHelper::configure();
-            Mail::raw(
-                "{$otp} is your OTP to reset your password on La Pavone. "
-                . "This OTP is valid for 10 minutes. Do not share it with anyone.",
-                function ($message) use ($email) {
-                    $message->to($email)
-                        ->subject('La Pavone – Password Reset OTP');
-                }
-            );
+        if (!$smtpSetting) {
+            return;
         }
+
+        MailHelper::configure();
+
+        // Resolve the customer's name so the email feels personal.
+        $customer = Customer::where('email', $email)->first();
+        $customerName = $customer?->name ?? 'Valued Customer';
+
+        Mail::to($email)->send(new PasswordResetOtpMail($email, $otp, $customerName));
     }
 
     private function mergeGuestCart(Customer $customer): void

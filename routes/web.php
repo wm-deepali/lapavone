@@ -92,8 +92,7 @@ Route::middleware('maintenance.mode')->group(function () {
 
         Route::prefix('wishlist')->name('wishlist.')->group(function () {
 
-            Route::get('/', [WishlistController::class, 'index'])->name('index');
-            Route::post('/add', [WishlistController::class, 'add'])->name('add');
+            Route::post('/wishlist/add', [WishlistController::class, 'add'])->name('add');
             Route::delete('/{product}', [WishlistController::class, 'remove'])->name('remove');
             Route::post('/{product}/move-to-cart', [WishlistController::class, 'moveToCart'])->name('moveToCart');
 
@@ -187,7 +186,7 @@ Route::middleware('maintenance.mode')->group(function () {
             Route::patch('/addresses/{id}/default', [App\Http\Controllers\User\AddressController::class, 'setDefault'])->name('addresses.default');
             Route::get('/addresses/cities', [App\Http\Controllers\User\AddressController::class, 'cities'])->name('addresses.cities');
 
-            Route::view('/wishlist', 'user.wishlist')->name('wishlist');
+            Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
 
             Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
             Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

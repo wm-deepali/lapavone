@@ -72,7 +72,7 @@
             <a href="#"><i class="fa-solid fa-box"></i> Product & Inventories</a>
             <ul>
                 <li><a href="{{ route('admin.products.index') }}">Manage Products</a></li>
-                <li><a href="{{ route('admin.reviews.index') }}">Product Reviews</a></li>
+                <!-- <li><a href="{{ route('admin.reviews.index') }}">Product Reviews</a></li> -->
                 <li><a href="{{ route('admin.stock.index') }}">Stock Management</a></li>
                 <li><a href="{{ route('admin.stock.alerts') }}">Stock Alerts</a></li>
             </ul>
@@ -90,13 +90,9 @@
             <ul>
                 <li><a href="{{ route('admin.orders.index')}}">Manage Orders</a></li>
                 <li><a href="{{ route('admin.payments.index')}}">Payments & Transactions</a></li>
-                <li><a href="{{ route('admin.order-returns.index')}}">Manage Returns</a></li>
-                <li>
-                    <a href="{{ route('admin.return-reasons.index') }}">
-                        Return Reasons
-                    </a>
-                </li>
-                <li><a href="{{route('admin.refunds.index') }}">Manage Refunds</a></li>
+                <!-- <li><a href="{{ route('admin.order-returns.index')}}">Manage Returns</a></li> -->
+                <!-- <li><a href="{{ route('admin.return-reasons.index') }}">Return Reasons</a></li> -->
+                <!-- <li><a href="{{route('admin.refunds.index') }}">Manage Refunds</a></li> -->
                 <li><a href="{{ route('admin.customers.index') }}">Manage Customers</a></li>
                 <li><a href="{{ route('admin.customers.addresses.index') }}">Customer Address Book</a></li>
                 <li><a href="{{ route('admin.stored-carts.index') }}">Customer Carts</a></li>
@@ -124,9 +120,9 @@
                 <li><a href="{{ route('admin.blogs.index') }}">Blog Management</a></li>
                 <li><a href="{{ route('admin.pages.index') }}">Dynamic Pages</a></li>
                 <!-- <li><a href="{{ route('admin.announcements.index') }}">Announcement Bar</a></li> -->
-                 <!-- <li><a href="{{ route('admin.teams.index') }}">Manage Teams</a></li> -->
+                <!-- <li><a href="{{ route('admin.teams.index') }}">Manage Teams</a></li> -->
                 <!-- <li><a href="{{ route('admin.testimonials.index') }}">Testimonial & Feedback</a></li> -->
-                 <!-- <li><a href="{{ route('admin.contact-branches.index') }}">Manage Office Branches</a></li> -->
+                <!-- <li><a href="{{ route('admin.contact-branches.index') }}">Manage Office Branches</a></li> -->
             </ul>
         </li>
 

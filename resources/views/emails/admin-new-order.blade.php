@@ -141,8 +141,8 @@
             </td>
             <td>
               <div style="font-weight:500;color:#111;margin-bottom:2px;">{{ $item->product_name }}</div>
-              @if($variantLabel)
-                <div style="font-size:11px;color:#999;">{{ $variantLabel }}</div>
+              @if($item->product?->weight)
+                <div style="font-size:11px;color:#999;">{{  $item->product?->weight }}ml</div>
               @endif
             </td>
             <td style="font-size:11px;color:#999;">{{ $item->product?->sku ?? '—' }}</td>

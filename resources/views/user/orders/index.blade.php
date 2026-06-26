@@ -165,12 +165,12 @@
                                             @endif
 
                                             {{-- Return/Exchange: delivered within 7 days --}}
-                                            @if ($order->status === 'delivered' && $order->created_at->diffInDays(now()) <= 7)
+                                            <!-- @if ($order->status === 'delivered' && $order->created_at->diffInDays(now()) <= 7)
                                                 <button class="btn-order-action btn-outline btn-return"
                                                     data-order-id="{{ $order->id }}">
                                                     Return / Exchange
                                                 </button>
-                                            @endif
+                                            @endif -->
 
                                         </div>
                                     </div>

@@ -167,6 +167,7 @@ class CartController extends Controller
             $cart->recalculateTotals();
             $cart->refresh();
         }
+        // dd($cart->toArray());
 
         return view(
             'front-pages.cart',

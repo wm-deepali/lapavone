@@ -629,19 +629,6 @@
                 <tbody>
                     @foreach($order->items as $i => $item)
                         @php
-                            $variantLabel = null;
-                            if ($item->variant && $item->variant->values->isNotEmpty()) {
-                                $variantLabel = $item->variant->values
-                                    ->map(function ($v) {
-
-                                        return optional($v->attributeValue?->attribute)->name .
-                                            ': ' .
-                                            ($v->attributeValue->value ?? '');
-
-                                    })
-                                    ->join(' · ');
-                            }
-
                             $lineTotal = $item->price * $item->quantity;
                         @endphp
                         <tr>
@@ -650,8 +637,8 @@
                                 <div class="item-name">
                                     {{ $item->product_name ?? ($item->product->name ?? 'Product') }}
                                 </div>
-                                @if($variantLabel)
-                                    <div class="item-variant">{{ $variantLabel }}</div>
+                                @if($item->product?->weight)
+                                    <div class="item-variant">{{  $item->product?->weight }}ml</div>
                                 @endif
                                 @if($item->sku ?? ($item->product->sku ?? null))
                                     <div class="item-sku">
