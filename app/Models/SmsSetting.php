@@ -60,7 +60,7 @@ class SmsSetting extends Model
 
         // Notification toggles
         'notify_order_placed',
-        'notify_otp',
+        'notify_order_shipped',
         'notify_payment_received',
         'notify_order_shipped',
         'notify_out_for_delivery',

@@ -178,7 +178,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'default',
                     'is_default' => true,
-                    'sort_order' => 0,
+                    // 'sort_order' => 0,
                 ]);
             }
 
@@ -190,7 +190,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'hover',
                     'is_default' => false,
-                    'sort_order' => 1,
+                    // 'sort_order' => 1,
                 ]);
             }
 
@@ -203,7 +203,7 @@ class ProductController extends Controller
                         'image' => $path,
                         'image_type' => 'banner',
                         'is_default' => false,
-                        'sort_order' => $i,
+                        // 'sort_order' => $i,
                     ]);
                 }
             }
@@ -217,7 +217,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'story',
                     'is_default' => false,
-                    'sort_order' => 99,
+                    // 'sort_order' => 99,
                 ]);
             }
 
@@ -451,7 +451,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'default',
                     'is_default' => true,
-                    'sort_order' => 0,
+                    // 'sort_order' => 0,
                 ]);
             }
 
@@ -468,7 +468,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'hover',
                     'is_default' => false,
-                    'sort_order' => 1,
+                    // 'sort_order' => 1,
                 ]);
             }
 
@@ -482,7 +482,7 @@ class ProductController extends Controller
                         'image' => $path,
                         'image_type' => 'banner',
                         'is_default' => false,
-                        'sort_order' => $nextOrder + $i,
+                        // 'sort_order' => $nextOrder + $i,
                     ]);
                 }
             }
@@ -514,7 +514,7 @@ class ProductController extends Controller
                     'image' => $path,
                     'image_type' => 'story',
                     'is_default' => false,
-                    'sort_order' => 99,
+                    // 'sort_order' => 99,
                 ]);
             }
 

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
 
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->unique()->nullable();
 
             $table->string('mobile', 10)->unique();
             $table->string('alternate_mobile', 10);

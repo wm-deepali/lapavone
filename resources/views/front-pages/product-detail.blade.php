@@ -25,12 +25,12 @@
             overflow: hidden;
             background: #fff;
             align-items: center;
-             /*padding: 10px 24px;*/
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    
+            /*padding: 10px 24px;*/
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+
 
         }
 
@@ -56,32 +56,33 @@
             cursor: not-allowed;
         }
 
-     .qty-value {
-    display: inline-block;
-    min-width: 36px;
-    text-align: center;
-    font-size: 24px;
-    font-weight: 500;
-    color: #1F5552;
-}
+        .qty-value {
+            display: inline-block;
+            min-width: 36px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: 500;
+            color: #1F5552;
+        }
 
         /* ── View Cart Button ── */
-     .btn-view-cart {
-       background-color: #1F5552;
-    color: #fff !important;
-    border: 1px solid transparent;
-    padding: 10px 24px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: 'Inter', system-ui, sans-serif;
-}
+        .btn-view-cart {
+            background-color: #1F5552;
+            color: #fff !important;
+            border: 1px solid transparent;
+            padding: 10px 24px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+
         .btn-view-cart:hover {
             background: #e8f1f0;
             color: #1F5552;
@@ -93,6 +94,70 @@
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
+        }
+
+        .qty-btn.delete-mode {
+            color: #e53e3e;
+        }
+
+        .qty-btn.delete-mode:hover {
+            background: #fff5f5;
+        }
+
+        #ps-dots-right .dot {
+            background-color: {
+                    {
+                    $product->detail_page_color ?? '#B8832F'
+                }
+            }
+
+            ;
+
+            border-color: {
+                    {
+                    $product->detail_page_color ?? '#B8832F'
+                }
+            }
+        }
+
+        #ps-dots-right .dot.active {
+            background-color: #fff;
+
+            border-color: {
+                    {
+                    $product->detail_page_color ?? '#B8832F'
+                }
+            }
+
+            ;
+        }
+
+        /* ── SweetAlert Custom Buttons ── */
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            width: 400px !important;
+            height: 350px !important;
+            border-radius: 20px !important;
+            padding: 30px !important;
+            box-sizing: border-box !important;
+            overflow: hidden !important;
+        }
+
+        div:where(.swal2-container) .swal2-html-container {
+            overflow: hidden !important;
+        }
+
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-confirm,
+        div:where(.swal2-container) button:where(.swal2-styled).swal2-cancel {
+            min-width: 120px !important;
+            height: 45px !important;
+            padding: 0 24px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            border-radius: 999px !important;
+            font-size: 14px !important;
+            font-weight: 500 !important;
+            font-family: 'Inter', system-ui, sans-serif !important;
         }
     </style>
 
@@ -163,8 +228,15 @@
                             {{-- ── Add To Bag / Qty Controls / View Cart ── --}}
                             <div class="add-to-bag-wrapper">
 
+                                @php
+                                    $inCart = !empty($cartItem);
+                                    $cartQty = $cartItem->quantity ?? ($cartItem['quantity'] ?? 1);
+                                    $cartItemId = $cartItem->id ?? ($cartItem['id'] ?? null);
+                                @endphp
+
                                 {{-- Step 1: Add To Bag button --}}
-                                <button class="btn-add-bag" id="add-to-bag-btn" data-product-id="{{ $product->id }}">
+                                <button class="btn-add-bag" id="add-to-bag-btn" data-product-id="{{ $product->id }}"
+                                    style="{{ $inCart ? 'display:none' : '' }}">
                                     <span style="display: flex; align-items: center; gap: 8px;">
                                         <img src="{{ asset('assets/images/products/add_to_cart.png') }}" alt="Bag"
                                             class="bag-icon">
@@ -172,22 +244,28 @@
                                     </span>
                                 </button>
 
+
                                 {{-- Step 2: Qty Controls — cart_item_id JS mein store hoga --}}
-                              <div class="qty-controls" id="qty-controls" style="display: none;">
-    <button class="qty-btn" type="button" id="qty-minus">
-        <i class="fa-solid fa-minus"></i>
-    </button>
+                                <div class="qty-controls" id="qty-controls" data-cart-item-id="{{ $cartItemId }}"
+                                    style="{{ $inCart ? 'display:flex' : 'display:none' }}">
+                                    <button class="qty-btn" type="button" id="qty-minus">
+                                        <i class="fa-solid {{ $cartQty <= 1 ? 'fa-trash' : 'fa-minus' }}"
+                                            id="qty-minus-icon"></i>
+                                    </button>
 
-    <span class="qty-value" id="qty-display">1</span>
+                                    <span class="qty-value" id="qty-display">
+                                        {{ $cartQty }}
+                                    </span>
 
-    <button class="qty-btn" type="button" id="qty-plus">
-        <i class="fa-solid fa-plus"></i>
-    </button>
-</div>
+                                    <button class="qty-btn" type="button" id="qty-plus">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </div>
+
 
                                 {{-- Step 2: View Cart button --}}
                                 <a href="{{ route('cart') }}" class="btn-view-cart" id="view-cart-btn"
-                                    style="display: none;">
+                                    style="{{ $inCart ? 'inline-flex' : 'display:none' }}">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="9" cy="21" r="1"></circle>
@@ -357,16 +435,8 @@
     <script>
         $(function () {
 
-            /*
-            |------------------------------------------------------------------
-            | State variables
-            | cartItemId → cart.add response se milega, updateQuantity ke liye
-            | currentQty → UI mein dikhane ke liye
-            | isUpdating → plus/minus double-click rokne ke liye
-            |------------------------------------------------------------------
-            */
-            let cartItemId = null;
-            let currentQty = 1;
+            let cartItemId = $('#qty-controls').data('cart-item-id') || null;
+            let currentQty = parseInt($('#qty-display').text()) || 1;
             let isUpdating = false;
 
             const $addBtn = $('#add-to-bag-btn');
@@ -374,13 +444,24 @@
             const $viewCart = $('#view-cart-btn');
             const $qtyDisplay = $('#qty-display');
             const $qtyMinus = $('#qty-minus');
+            const $qtyMinusIcon = $('#qty-minus-icon');
             const $qtyPlus = $('#qty-plus');
 
-            /*
-            |------------------------------------------------------------------
-            | Helper: Add ke baad UI switch
-            |------------------------------------------------------------------
-            */
+            if (cartItemId) {
+                updateMinusIcon(currentQty);
+            }
+            // ── Icon update helper ──
+            function updateMinusIcon(qty) {
+                if (qty <= 1) {
+                    $qtyMinus.addClass('delete-mode');
+                    $qtyMinusIcon.removeClass('fa-minus').addClass('fa-trash');
+                } else {
+                    $qtyMinus.removeClass('delete-mode');
+                    $qtyMinusIcon.removeClass('fa-trash').addClass('fa-minus');
+                }
+            }
+
+            // ── Add ke baad UI switch ──
             function showQtyState(qty, itemId) {
                 cartItemId = itemId;
                 currentQty = qty;
@@ -388,21 +469,22 @@
                 $addBtn.hide();
                 $qtyControls.css('display', 'flex');
                 $viewCart.css('display', 'inline-flex');
-                $qtyMinus.prop('disabled', currentQty <= 1);
+                updateMinusIcon(currentQty);   // ← icon set karo
             }
 
-            /*
-            |------------------------------------------------------------------
-            | ADD TO BAG
-            | Route  : cart.add
-            | Sends  : product_id, quantity
-            | Gets   : status, message, cart_count, cart_total, cart_item_id ← key
-            |------------------------------------------------------------------
-            */
+            // ── Wapas Add To Bag state ──
+            function resetToAddState() {
+                cartItemId = null;
+                currentQty = 1;
+                $qtyControls.hide();
+                $viewCart.hide();
+                $addBtn.prop('disabled', false).show();
+                $('.cart-count').text(parseInt($('.cart-count').text() || 0) - 0); // count server se aayega
+            }
+
+            // ── ADD TO BAG ──
             $addBtn.on('click', function () {
-
                 $addBtn.prop('disabled', true);
-
                 $.ajax({
                     url: "{{ route('cart.add') }}",
                     type: 'POST',
@@ -413,7 +495,6 @@
                     },
                     success: function (response) {
                         if (response.status) {
-                            // cart_item_id store karo — updateQuantity ko chahiye
                             showQtyState(1, response.cart_item_id);
                             $('.cart-count').text(response.cart_count);
                             Swal.fire({
@@ -424,7 +505,7 @@
                             });
                         } else {
                             $addBtn.prop('disabled', false);
-                            Swal.fire({ icon: 'warning', title: response.message });
+                            Swal.fire({ icon: 'warning', title: response.message, confirmButtonColor: '#1F5552' });
                         }
                     },
                     error: function (xhr) {
@@ -433,44 +514,46 @@
                             icon: 'error',
                             title: 'Oops!',
                             text: xhr.responseJSON?.message ?? 'Something went wrong.',
+                            confirmButtonColor: '#1F5552',
                         });
                     },
                 });
             });
 
-            /*
-            |------------------------------------------------------------------
-            | QTY MINUS
-            | Route  : cart.update-quantity
-            | Sends  : item_id (cartItemId), action: 'minus'
-            | Gets   : status, quantity, item_total, total_mrp, cart_total, cart_count
-            |------------------------------------------------------------------
-            */
+            // ── QTY MINUS / DELETE ──
             $qtyMinus.on('click', function () {
-                if (isUpdating || currentQty <= 1) return;
+                if (isUpdating) return;
+
+                // Qty 1 hai → DELETE mode
+                if (currentQty <= 1) {
+                    Swal.fire({
+                        title: 'Remove Item?',
+                        text: 'Are you sure you want to remove this item from your cart?',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#e53e3e',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Yes, Remove',
+                        cancelButtonText: 'Cancel',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            callRemoveItem();
+                        }
+                    });
+                    return;
+                }
+
                 callUpdateQty('minus');
             });
 
-            /*
-            |------------------------------------------------------------------
-            | QTY PLUS
-            | Route  : cart.update-quantity
-            | Sends  : item_id (cartItemId), action: 'plus'
-            | Gets   : status, quantity, item_total, total_mrp, cart_total, cart_count
-            |------------------------------------------------------------------
-            */
+            // ── QTY PLUS ──
             $qtyPlus.on('click', function () {
                 if (isUpdating) return;
                 callUpdateQty('plus');
             });
 
-            /*
-            |------------------------------------------------------------------
-            | AJAX: updateQuantity — controller expect karta hai item_id + action
-            |------------------------------------------------------------------
-            */
+            // ── AJAX: Update Quantity ──
             function callUpdateQty(action) {
-
                 isUpdating = true;
                 $qtyMinus.prop('disabled', true);
                 $qtyPlus.prop('disabled', true);
@@ -480,21 +563,21 @@
                     type: 'POST',
                     data: {
                         _token: $('meta[name="csrf-token"]').attr('content'),
-                        item_id: cartItemId,   // ← CartController@updateQuantity expects item_id
-                        action: action,        // ← 'plus' ya 'minus'
+                        item_id: cartItemId,
+                        action: action,
                     },
                     success: function (response) {
                         if (response.status) {
                             currentQty = response.quantity;
                             $qtyDisplay.text(currentQty);
-                            $qtyMinus.prop('disabled', currentQty <= 1);
+                            $qtyMinus.prop('disabled', false);
                             $qtyPlus.prop('disabled', false);
-                            // cart_count ab controller mein add kar diya hai
+                            updateMinusIcon(currentQty);   // ← har update pe icon check karo
                             $('.cart-count').text(response.cart_count);
                         } else {
-                            // Stock limit ya min_qty hit
-                            $qtyMinus.prop('disabled', currentQty <= 1);
+                            $qtyMinus.prop('disabled', false);
                             $qtyPlus.prop('disabled', false);
+                            updateMinusIcon(currentQty);
                             Swal.fire({
                                 icon: 'warning',
                                 title: response.message ?? 'Limit reached',
@@ -504,12 +587,14 @@
                         }
                     },
                     error: function (xhr) {
-                        $qtyMinus.prop('disabled', currentQty <= 1);
+                        $qtyMinus.prop('disabled', false);
                         $qtyPlus.prop('disabled', false);
+                        updateMinusIcon(currentQty);
                         Swal.fire({
                             icon: 'error',
                             title: 'Oops!',
                             text: xhr.responseJSON?.message ?? 'Quantity update failed.',
+                            confirmButtonColor: '#1F5552',
                         });
                     },
                     complete: function () {
@@ -518,6 +603,49 @@
                 });
             }
 
+            // ── AJAX: Remove Item ──
+            function callRemoveItem() {
+                isUpdating = true;
+                $qtyMinus.prop('disabled', true);
+                $qtyPlus.prop('disabled', true);
+
+                $.ajax({
+                    url: "{{ route('cart.remove', ['id' => '__ID__']) }}"
+                        .replace('__ID__', cartItemId),
+                    type: 'POST',                                          // ← POST hi bhejo
+                    data: {
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        _method: 'DELETE',   // ← Laravel method spoofing
+                    },
+                    success: function (response) {
+                        if (response.status) {
+                            $('.cart-count').text(response.cart_count);
+                            resetToAddState();
+                            Swal.fire({
+                                icon: 'success',
+                                title: response.message ?? 'Item removed',
+                                timer: 1500,
+                                showConfirmButton: false,
+                            });
+                        } else {
+                            Swal.fire({ icon: 'warning', title: response.message, confirmButtonColor: '#1F5552' });
+                        }
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: xhr.responseJSON?.message ?? 'Remove failed.',
+                            confirmButtonColor: '#1F5552',
+                        });
+                    },
+                    complete: function () {
+                        isUpdating = false;
+                        $qtyMinus.prop('disabled', currentQty <= 1);
+                        $qtyPlus.prop('disabled', false);
+                    },
+                });
+            }
         });
 
         $(document).on('click', '.btn-wishlist', function (e) {
@@ -564,13 +692,14 @@
                             icon: 'warning',   // or 'error'
                             title: 'Wishlist',
                             text: response.message,
+                            confirmButtonColor: '#1F5552',
                         });
 
                     }
                 },
                 error: function (xhr) {
                     const msg = xhr.responseJSON?.message ?? 'Something went wrong.';
-                    Swal.fire({ icon: 'error', title: 'Oops!', text: msg });
+                    Swal.fire({ icon: 'error', title: 'Oops!', text: msg, confirmButtonColor: '#1F5552' });
 
                 },
                 complete: function () {

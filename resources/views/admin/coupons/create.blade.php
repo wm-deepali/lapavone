@@ -447,17 +447,28 @@
                                     <input type="number" step="0.01" name="maximum_discount" class="field-input">
                                 </div>
 
+                                <div class="field-group">
+                                    <label class="field-label">
+                                        Coupon For
+                                    </label>
+
+                                    <select name="customer_type" class="field-select">
+                                        <option value="all">For All Customers</option>
+                                        <option value="new">For New Customers Only</option>
+                                    </select>
+                                </div>
+
                             </div>
                         </div>
 
-                     
+
 
                     </div>
 
                     <!-- ── RIGHT column ─────────────────────────────── -->
                     <div>
 
-                       <div class="section-card">
+                        <div class="section-card">
 
                             <div class="section-card-header">
                                 <h5>Validity</h5>
@@ -483,7 +494,7 @@
 
                                 <div class="field-group">
                                     <label class="field-label">
-                                        Usage Limit
+                                        Usage Limit (Usage Per Customer)
                                     </label>
 
                                     <input type="number" name="usage_limit" class="field-input">
@@ -522,6 +533,25 @@
                                             Inactive
                                         </option>
 
+                                    </select>
+
+                                </div>
+
+                                <div class="toggle-row">
+
+                                    <div>
+                                        <div class="toggle-label">
+                                            Coupon Visibility
+                                        </div>
+
+                                        <div class="toggle-sub">
+                                            Show or hide coupon from website coupon popup
+                                        </div>
+                                    </div>
+
+                                    <select name="visibility" class="field-select-sm">
+                                        <option value="public">Show On Website</option>
+                                        <option value="private">Make It Private</option>
                                     </select>
 
                                 </div>

@@ -29,15 +29,18 @@
 
                 <!-- Subcategory Filter Tabs -->
                 <div class="filter-group d-flex flex-wrap gap-2" id="filter-tabs">
-                    <button class="filter-tab {{ !request('subcategory') ? 'active' : '' }}" onclick="applyFilter('')">
+
+                    <button class="filter-tab {{ !request('subcategory') ? 'active' : '' }}" onclick="applyFilter('', '')">
                         All
                     </button>
+
                     @foreach($subcategories as $sub)
                         <button class="filter-tab {{ request('subcategory') == $sub->id ? 'active' : '' }}"
-                            onclick="applyFilter('{{ $sub->id }}')">
+                            onclick="applyFilter('{{ $sub->id }}', '{{ $sub->slug }}')">
                             {{ $sub->name }}
                         </button>
                     @endforeach
+
                 </div>
 
                 <!-- Sort -->
@@ -153,9 +156,35 @@
             return url.toString();
         }
 
-        // Clicking a subcategory tab — keeps current sort, resets to that subcategory
-        function applyFilter(subcategoryId) {
-            window.location.href = buildUrl({ subcategory: subcategoryId });
+        // PHP se JS mein flag pass karo
+        const isShopAll = {{ ($isShopAll ?? false) ? 'true' : 'false' }};
+
+        function buildUrl(params) {
+            const url = new URL(window.location.href);
+            Object.entries(params).forEach(([key, val]) => {
+                if (val === '' || val === null) url.searchParams.delete(key);
+                else url.searchParams.set(key, val);
+            });
+            return url.toString();
+        }
+
+        function applyFilter(id, slug) {
+            if (isShopAll) {
+                // Shop All page → category tab click → category URL pe jao
+                if (slug) {
+                    window.location.href = "{{ url('/category') }}/" + slug;
+                } else {
+                    // "All" tab → shop all wapas, filter hata do
+                    window.location.href = "{{ route('shop.all') }}";
+                }
+            } else {
+                // Category page → subcategory filter
+                window.location.href = buildUrl({ subcategory: id });
+            }
+        }
+
+        function applySort(sortValue) {
+            window.location.href = buildUrl({ sort: sortValue === 'featured' ? '' : sortValue });
         }
 
         // Changing sort dropdown — keeps current subcategory filter, updates sort

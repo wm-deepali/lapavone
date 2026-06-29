@@ -321,6 +321,73 @@ class CartController extends Controller
             ]);
         }
 
+        if (
+            $coupon->customer_type === 'new' &&
+            auth('customer')->check()
+        ) {
+
+            $hasPreviousOrder = \App\Models\Order::where(
+                'customer_id',
+                auth('customer')->id()
+            )->exists();
+
+            if ($hasPreviousOrder) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This coupon is only valid for new customers.'
+                ]);
+            }
+        }
+
+        $subtotal = $cart->items()->sum('total');
+
+        if (
+            $coupon->customer_type === 'new' &&
+            auth('customer')->check()
+        ) {
+
+            $hasPreviousOrder = \App\Models\Order::where(
+                'customer_id',
+                auth('customer')->id()
+            )->exists();
+
+            if ($hasPreviousOrder) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'This coupon is only valid for new customers.'
+                ]);
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Usage Limit Per Customer
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            auth('customer')->check() &&
+            $coupon->usage_limit
+        ) {
+
+            $usedCount = \App\Models\Order::where(
+                'customer_id',
+                auth('customer')->id()
+            )
+                ->where('coupon_id', $coupon->id)
+                ->count();
+
+            if ($usedCount >= $coupon->usage_limit) {
+
+                return response()->json([
+                    'status' => false,
+                    'message' => 'You have already used this coupon the maximum allowed number of times.'
+                ]);
+            }
+        }
+
         $subtotal = $cart->items()->sum('total');
 
         if (
@@ -396,6 +463,7 @@ class CartController extends Controller
         $subtotal = $cart ? $cart->subtotal : 0;
 
         $coupons = Coupon::where('status', 1)
+            ->where('visibility', 'public')
             ->where(function ($q) {
                 $q->whereNull('start_date')
                     ->orWhere('start_date', '<=', now());

@@ -22,7 +22,8 @@
                             <div class="checkout-section-block">
                                 <h2 class="checkout-section-title">Contact Information</h2>
                                 <div class="form-group">
-                                    <input type="email" class="form-control" placeholder="Email Address">
+                                    <input type="email" class="form-control" placeholder="Email Address"
+                                        value="{{ auth('customer')->user()?->email ?? '' }}">
                                 </div>
                                 <div class="form-check mt-3">
                                     <input class="form-check-input" type="checkbox" id="newsOffers" checked>
@@ -130,17 +131,18 @@
                                         <input type="hidden" name="address_id" id="address_id">
                                         <div class="col-md-6">
                                             <input type="text" name="name" class="form-control" placeholder="Full Name"
-                                                required>
+                                                value="{{ auth('customer')->user()?->name ?? '' }}" required>
                                         </div>
 
                                         <div class="col-md-6">
                                             <input type="email" name="email" class="form-control"
-                                                placeholder="Email Address" required>
+                                                placeholder="Email Address"
+                                                value="{{ auth('customer')->user()?->email ?? '' }}" required>
                                         </div>
 
                                         <div class="col-md-6">
                                             <input type="tel" name="phone" class="form-control" placeholder="Phone Number"
-                                                required>
+                                                value="{{ auth('customer')->user()?->mobile ?? '' }}" required>
                                         </div>
 
                                         <div class="col-md-6">
@@ -344,7 +346,38 @@
 
     </div>
 
-  
+
+    <div id="payment-overlay" style="display:none;">
+        <div class="payment-loader">
+            <div class="spinner-border text-light" role="status"></div>
+            <p>Please wait, processing your payment...</p>
+        </div>
+    </div>
+
+    <style>
+        #payment-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .payment-loader {
+            text-align: center;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .payment-loader p {
+            margin-top: 15px;
+            margin-bottom: 0;
+        }
+    </style>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
@@ -418,19 +451,19 @@
                             return;
                         }
                         body.innerHTML = data.coupons.map((c, i) => `
-                                                    <div class="coupon-card ${i < data.coupons.length - 1 ? 'mb-3' : ''} ${!c.eligible ? 'coupon-card--disabled' : ''}">
-                                                        <div class="d-flex justify-content-between align-items-start mb-3">
-                                                            <span class="coupon-badge">${c.code}</span>
-                                                            ${c.eligible
+                                                                        <div class="coupon-card ${i < data.coupons.length - 1 ? 'mb-3' : ''} ${!c.eligible ? 'coupon-card--disabled' : ''}">
+                                                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                                                <span class="coupon-badge">${c.code}</span>
+                                                                                ${c.eligible
                                 ? `<button class="btn-use-coupon" data-code="${c.code}">USE COUPON</button>`
                                 : `<span class="coupon-ineligible-label">Min. ₹${Number(c.min_amount).toLocaleString('en-IN')} required</span>`
                             }
-                                                        </div>
-                                                        <div style="font-family:'Outfit',sans-serif;font-size:13px;color:${c.eligible ? '#666' : '#aaa'};line-height:1.4;">
-                                                            ${c.description}
-                                                        </div>
-                                                    </div>
-                                                `).join('');
+                                                                            </div>
+                                                                            <div style="font-family:'Outfit',sans-serif;font-size:13px;color:${c.eligible ? '#666' : '#aaa'};line-height:1.4;">
+                                                                                ${c.description}
+                                                                            </div>
+                                                                        </div>
+                                                                    `).join('');
 
                         // Wire up USE COUPON buttons
                         body.querySelectorAll('.btn-use-coupon').forEach(btn => {
@@ -467,8 +500,8 @@
 
                 response.forEach(city => {
                     html += `<option value="${city.id}">
-                                                        ${city.name}
-                                                    </option>`;
+                                                                            ${city.name}
+                                                                        </option>`;
                 });
 
                 $('#city_id').html(html);
@@ -572,8 +605,8 @@
                 response.forEach(city => {
 
                     html += `<option value="${city.id}">
-                                    ${city.name}
-                                 </option>`;
+                                                        ${city.name}
+                                                     </option>`;
 
                 });
 
@@ -588,19 +621,38 @@
 
         $('#place-order-btn').click(function () {
 
-        let addressId = $('.existing-address-card.active').data('address-id');
+            let addressId = $('.existing-address-card.active').data('address-id');
 
-$.ajax({
-    url: '{{ route("checkout.place-order") }}',
-    type: 'POST',
-    data: {
-        _token: '{{ csrf_token() }}',
-        payment_method: 'razorpay',
-        address_id: addressId
-    },
+            if (!addressId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Address Required',
+                    text: 'Please add or select a shipping address before placing the order.'
+                });
+
+                return;
+            }
+
+
+            $(this)
+                .prop('disabled', true)
+                .text('Processing...');
+
+            $.ajax({
+                url: '{{ route("checkout.place-order") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    payment_method: 'razorpay',
+                    address_id: addressId
+                },
                 success: function (response) {
 
                     if (!response.success) {
+
+                        $('#place-order-btn')
+                            .prop('disabled', false)
+                            .text('COMPLETE ORDER');
 
                         Swal.fire({
                             icon: 'error',
@@ -625,6 +677,13 @@ $.ajax({
 
                         order_id: response.razorpay_order_id,
 
+                        modal: {
+                            ondismiss: function () {
+                                $('#place-order-btn')
+                                    .prop('disabled', false)
+                                    .text('COMPLETE ORDER');
+                            }
+                        },
                         prefill: {
 
                             name: response.customer_name,
@@ -636,6 +695,9 @@ $.ajax({
                         },
 
                         handler: function (paymentResponse) {
+
+                            document.getElementById('payment-overlay').style.display = 'flex';
+
 
                             $.ajax({
 

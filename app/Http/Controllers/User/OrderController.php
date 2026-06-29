@@ -136,7 +136,9 @@ class OrderController extends Controller
                 'dpi' => 150,
             ]);
 
-        $filename = 'Invoice-' . $order->invoice->invoice_number . '.pdf';
+        $invoiceNumber = str_replace(['/', '\\'], '-', $order->invoice->invoice_number);
+
+        $filename = "Invoice-{$invoiceNumber}.pdf";
 
         return $pdf->download($filename);
     }
@@ -287,4 +289,5 @@ class OrderController extends Controller
 
         return redirect()->route('cart')->with('success', $message);
     }
+
 }

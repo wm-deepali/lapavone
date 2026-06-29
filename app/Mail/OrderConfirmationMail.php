@@ -94,9 +94,9 @@ class OrderConfirmationMail extends Mailable
             )
             ->view('emails.order-confirmation')
             ->with([
-                'order'         => $this->order,
-                'settings'      => $this->settings,
-                'logoPath'      => $logoPath,
+                'order' => $this->order,
+                'settings' => $this->settings,
+                'logoPath' => $logoPath,
                 'productImages' => $this->productImages,
             ]);
 
@@ -143,7 +143,7 @@ class OrderConfirmationMail extends Mailable
                         'app/public/' . $invoiceSetting->company_logo
                     );
                     if (file_exists($logoPath64)) {
-                        $mime    = mime_content_type($logoPath64);
+                        $mime = mime_content_type($logoPath64);
                         $logo_64 = 'data:' . $mime . ';base64,' .
                             base64_encode(file_get_contents($logoPath64));
                     }
@@ -154,24 +154,24 @@ class OrderConfirmationMail extends Mailable
                     $pdf = Pdf::loadView(
                         'admin.orders.invoice',
                         [
-                            'order'   => $this->order,
+                            'order' => $this->order,
                             'invoice' => $invoice,
                             'setting' => $invoiceSetting,
-                            'isPdf'   => true,
+                            'isPdf' => true,
                             'logo_64' => $logo_64,
                         ]
                     )
                         ->setPaper('a4', 'portrait')
                         ->setOptions([
-                            'defaultFont'         => 'DejaVu Sans',
-                            'isRemoteEnabled'     => false,
-                            'isHtml5ParserEnabled'=> true,
-                            'dpi'                 => 150,
+                            'defaultFont' => 'DejaVu Sans',
+                            'isRemoteEnabled' => false,
+                            'isHtml5ParserEnabled' => true,
+                            'dpi' => 150,
                         ]);
 
                     $mail->attachData(
                         $pdf->output(),
-                        'Invoice-' . $invoice->invoice_number . '.pdf',
+                        'Invoice-' . preg_replace('/[\/\\\\]/', '-', $invoice->invoice_number) . '.pdf',
                         ['mime' => 'application/pdf']
                     );
                 }

@@ -173,7 +173,7 @@ class CustomerAuthController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Registration successful.',
-            'redirect' => route('user.profile'),
+            'redirect' => $this->intendedRedirect(), // ← change
         ]);
     }
 
@@ -206,7 +206,7 @@ class CustomerAuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'redirect' => route('home'),
+            'redirect' => $this->intendedRedirect(), // ← change
         ]);
     }
 
@@ -297,7 +297,7 @@ class CustomerAuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'redirect' => route('user.profile'),
+            'redirect' => $this->intendedRedirect(), // ← change
         ]);
     }
 
@@ -329,7 +329,7 @@ class CustomerAuthController extends Controller
 
         return response()->json([
             'status' => true,
-            'redirect' => route('user.profile'),
+            'redirect' => $this->intendedRedirect(), // ← change
         ]);
     }
 
@@ -451,7 +451,7 @@ class CustomerAuthController extends Controller
         $this->mergeGuestCart($customer);
         $this->mergeGuestWishlist($customer);
 
-        return redirect()->route('home');
+        return redirect()->intended(route('home')); // ← change
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -586,5 +586,20 @@ class CustomerAuthController extends Controller
         }
 
         Wishlist::where('session_id', session()->getId())->delete();
+    }
+
+    /**
+     * Checkout se aaya → checkout pe wapas
+     * Direct login → profile pe
+     */
+    private function intendedRedirect(): string
+    {
+        $intended = session()->pull('url.intended');
+
+        if ($intended && str_contains($intended, '/checkout')) {
+            return $intended;
+        }
+
+        return route('user.profile');
     }
 }

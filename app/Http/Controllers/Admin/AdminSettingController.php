@@ -65,7 +65,7 @@ class AdminSettingController extends Controller
 
             // Invoice
             'invoice_prefix' => 'required|string|max:20',
-            'invoice_serial' => 'required|integer|min:1',
+            'invoice_serial' => 'required|string|max:20',
             'invoice_year_format' => 'nullable|in:none,slash,year',
             'invoice_separator' => 'nullable|string|max:5',
             'invoice_date_format' => 'nullable|in:d/m/Y,d M Y,m-d-Y',
@@ -84,7 +84,7 @@ class AdminSettingController extends Controller
         if ($request->business_type == 'registered') {
 
             $rules['company_gstin'] = 'required|string|max:15';
-            $rules['company_pan'] = 'required|string|max:10';
+            $rules['company_pan'] = 'nullable|string|max:10';
 
             $rules['cgst'] = 'required|numeric|min:0|max:100';
             $rules['sgst'] = 'required|numeric|min:0|max:100';

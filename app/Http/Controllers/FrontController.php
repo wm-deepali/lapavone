@@ -144,6 +144,47 @@ class FrontController extends Controller
         ]);
     }
 
+    public function shopAll(Request $request)
+    {
+        $subcategories = Category::where('status', 1)
+            ->whereNull('parent_id')
+            ->orderBy('name')
+            ->get();
+
+        $query = Product::with([
+            'images' => function ($q) {
+                $q->whereIn('image_type', ['default', 'hover']);
+            }
+        ])->where('status', 1);
+
+        if ($request->filled('subcategory')) {
+            $query->where('category_id', $request->subcategory);
+        }
+
+        match ($request->get('sort')) {
+            'price-asc' => $query->orderBy('price', 'asc'),
+            'price-desc' => $query->orderBy('price', 'desc'),
+            default => $query->orderBy('id', 'desc'),
+        };
+
+        $products = $query->get();
+
+        $category = (object) [
+            'name' => 'Shop All',
+            'description' => null,
+            'horizontal_image' => null,
+        ];
+
+        $isShopAll = true; // ← flag
+
+        return view('front-pages.products', compact(
+            'category',
+            'subcategories',
+            'products',
+            'isShopAll'
+        ));
+    }
+
     public function category(Category $category, Request $request)
     {
         $subcategories = Category::where('parent_id', $category->id)
@@ -172,8 +213,9 @@ class FrontController extends Controller
         };
 
         $products = $query->get();
+        $isShopAll = false;
 
-        return view('front-pages.products', compact('category', 'subcategories', 'products'))
+        return view('front-pages.products', compact('category', 'subcategories', 'products', 'isShopAll'))
             ->with('activeSubcategory', $request->filled('subcategory') ? (string) $request->subcategory : null);
     }
 
@@ -202,8 +244,9 @@ class FrontController extends Controller
         ];
 
         $subcategories = collect();
+        $isShopAll = false;
 
-        return view('front-pages.products', compact('category', 'subcategories', 'products'))
+        return view('front-pages.products', compact('category', 'subcategories', 'products', 'isShopAll'))
             ->with('activeSubcategory', null);
     }
 
@@ -226,7 +269,7 @@ class FrontController extends Controller
                 $q->whereIn('image_type', ['default', 'hover']);
             }
         ])
-            ->where('category_id', $product->category_id)
+            // ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('status', 1)
             ->latest()
@@ -237,7 +280,24 @@ class FrontController extends Controller
             ->where('status', 1)
             ->get();
 
-        return view('front-pages.product-detail', compact('product', 'similarProducts', 'faqs'));
+        $cartItem = null;
+
+        if (auth('customer')->check()) {
+            $cart = \App\Models\Cart::where('user_id', auth('customer')->id())->first();
+
+            if ($cart) {
+                $cartItem = $cart->items()
+                    ->where('product_id', $product->id)
+                    ->first();
+            }
+        } else {
+            $sessionCart = session('cart.items', []);
+
+            $cartItem = collect($sessionCart)
+                ->firstWhere('product_id', $product->id);
+        }
+
+        return view('front-pages.product-detail', compact('product', 'similarProducts', 'faqs', 'cartItem'));
     }
 
     public function faqs(Request $request)

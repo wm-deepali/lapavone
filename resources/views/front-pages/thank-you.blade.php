@@ -55,7 +55,7 @@
                 View Order
             </a>
 
-            <a href="{{ route('home') }}"
+            <a href="{{ route('shop.all') }}"
                class="thankyou-action-btn"
                style="background: transparent; color:#1F5552;border:1px solid #1F5552;">
                 Continue Shopping

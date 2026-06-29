@@ -55,6 +55,10 @@ class CouponController extends Controller
 
             'usage_limit' => 'nullable|integer|min:1',
 
+            'customer_type' => 'required|in:all,new',
+
+            'visibility' => 'required|in:public,private',
+
             'status' => 'nullable|boolean',
         ]);
 
@@ -102,6 +106,10 @@ class CouponController extends Controller
 
             'usage_limit' => 'nullable|integer|min:1',
 
+            'customer_type' => 'required|in:all,new',
+
+            'visibility' => 'required|in:public,private',
+
             'status' => 'nullable|boolean',
         ]);
 
@@ -136,4 +144,32 @@ class CouponController extends Controller
             'message' => 'Status updated successfully.'
         ]);
     }
+
+    public function share(Request $request, \App\Models\Coupon $coupon)
+    {
+        $request->validate([
+            'mobile' => ['required', 'regex:/^[6-9]\d{9}$/'],
+        ]);
+
+        $customer = \App\Models\Customer::where('mobile', $request->mobile)
+            ->first();
+
+        \App\Services\Sms\SmsDispatcher::send('coupon', $request->mobile, [
+            '{coupon_code}' => $coupon->code,
+            '{discount_value}' => $coupon->discount_type === 'percentage'
+                ? $coupon->discount_value . '%'
+                : '₹' . number_format($coupon->discount_value, 2),
+            '{expiry_date}' => \Carbon\Carbon::parse($coupon->end_date)->format('d M Y'),
+            '{customer_name}' => $customer?->name ?? 'Valued Customer',
+            '{store_url}' => url('/shop'),
+            '{shop_url}' => url('/shop'),
+            '{brand_name}' => config('app.name'),
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Coupon SMS sent successfully to ' . $request->mobile,
+        ]);
+    }
+
 }

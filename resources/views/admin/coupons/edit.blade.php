@@ -382,11 +382,10 @@
                 </div>
             </div>
 
-            <form method="POST"
-      action="{{ route('admin.coupons.update', $coupon->id) }}">
+            <form method="POST" action="{{ route('admin.coupons.update', $coupon->id) }}">
 
-    @csrf
-    @method('PUT')
+                @csrf
+                @method('PUT')
                 <div class="create-layout">
 
                     <!-- ── LEFT column ──────────────────────────────── -->
@@ -403,8 +402,9 @@
                                     <label class="field-label">
                                         Coupon Code
                                         <span class="req">*</span>
-                                    </label>                                    
-                                    <input type="text" name="code" class="field-input"  value="{{ old('code', $coupon->code) }}" required >
+                                    </label>
+                                    <input type="text" name="code" class="field-input"
+                                        value="{{ old('code', $coupon->code) }}" required>
                                 </div>
 
                                 <div class="field-group">
@@ -412,19 +412,17 @@
                                         Discount Type
                                     </label>
 
-                                   <select name="discount_type" class="field-select">
+                                    <select name="discount_type" class="field-select">
 
-    <option value="percentage"
-        {{ old('discount_type', $coupon->discount_type) == 'percentage' ? 'selected' : '' }}>
-        Percentage
-    </option>
+                                        <option value="percentage" {{ old('discount_type', $coupon->discount_type) == 'percentage' ? 'selected' : '' }}>
+                                            Percentage
+                                        </option>
 
-    <option value="fixed"
-        {{ old('discount_type', $coupon->discount_type) == 'fixed' ? 'selected' : '' }}>
-        Fixed Amount
-    </option>
+                                        <option value="fixed" {{ old('discount_type', $coupon->discount_type) == 'fixed' ? 'selected' : '' }}>
+                                            Fixed Amount
+                                        </option>
 
-</select>
+                                    </select>
                                 </div>
 
                                 <div class="field-group">
@@ -432,12 +430,8 @@
                                         Discount Value
                                     </label>
 
-                                    <input type="number"
-       step="0.01"
-       name="discount_value"
-       class="field-input"
-       value="{{ old('discount_value', $coupon->discount_value) }}"
-       required>
+                                    <input type="number" step="0.01" name="discount_value" class="field-input"
+                                        value="{{ old('discount_value', $coupon->discount_value) }}" required>
                                 </div>
 
                                 <div class="field-group">
@@ -445,11 +439,8 @@
                                         Minimum Order Amount
                                     </label>
 
-                                   <input type="number"
-       step="0.01"
-       name="minimum_order_amount"
-       class="field-input"
-       value="{{ old('minimum_order_amount', $coupon->minimum_order_amount) }}">
+                                    <input type="number" step="0.01" name="minimum_order_amount" class="field-input"
+                                        value="{{ old('minimum_order_amount', $coupon->minimum_order_amount) }}">
                                 </div>
 
                                 <div class="field-group">
@@ -457,24 +448,39 @@
                                         Maximum Discount
                                     </label>
 
-                                  <input type="number"
-       step="0.01"
-       name="maximum_discount"
-       class="field-input"
-       value="{{ old('maximum_discount', $coupon->maximum_discount) }}">
+                                    <input type="number" step="0.01" name="maximum_discount" class="field-input"
+                                        value="{{ old('maximum_discount', $coupon->maximum_discount) }}">
+                                </div>
+
+                                <div class="field-group">
+                                    <label class="field-label">
+                                        Coupon For
+                                    </label>
+
+                                    <select name="customer_type" class="field-select">
+
+                                        <option value="all" {{ old('customer_type', $coupon->customer_type) == 'all' ? 'selected' : '' }}>
+                                            For All Customers
+                                        </option>
+
+                                        <option value="new" {{ old('customer_type', $coupon->customer_type) == 'new' ? 'selected' : '' }}>
+                                            For New Customers Only
+                                        </option>
+
+                                    </select>
                                 </div>
 
                             </div>
                         </div>
 
-                     
+
 
                     </div>
 
                     <!-- ── RIGHT column ─────────────────────────────── -->
                     <div>
 
-                       <div class="section-card">
+                        <div class="section-card">
 
                             <div class="section-card-header">
                                 <h5>Validity</h5>
@@ -487,11 +493,8 @@
                                         Start Date
                                     </label>
 
-                                    <input type="date"
-       name="start_date"
-       class="field-input"
-       value="{{ old('start_date', $coupon->start_date) }}"
-       required>
+                                    <input type="date" name="start_date" class="field-input"
+                                        value="{{ old('start_date', $coupon->start_date) }}" required>
                                 </div>
 
                                 <div class="field-group">
@@ -499,22 +502,17 @@
                                         End Date
                                     </label>
 
-                                   <input type="date"
-       name="end_date"
-       class="field-input"
-       value="{{ old('end_date', $coupon->end_date) }}"
-       required>
+                                    <input type="date" name="end_date" class="field-input"
+                                        value="{{ old('end_date', $coupon->end_date) }}" required>
                                 </div>
 
                                 <div class="field-group">
                                     <label class="field-label">
-                                        Usage Limit
+                                        Usage Limit (Usage Per Customer)
                                     </label>
 
-                                    <input type="number"
-       name="usage_limit"
-       class="field-input"
-       value="{{ old('usage_limit', $coupon->usage_limit) }}">
+                                    <input type="number" name="usage_limit" class="field-input"
+                                        value="{{ old('usage_limit', $coupon->usage_limit) }}">
                                 </div>
 
                             </div>
@@ -540,22 +538,45 @@
                                         </div>
                                     </div>
 
-                                   <select name="status" class="field-select-sm">
+                                    <select name="status" class="field-select-sm">
 
-    <option value="1"
-        {{ old('status', $coupon->status) == 1 ? 'selected' : '' }}>
-        Active
-    </option>
+                                        <option value="1" {{ old('status', $coupon->status) == 1 ? 'selected' : '' }}>
+                                            Active
+                                        </option>
 
-    <option value="0"
-        {{ old('status', $coupon->status) == 0 ? 'selected' : '' }}>
-        Inactive
-    </option>
+                                        <option value="0" {{ old('status', $coupon->status) == 0 ? 'selected' : '' }}>
+                                            Inactive
+                                        </option>
 
-</select>
+                                    </select>
 
                                 </div>
 
+                                <div class="toggle-row">
+
+                                    <div>
+                                        <div class="toggle-label">
+                                            Coupon Visibility
+                                        </div>
+
+                                        <div class="toggle-sub">
+                                            Show or hide coupon from website coupon popup
+                                        </div>
+                                    </div>
+
+                                    <select name="visibility" class="field-select-sm">
+
+                                        <option value="public" {{ old('visibility', $coupon->visibility) == 'public' ? 'selected' : '' }}>
+                                            Show On Website
+                                        </option>
+
+                                        <option value="private" {{ old('visibility', $coupon->visibility) == 'private' ? 'selected' : '' }}>
+                                            Make It Private
+                                        </option>
+
+                                    </select>
+
+                                </div>
 
                             </div>
                         </div>

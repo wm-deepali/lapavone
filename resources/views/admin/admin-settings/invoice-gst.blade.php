@@ -48,12 +48,12 @@
 
                                 <img src="{{ asset('storage/' . $invoice_setting->company_logo) }}" alt="Company Logo"
                                     style="
-                                                                        max-width:100%;
-                                                                        max-height:120px;
-                                                                        border-radius:8px;
-                                                                        border:1px solid #ddd;
-                                                                        padding:5px;
-                                                                    ">
+                                                                            max-width:100%;
+                                                                            max-height:120px;
+                                                                            border-radius:8px;
+                                                                            border:1px solid #ddd;
+                                                                            padding:5px;
+                                                                        ">
 
                             </div>
 
@@ -92,7 +92,8 @@
                     <div class="field-group col-full">
                         <label class="field-label">Full Registered Address <span class="req">*</span></label>
                         <textarea class="field-textarea" name="company_address" rows="3"
-                            placeholder="House / Building No., Street, Area" required>{{ old('company_address', $invoice_setting->company_address ?? '') }}</textarea>
+                            placeholder="House / Building No., Street, Area"
+                            required>{{ old('company_address', $invoice_setting->company_address ?? '') }}</textarea>
                     </div>
                     <div class="field-group">
                         <label class="field-label">Country</label>
@@ -136,8 +137,8 @@
 
                     <div class="field-group">
                         <label class="field-label">Pin Code <span class="req">*</span></label>
-                        <input type="text" name="company_pincode" class="field-input" placeholder="226001" maxlength="6" required
-                            value="{{ old('company_pincode', $invoice_setting->company_pincode ?? '') }}">
+                        <input type="text" name="company_pincode" class="field-input" placeholder="226001" maxlength="6"
+                            required value="{{ old('company_pincode', $invoice_setting->company_pincode ?? '') }}">
                     </div>
 
                     <div class="field-group gst-field">
@@ -148,7 +149,7 @@
                         <span class="field-hint">15-character GST Identification Number.</span>
                     </div>
                     <div class="field-group gst-field">
-                        <label class="field-label">PAN Number <span class="req">*</span></label>
+                        <label class="field-label">PAN Number</label>
                         <input type="text" name="company_pan" class="field-input monospace" placeholder="AAAAA0000A"
                             maxlength="10" value="{{ old('company_pan', $invoice_setting->company_pan ?? '') }}">
                         <span class="field-hint">10-character Permanent Account Number.</span>
@@ -271,7 +272,7 @@
                     </div>
                     <div class="field-group">
                         <label class="field-label">Starting Serial Number <span class="req">*</span></label>
-                        <input name="invoice_serial" type="number" class="field-input monospace" id="invSerial"
+                        <input name="invoice_serial" type="text" class="field-input monospace" id="invSerial"
                             value="{{ old('invoice_serial', $invoice_setting->invoice_serial ?? 1) }}" min="1"
                             oninput="updatePreview()" required>
                         <span class="field-hint">Next invoice will use this number.</span>

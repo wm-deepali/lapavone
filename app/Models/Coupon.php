@@ -21,6 +21,8 @@ class Coupon extends Model
 
         'usage_limit',
         'used_count',
+        'customer_type',
+        'visibility',
 
         'status',
     ];

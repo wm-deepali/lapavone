@@ -72,6 +72,7 @@ Route::middleware('maintenance.mode')->group(function () {
 
         Route::get('/category/{category:slug}', 'category')->name('shop.category');
         Route::get('/collection/{collection:slug}', 'collection')->name('shop.collection');
+        Route::get('/shop', 'shopAll')->name('shop.all');
 
         Route::get('/product/{product:slug}', 'productDetail')->name('shop.product');
 
@@ -307,6 +308,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('announcements', AnnouncementController::class);
 
+        Route::post('coupons/{coupon}/share', [CouponController::class, 'share'])->name('coupons.share');
         Route::resource('coupons', CouponController::class);
 
         // Admin Settings routes

@@ -46,7 +46,7 @@ return new class extends Migration
 
             // Invoice Settings
             $table->string('invoice_prefix')->default('INV');
-            $table->bigInteger('invoice_serial')->default(1);
+            $table->string('invoice_serial')->default(1);
 
             $table->enum('invoice_year_format', [
                 'none',
