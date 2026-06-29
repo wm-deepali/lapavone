@@ -182,6 +182,16 @@
                         Courier Management
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.admin-setting.index', ['tab' => 'sms']) }}">
+                        SMS
+                    </a>
+                </li>
+                  <li>
+                    <a href="{{ route('admin.settings.templates.index') }}">
+                        Template Settings
+                    </a>
+                </li>
             </ul>
         </li>
 

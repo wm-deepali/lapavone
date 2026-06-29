@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\Customer;
 use App\Models\SmtpSetting;
+use App\Services\Sms\SmsDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -48,14 +49,28 @@ class CustomerAuthController extends Controller
             'mobile' => 'required|regex:/^[6-9]\d{9}$/'
         ]);
 
-        $otp = rand(100000, 999999);
+        $extras = $this->getOtpExtras();
+        $maxRetries = (int) ($extras['max_retries'] ?? 3);
+        $otpLength = (int) ($extras['otp_length'] ?? 6);
+
+        // ── Max retry check ────────────────────────────────────────────────────
+        $attempts = session('otp_attempts', 0);
+        if ($attempts >= $maxRetries) {
+            return response()->json([
+                'status' => false,
+                'message' => "Too many OTP requests. Please try again later.",
+            ]);
+        }
+
+        $otp = $this->generateOtp($otpLength);
 
         session([
             'register_mobile' => $request->mobile,
             'register_otp' => $otp,
+            'otp_attempts' => $attempts + 1,
         ]);
 
-        $this->sendSms($request->mobile, $otp);
+        $this->sendSms($request->mobile, $otp, $extras);
 
         return response()->json([
             'status' => true,
@@ -63,12 +78,14 @@ class CustomerAuthController extends Controller
         ]);
     }
 
+
     public function verifyOtp(Request $request)
     {
         $request->validate(['otp' => 'required']);
 
         if ($request->otp == session('register_otp')) {
             session(['otp_verified' => true]);
+            session()->forget('otp_attempts');      // ← reset on success
             return response()->json([
                 'status' => true,
                 'message' => 'OTP verified successfully.',
@@ -203,17 +220,30 @@ class CustomerAuthController extends Controller
             'mobile' => 'required|regex:/^[6-9]\d{9}$/'
         ]);
 
-        $customer = Customer::where('mobile', $request->mobile)->first();
+        $extras = $this->getOtpExtras();
+        $maxRetries = (int) ($extras['max_retries'] ?? 3);
+        $otpLength = (int) ($extras['otp_length'] ?? 6);
 
-        $otp = rand(100000, 999999);
+        // ── Max retry check ────────────────────────────────────────────────────
+        $attempts = session('login_otp_attempts', 0);
+        if ($attempts >= $maxRetries) {
+            return response()->json([
+                'status' => false,
+                'message' => "Too many OTP requests. Please try again later.",
+            ]);
+        }
+
+        $customer = Customer::where('mobile', $request->mobile)->first();
+        $otp = $this->generateOtp($otpLength);
 
         session([
             'login_mobile' => $request->mobile,
             'login_otp' => $otp,
-            'login_is_new' => !$customer, // true if user does NOT exist yet
+            'login_is_new' => !$customer,
+            'login_otp_attempts' => $attempts + 1,
         ]);
 
-        $this->sendSms($request->mobile, $otp);
+        $this->sendSms($request->mobile, $otp, $extras);
 
         return response()->json([
             'status' => true,
@@ -231,6 +261,8 @@ class CustomerAuthController extends Controller
                 'message' => 'Invalid OTP.',
             ]);
         }
+
+        session()->forget('login_otp_attempts');
 
         // ── New user: transfer session to register flow and send them to register page ──
         if (session('login_is_new')) {
@@ -438,32 +470,35 @@ class CustomerAuthController extends Controller
     // HELPERS
     // ──────────────────────────────────────────────────────────────────────────
 
-    private function sendSms(string $mobile, int $otp): void
+    private function sendSms(string $mobile, int $otp, array $extras = []): void
     {
-        $message = "{$otp} is the One Time Password(OTP) to verify your MOB number at Web Mingo, This OTP is Usable only once and is valid for 10 min,PLS DO NOT SHARE THE OTP WITH ANYONE";
-        $dlt_id = '1307161465983326774';
-        $pe_id = '1301160576431389865';
-        $authkey = '133780AWLy8zZpC690b124aP1';
+        // Load extras if not passed (fallback for any direct calls)
+        if (empty($extras)) {
+            $extras = $this->getOtpExtras();
+        }
 
-        $params = [
-            'authkey' => $authkey,
-            'mobiles' => $mobile,
-            'sender' => 'WMINGO',
-            'message' => urlencode($message),
-            'route' => '4',
-            'country' => '91',
-            'DLT_TE_ID' => $dlt_id,
-            'PE_ID' => $pe_id,
-        ];
+        $otpExpiry = (int) ($extras['otp_expiry'] ?? 10);
 
-        $url = 'http://sms.webmingo.in/api/sendhttp.php?' . http_build_query($params);
+        SmsDispatcher::send('otp', $mobile, [
+            '{otp}' => (string) $otp,
+            '{otp_expiry}' => (string) $otpExpiry,
+            '{brand_name}' => config('app.name'),
+            '{store_name}' => config('app.name'),
+            '{website_url}' => url('/'),
+        ]);
+    }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_exec($ch);
-        curl_close($ch);
+    private function getOtpExtras(): array
+    {
+        $template = \App\Models\SmsTemplate::where('event_key', 'otp')->first();
+        return $template?->extra_settings ?? [];
+    }
+
+    private function generateOtp(int $length = 6): int
+    {
+        $min = (int) str_pad('1', $length, '0');
+        $max = (int) str_pad('', $length, '9');
+        return rand($min, $max);
     }
 
 

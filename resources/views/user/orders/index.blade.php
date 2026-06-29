@@ -179,7 +179,7 @@
                             @empty
                                 <div class="empty-state">
                                     <p>You have no orders yet.</p>
-                                    <a href="{{ route('shop.index') }}" class="lp-btn lp-btn-solid">Start Shopping</a>
+                                    <a href="{{ route('home') }}" class="lp-btn lp-btn-solid">Start Shopping</a>
                                 </div>
                             @endforelse
 

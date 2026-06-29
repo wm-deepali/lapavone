@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SmsSetting;
 use Illuminate\Http\Request;
 use App\Models\InvoiceSetting;
 use App\Models\State;
@@ -30,6 +31,8 @@ class AdminSettingController extends Controller
 
         $activeTab = $request->tab ?? 'general';
 
+        $settings = SmsSetting::first();
+
         return view(
             'admin.admin-settings.index',
             compact(
@@ -39,7 +42,8 @@ class AdminSettingController extends Controller
                 'general',
                 'states',
                 'couriers',
-                'activeTab'
+                'activeTab',
+                'settings'
             )
         );
     }

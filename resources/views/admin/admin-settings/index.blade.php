@@ -831,6 +831,10 @@
                         onclick="switchTab('couriers', this)">
                         <i class="fa-solid fa-truck"></i> Courier Management
                     </button>
+                      <button class="tab-btn {{ $activeTab == 'sms' ? 'active' : '' }}"
+                        onclick="switchTab('sms', this)">
+                        <i class="fa-solid fa-truck"></i> SMS
+                    </button>
                 </div>
 
                 <!-- ══════════════════════════════════
@@ -864,12 +868,18 @@
                     @include('admin.admin-settings.invoice-gst')
                 </div><!-- /tab-gst -->
 
-                <div class="tab-panel {{ $activeTab == 'couriers' ? 'active' : '' }}"
-     id="tab-couriers">
+                <div class="tab-panel {{ $activeTab == 'couriers' ? 'active' : '' }}" id="tab-couriers">
 
-    @include('admin.admin-settings.couriers')
+                    @include('admin.admin-settings.couriers')
 
-</div>
+                </div>
+
+                 <div class="tab-panel {{ $activeTab == 'sms' ? 'active' : '' }}" id="tab-sms">
+
+                    @include('admin.admin-settings.sms')
+
+                </div>
+         
 
             </div><!-- /tab-shell -->
 
@@ -904,7 +914,7 @@
         }, 800);
     }
 
-   
+
 
     // ── Toggle password visibility ──
     function togglePass(id, btn) {

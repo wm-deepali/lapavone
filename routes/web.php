@@ -46,10 +46,8 @@ use App\Http\Controllers\Admin\{
     BannerSectionController,
     TestimonialSectionController,
     AudioSectionController,
-    SmsSettingController,
-    NotificationTemplateController
-
-
+    SmsSettingsController,
+    SmsTemplateController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -319,8 +317,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings/general', [AdminSettingController::class, 'generalSettingStore'])->name('settings.general.store');
         Route::post('/settings/courier/store', [AdminSettingController::class, 'courierStore'])->name('couriers.store');
         Route::delete('/settings/courier/{courier}', [AdminSettingController::class, 'courierDelete'])->name('couriers.delete');
-        Route::post('/sms-settings', [SmsSettingController::class, 'store'])->name('sms-settings.store');
-        Route::post('/templates', [NotificationTemplateController::class, 'store'])->name('templates.store');
+
+        Route::post('/settings/sms', [SmsSettingsController::class, 'update'])->name('settings.sms.update');
+        Route::post('/settings/sms/test', [SmsSettingsController::class, 'test'])->name('settings.sms.test');
+
+        Route::get('/settings/templates', [SmsTemplateController::class, 'index'])->name('settings.templates.index');
+        Route::post('/settings/templates/send-test', [SmsTemplateController::class, 'test'])->name('settings.templates.test');
+        Route::post('/settings/templates/{eventKey}', [SmsTemplateController::class, 'update'])->name('settings.templates.update');
+
+
 
         // Orders routes
         Route::get('orders', [OrderController::class, 'index'])->name('orders.index');

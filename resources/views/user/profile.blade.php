@@ -37,25 +37,25 @@
                                             <label>First Name</label>
                                             <input type="text" name="first_name"
                                                 value="{{ old('first_name', $customer->first_name) }}"
-                                                class="lp-input profile-field" readonly>
+                                                class="lp-input profile-field" >
                                         </div>
                                         <div class="form-group">
                                             <label>Last Name</label>
                                             <input type="text" name="last_name"
                                                 value="{{ old('last_name', $customer->last_name) }}"
-                                                class="lp-input profile-field" readonly>
+                                                class="lp-input profile-field" >
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group">
                                             <label>Email Address</label>
                                             <input type="email" name="email" value="{{ old('email', $customer->email) }}"
-                                                class="lp-input profile-field" readonly>
+                                                class="lp-input profile-field" >
                                         </div>
                                         <div class="form-group">
                                             <label>Phone Number</label>
                                             <input type="tel" name="mobile" value="{{ old('mobile', $customer->mobile) }}"
-                                                class="lp-input profile-field" readonly>
+                                                class="lp-input profile-field" >
                                         </div>
                                     </div>
                                     <div class="form-row">
@@ -63,11 +63,11 @@
                                             <label>Date of Birth</label>
                                             <input type="date" name="dob"
                                                 value="{{ old('dob', $customer->dob ? \Carbon\Carbon::parse($customer->dob)->format('Y-m-d') : '') }}"
-                                                class="lp-input profile-field" readonly>
+                                                class="lp-input profile-field" >
                                         </div>
                                         <div class="form-group">
                                             <label>Gender</label>
-                                            <select name="gender" class="lp-input profile-field" disabled>
+                                            <select name="gender" class="lp-input profile-field" >
                                                 <option value="">— Select —</option>
                                                 @foreach (['male' => 'Male', 'female' => 'Female', 'other' => 'Other'] as $val => $label)
                                                     <option value="{{ $val }}" {{ old('gender', $customer->gender) === $val ? 'selected' : '' }}>
@@ -79,50 +79,22 @@
                                     </div>
 
                                     <div class="form-actions" id="form-actions">
-                                        {{-- Default state: Edit button --}}
-                                        <button type="button" class="lp-btn lp-btn-solid" id="edit-btn">Edit
-                                            Details</button>
 
                                         {{-- Editing state: Save + Cancel (hidden by default) --}}
-                                        <button type="submit" class="lp-btn lp-btn-solid d-none" id="save-btn">Save
+                                        <button type="submit" class="lp-btn lp-btn-solid" id="save-btn">Save
                                             Changes</button>
-                                        <button type="button" class="lp-btn lp-btn-outline d-none"
-                                            id="cancel-btn">Cancel</button>
                                     </div>
 
                                 </form>
                             </div>
 
                             <script>
-                                const editBtn = document.getElementById('edit-btn');
                                 const saveBtn = document.getElementById('save-btn');
-                                const cancelBtn = document.getElementById('cancel-btn');
-                                const fields = document.querySelectorAll('.profile-field');
 
                                 // Store original values to restore on cancel
                                 const originalValues = {};
                                 fields.forEach(f => originalValues[f.name] = f.value);
 
-                                editBtn.addEventListener('click', () => {
-                                    fields.forEach(f => {
-                                        if (f.tagName === 'SELECT') f.disabled = false;
-                                        else f.removeAttribute('readonly');
-                                    });
-                                    editBtn.classList.add('d-none');
-                                    saveBtn.classList.remove('d-none');
-                                    cancelBtn.classList.remove('d-none');
-                                });
-
-                                cancelBtn.addEventListener('click', () => {
-                                    fields.forEach(f => {
-                                        if (f.tagName === 'SELECT') f.disabled = true;
-                                        else f.setAttribute('readonly', true);
-                                        f.value = originalValues[f.name];
-                                    });
-                                    saveBtn.classList.add('d-none');
-                                    cancelBtn.classList.add('d-none');
-                                    editBtn.classList.remove('d-none');
-                                });
                             </script>
 
                             {{-- Default Shipping Address Card --}}

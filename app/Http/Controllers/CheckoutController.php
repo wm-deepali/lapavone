@@ -9,6 +9,7 @@ use App\Models\CustomerAddress;
 use App\Models\Setting;
 use App\Models\SmtpSetting;
 use App\Models\State;
+use App\Services\Sms\SmsDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -172,7 +173,7 @@ class CheckoutController extends Controller
 
     public function placeOrder(Request $request)
     {
-        
+
         $customer = auth('customer')->user();
 
         $request->validate([
@@ -419,6 +420,7 @@ class CheckoutController extends Controller
                 DB::commit();
 
                 $this->sendOrderEmails($order);
+                $this->sendOrderSms($order);
 
                 return response()->json([
                     'success' => true,
@@ -450,19 +452,19 @@ class CheckoutController extends Controller
             $api = new Api(
                 $keyId,
                 $keySecret
-                );
+            );
             $razorpayOrder = $api->order->create([
-                
+
                 'receipt' => $order->order_number,
-                
+
                 'amount' =>
-                round($order->grand_total * 100),
-                
+                    round($order->grand_total * 100),
+
                 'currency' => 'INR',
-                
+
                 'payment_capture' => 1
-                ]);
-                
+            ]);
+
             $order->update([
                 'razorpay_order_id' =>
                     $razorpayOrder['id']
@@ -708,6 +710,7 @@ class CheckoutController extends Controller
             DB::commit();
 
             $this->sendOrderEmails($order);
+            $this->sendOrderSms($order);
 
             return response()->json([
 
@@ -798,6 +801,24 @@ class CheckoutController extends Controller
                 \Log::warning("Stock debit failed for product {$product->id} on order {$order->id}: " . $e->getMessage());
             }
         }
+    }
+
+    protected function sendOrderSms(Order $order): void
+    {
+        $mobile = $order->customer_phone;
+
+        if (empty($mobile)) {
+            return;
+        }
+
+        SmsDispatcher::send('order-confirmed', $mobile, [
+            '{customer_name}' => $order->customer_name,
+            '{order_id}' => $order->order_number,
+            '{order_amount}' => '₹' . number_format($order->grand_total, 2),
+            '{payment_method}' => ucfirst($order->payment_method),
+            '{expected_delivery}' => now()->addDays(5)->format('d M Y'),
+            '{brand_name}' => config('app.name'),
+        ]);
     }
 
 }

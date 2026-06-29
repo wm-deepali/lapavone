@@ -176,46 +176,78 @@
         modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal); });
     });
 
-    document.querySelectorAll('.btn-edit-address').forEach(btn => {
-        btn.addEventListener('click', async () => {
-            const id = btn.dataset.id;
-            const res = await fetch(`/user/addresses/${id}/edit`);
-            const { address, cities } = await res.json();
+   document.querySelectorAll('.btn-edit-address').forEach(btn => {
+    btn.addEventListener('click', async () => {
 
-            const form = document.getElementById('edit-address-form');
-            form.action = `/user/addresses/${id}`;
+        const id = btn.dataset.id;
 
-            ['name', 'phone', 'address_line_1', 'address_line_2', 'pincode'].forEach(field => {
-                const el = form.querySelector(`[name="${field}"]`);
-                if (el) el.value = address[field] ?? '';
+        const editUrl = `{{ route('user.addresses.edit', ':id') }}`.replace(':id', id);
+
+        const res = await fetch(editUrl);
+
+        const { address, cities } = await res.json();
+
+        const form = document.getElementById('edit-address-form');
+
+        form.action = `{{ route('user.addresses.update', ':id') }}`.replace(':id', id);
+
+        ['name', 'phone', 'address_line_1', 'address_line_2', 'pincode'].forEach(field => {
+            const el = form.querySelector(`[name="${field}"]`);
+            if (el) el.value = address[field] ?? '';
+        });
+
+        form.querySelector('[name="state_id"]').value = address.state_id;
+
+        const citySelect = form.querySelector('[name="city_id"]');
+        citySelect.innerHTML = cities.map(c =>
+            `<option value="${c.id}" ${c.id == address.city_id ? 'selected' : ''}>
+                ${c.name}
+            </option>`
+        ).join('');
+
+        form.querySelector('[name="address_type"]').value = address.address_type;
+
+        const defCheckbox = form.querySelector('[name="is_default"]');
+        if (defCheckbox) {
+            defCheckbox.checked = !!address.is_default;
+        }
+
+        openModal(editModal);
+    });
+});
+
+   document.querySelectorAll('[name="state_id"]').forEach(stateSelect => {
+    stateSelect.addEventListener('change', async function () {
+
+        const citySelect = this.closest('form').querySelector('[name="city_id"]');
+
+        citySelect.innerHTML = '<option value="">Loading...</option>';
+
+        try {
+            const response = await fetch(
+                `{{ route('get-cities') }}?state_id=${this.value}`
+            );
+
+            const cities = await response.json();
+
+            let options = '<option value="">Select City</option>';
+
+            cities.forEach(city => {
+                options += `<option value="${city.id}">${city.name}</option>`;
             });
 
-            form.querySelector('[name="state_id"]').value = address.state_id;
+            citySelect.innerHTML = options;
 
-            const citySelect = form.querySelector('[name="city_id"]');
-            citySelect.innerHTML = cities.map(c =>
-                `<option value="${c.id}" ${c.id == address.city_id ? 'selected' : ''}>${c.name}</option>`
-            ).join('');
+        } catch (error) {
+            console.error('Error loading cities:', error);
 
-            form.querySelector('[name="address_type"]').value = address.address_type;
+            citySelect.innerHTML =
+                '<option value="">Unable to load cities</option>';
+        }
 
-            const defCheckbox = form.querySelector('[name="is_default"]');
-            if (defCheckbox) defCheckbox.checked = !!address.is_default;
-
-            openModal(editModal);
-        });
     });
-
-    document.querySelectorAll('[name="state_id"]').forEach(stateSelect => {
-        stateSelect.addEventListener('change', async function () {
-            const citySelect = this.closest('form').querySelector('[name="city_id"]');
-            citySelect.innerHTML = '<option value="">Loading...</option>';
-            const res = await fetch(`/user/addresses/cities?state_id=${this.value}`);
-            const cities = await res.json();
-            citySelect.innerHTML = '<option value="">— Select City —</option>' +
-                cities.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-        });
-    });
+});
 </script>
+
 
 @endsection
