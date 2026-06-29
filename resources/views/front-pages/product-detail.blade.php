@@ -96,39 +96,26 @@
             flex-wrap: wrap;
         }
 
-        .qty-btn.delete-mode {
+        /* .qty-btn.delete-mode {
             color: #e53e3e;
-        }
+        } */
 
         .qty-btn.delete-mode:hover {
             background: #fff5f5;
         }
 
         #ps-dots-right .dot {
-            background-color: {
-                    {
-                    $product->detail_page_color ?? '#B8832F'
-                }
-            }
-
+            background-color:
+                {{$product->detail_page_color ?? '#B8832F'}}
             ;
-
-            border-color: {
-                    {
-                    $product->detail_page_color ?? '#B8832F'
-                }
-            }
+            border-color:
+                {{$product->detail_page_color ?? '#B8832F'}}
         }
 
         #ps-dots-right .dot.active {
             background-color: #fff;
-
-            border-color: {
-                    {
-                    $product->detail_page_color ?? '#B8832F'
-                }
-            }
-
+            border-color:
+                {{$product->detail_page_color ?? '#B8832F'}}
             ;
         }
 
