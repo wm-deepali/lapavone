@@ -76,7 +76,7 @@
                             <h3 class="summary-title">ORDER SUMMARY</h3>
 
                             {{-- Coupon Input Row --}}
-                            <hr class="summary-divider">
+                            <!--<hr class="summary-divider">-->
 
                             <div class="mb-3">
                                 <div class="d-flex gap-2">
@@ -95,7 +95,7 @@
                                 <div class="d-flex justify-content-between align-items-center mt-2 px-1">
                                     <span id="coupon-msg" style="font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; display: none;"></span>
                                     <a href="#" data-bs-toggle="modal" data-bs-target="#couponsModal"
-                                        style="font-family: 'Outfit', sans-serif; font-size: 13px; color: #1F5552; margin-left: auto;">
+                                        style="font-family: 'Outfit', sans-serif; font-size: 13px; color: #1F5552; ">
                                         View All Coupons
                                     </a>
                                 </div>

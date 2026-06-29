@@ -218,7 +218,7 @@
             height: 20px;
 
             border-radius: 50%;
-            background: #b78b2d;
+             background: #002a26;
             /* gold */
             color: #fff;
 
@@ -233,29 +233,23 @@
             border: 2px solid #fff;
         }
 
-         .wishlist-count {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-
-            width: 20px;
-            height: 20px;
-
-            border-radius: 50%;
-            background: #b78b2d;
-            /* gold */
-            color: #fff;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            font-size: 11px;
-            font-weight: 700;
-
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
-            border: 2px solid #fff;
-        }
+       .wishlist-count {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #002a26;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    border: 2px solid #fff;
+}
 
     </style>
     <!-- Bootstrap 5.3 JS -->
@@ -264,6 +258,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
     <script src="{{ asset('assets/js/main.js')}}"></script>
+    
+    <!-- GSAP & ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </body>
 
 </html>

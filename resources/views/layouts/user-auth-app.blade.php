@@ -230,7 +230,7 @@
             height: 20px;
 
             border-radius: 50%;
-            background: #b78b2d;
+           background: #0a3f3c;
             /* gold */
             color: #fff;
 
@@ -254,7 +254,7 @@
             height: 20px;
 
             border-radius: 50%;
-            background: #b78b2d;
+            background: #0a3f3c;
             /* gold */
             color: #fff;
 

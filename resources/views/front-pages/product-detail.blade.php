@@ -25,6 +25,13 @@
             overflow: hidden;
             background: #fff;
             align-items: center;
+             /*padding: 10px 24px;*/
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    
+
         }
 
         .qty-btn {
@@ -34,7 +41,7 @@
             font-size: 22px;
             font-weight: 500;
             width: 40px;
-            height: 44px;
+            /*height: 44px;*/
             cursor: pointer;
             transition: background 0.15s;
             line-height: 1;
@@ -49,31 +56,32 @@
             cursor: not-allowed;
         }
 
-        .qty-value {
-            display: inline-block;
-            min-width: 36px;
-            text-align: center;
-            font-size: 15px;
-            font-weight: 600;
-            color: #1F5552;
-        }
+     .qty-value {
+    display: inline-block;
+    min-width: 36px;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 500;
+    color: #1F5552;
+}
 
         /* ── View Cart Button ── */
-        .btn-view-cart {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 11px 22px;
-            border: 1.5px solid #1F5552;
-            border-radius: 8px;
-            color: #1F5552;
-            font-size: 15px;
-            font-weight: 500;
-            text-decoration: none;
-            transition: background 0.2s;
-            background: transparent;
-        }
-
+     .btn-view-cart {
+       background-color: #1F5552;
+    color: #fff !important;
+    border: 1px solid transparent;
+    padding: 10px 24px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Inter', system-ui, sans-serif;
+}
         .btn-view-cart:hover {
             background: #e8f1f0;
             color: #1F5552;
@@ -165,11 +173,17 @@
                                 </button>
 
                                 {{-- Step 2: Qty Controls — cart_item_id JS mein store hoga --}}
-                                <div class="qty-controls" id="qty-controls" style="display: none;">
-                                    <button class="qty-btn" type="button" id="qty-minus">−</button>
-                                    <span class="qty-value" id="qty-display">1</span>
-                                    <button class="qty-btn" type="button" id="qty-plus">+</button>
-                                </div>
+                              <div class="qty-controls" id="qty-controls" style="display: none;">
+    <button class="qty-btn" type="button" id="qty-minus">
+        <i class="fa-solid fa-minus"></i>
+    </button>
+
+    <span class="qty-value" id="qty-display">1</span>
+
+    <button class="qty-btn" type="button" id="qty-plus">
+        <i class="fa-solid fa-plus"></i>
+    </button>
+</div>
 
                                 {{-- Step 2: View Cart button --}}
                                 <a href="{{ route('cart') }}" class="btn-view-cart" id="view-cart-btn"

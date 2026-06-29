@@ -150,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const wishlistBtns = document.querySelectorAll('.btn-wishlist');
     const cartBtns = document.querySelectorAll('.btn-cart, .btn-add-bag');
 
-    // wishlistBtns.forEach(btn => {
-    //     btn.addEventListener('click', (e) => {
-    //         e.preventDefault();
-    //         btn.classList.toggle('active');
-    //     });
-    // });
+    wishlistBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            btn.classList.toggle('active');
+        });
+    });
 
     // cartBtns.forEach(btn => {
     //     btn.addEventListener('click', (e) => {
@@ -231,111 +231,74 @@ document.addEventListener('DOMContentLoaded', () => {
         audioObserver.observe(audioSection);
     }
 
-     // 7. HORIZONTAL SCROLL ON VERTICAL SCROLL (ABOUT PAGE - GSAP SCROLLTRIGGER)
+    // 7. HORIZONTAL SCROLL ON VERTICAL SCROLL (ABOUT PAGE)
     const horizSection = document.getElementById('horizontal-scroll-section');
     const horizContainer = document.getElementById('horizontal-scroll-container');
 
     if (horizSection && horizContainer) {
-        // Register ScrollTrigger
-        gsap.registerPlugin(ScrollTrigger);
+        // Function to set section height dynamically for perfectly paced scrolling
+        const setScrollHeight = () => {
+            if (window.innerWidth <= 991) {
+                horizSection.style.height = 'auto';
+                horizContainer.style.transform = 'none';
+                return;
+            }
+            const maxTranslate = horizContainer.scrollWidth - window.innerWidth;
+            // Multiplier controls speed: 1.5 = slower, 1.0 = normal 1:1 speed, 0.5 = faster
+            const scrollSpeedMultiplier = 1.5; 
+            horizSection.style.height = (maxTranslate * scrollSpeedMultiplier) + window.innerHeight + 'px';
+        };
 
-        let mm = gsap.matchMedia();
-        let scrollST = null;
+        // Initial set and update on resize
+        setScrollHeight();
+        window.addEventListener('resize', setScrollHeight);
 
-        mm.add("(min-width: 992px)", () => {
-            const cards = horizContainer.querySelectorAll('.about-card');
-            if (cards.length === 0) return;
+        window.addEventListener('scroll', () => {
+            if (window.innerWidth <= 991) {
+                horizContainer.style.transform = 'none';
+                const cards = horizContainer.querySelectorAll('.about-card');
+                cards.forEach(card => card.style.transform = 'none');
+                return;
+            }
+            const sectionTop = horizSection.offsetTop;
+            const sectionHeight = horizSection.offsetHeight;
+            const windowHeight = window.innerHeight;
+            const scrollY = window.scrollY;
 
-            const setupDesktopGSAP = () => {
-                const cardWidth = cards[0].offsetWidth;
-                const gap = parseFloat(window.getComputedStyle(horizContainer).gap) || 0;
-                const maxTranslate = (cards.length - 1) * (cardWidth + gap);
-                const initialOffset = (window.innerWidth - cardWidth) / 2;
+            // Calculate how far we've scrolled into the section
+            const maxScroll = sectionHeight - windowHeight;
+            const scrollDistance = scrollY - sectionTop;
+            
+            // Normalize progress between 0 and 1
+            let progress = scrollDistance / maxScroll;
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
 
-                // Set initial center position for Card 0
-                gsap.set(horizContainer, { x: initialOffset });
-
-                // Create the ScrollTrigger translation tween
-                const tween = gsap.to(horizContainer, {
-                    x: initialOffset - maxTranslate,
-                    ease: "none",
-                    scrollTrigger: {
-                        id: "horizScrollTrigger",
-                        trigger: horizSection,
-                        pin: true,
-                        scrub: 1, // Smooth scrub
-                        start: "top top",
-                        end: () => "+=" + (maxTranslate * 1.2), // vertical-to-horizontal pace
-                        invalidateOnRefresh: true,
-                        onUpdate: (self) => {
-                            // Apply subtle scale animation while keeping opacity always 1
-                            const windowCenter = window.innerWidth / 2;
-                            cards.forEach(card => {
-                                const content = card.querySelector('.about-card-content');
-                                if (!content) return;
-
-                                const rect = card.getBoundingClientRect();
-                                const cardCenter = rect.left + (rect.width / 2);
-                                const distFromCenter = Math.abs(windowCenter - cardCenter);
-
-                                const threshold = window.innerWidth / 2;
-                                const normalizedDist = Math.min(1, distFromCenter / threshold);
-
-                                const scale = 1 - (normalizedDist * 0.05);
-                                gsap.set(content, { scale: scale, opacity: 1 });
-                            });
-                        }
-                    }
+            // Calculate max translation
+            // The container's full width minus the viewport width
+            const maxTranslate = horizContainer.scrollWidth - window.innerWidth;
+            
+            if (maxTranslate > 0) {
+                const translateX = -(progress * maxTranslate);
+                horizContainer.style.transform = `translateX(${translateX}px)`;
+                
+                // Scale cards based on proximity to center
+                const cards = horizContainer.querySelectorAll('.about-card');
+                const windowCenter = window.innerWidth / 2;
+                
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    const cardCenter = rect.left + (rect.width / 2);
+                    const distFromCenter = Math.abs(windowCenter - cardCenter);
+                    
+                    const threshold = window.innerWidth / 2;
+                    let scale = 1.1 - (distFromCenter / threshold) * 0.15;
+                    if (scale < 0.95) scale = 0.95;
+                    if (scale > 1.1) scale = 1.1;
+                    
+                    card.style.transform = `scale(${scale})`;
                 });
-
-                scrollST = ScrollTrigger.getById("horizScrollTrigger");
-            };
-
-            setupDesktopGSAP();
-
-            // Refresh on resize
-            window.addEventListener('resize', ScrollTrigger.refresh);
-
-            return () => {
-                window.removeEventListener('resize', ScrollTrigger.refresh);
-                if (scrollST) {
-                    scrollST.kill(true);
-                }
-            };
-        });
-
-        mm.add("(max-width: 991px)", () => {
-            // Revert all GSAP-defined inline properties for mobile layout compatibility
-            gsap.set(horizContainer, { clearProps: "all" });
-            const contents = horizContainer.querySelectorAll('.about-card-content');
-            contents.forEach(content => gsap.set(content, { clearProps: "all" }));
-
-            const cards = horizContainer.querySelectorAll('.about-card');
-            if (cards.length === 0) return;
-
-            const updateMobileCards = () => {
-                const scrollLeft = horizContainer.scrollLeft;
-                const cardWidth = cards[0].offsetWidth;
-                const gap = parseFloat(window.getComputedStyle(horizContainer).gap) || 0;
-                const stepWidth = cardWidth + gap;
-
-                // Apply mobile scaling (always opacity 1)
-                contents.forEach((content, idx) => {
-                    const cardLeft = idx * stepWidth;
-                    const distFromCenter = Math.abs(cardLeft - scrollLeft);
-                    const normalizedDist = Math.min(1, distFromCenter / stepWidth);
-
-                    const scale = 1 - (normalizedDist * 0.05);
-                    gsap.set(content, { scale: scale, opacity: 1 });
-                });
-            };
-
-            horizContainer.addEventListener('scroll', updateMobileCards);
-            updateMobileCards(); // Initial sync
-
-            return () => {
-                horizContainer.removeEventListener('scroll', updateMobileCards);
-            };
+            }
         });
     }
 

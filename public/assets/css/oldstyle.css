@@ -120,7 +120,7 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: #2a5856;
+    background-color: transparent;
     border: 2px solid var(--lp-white);
     color: var(--lp-white);
     border-radius: var(--radius-pill);
@@ -527,7 +527,6 @@ body {
     overflow: hidden;
     margin-bottom: 20px;
     background-color: var(--lp-bg);
-    cursor:pointer;
 }
 
 .la-pavone-wrapper .product-image-primary,
@@ -594,7 +593,6 @@ body {
     opacity: 1;
     transform: translateY(0);
 }
-
 .la-pavone-wrapper .product-category-hover2 {
     /*position: absolute;*/
     top: 100%;
@@ -615,8 +613,8 @@ body {
     transform: translateY(0);
 }
 
-.productcard_bottom {
-    display: flex;
+.productcard_bottom{
+        display: flex;
     justify-content: space-between;
 }
 
@@ -1462,14 +1460,16 @@ body {
 .la-pavone-wrapper .about-cards-section {
     position: relative;
     width: 100%;
-    height: 100vh;
+    height: 80vh;
     margin-top: 60px;
 }
 
 .la-pavone-wrapper .about-cards-sticky {
-    position: relative;
+    position: sticky;
+    top: 20vh;
+    /* Centers the 60vh block vertically on the screen */
     width: 100%;
-    height: 100vh;
+    height: 70vh;
     display: flex;
     align-items: center;
     overflow: hidden;
@@ -1496,65 +1496,34 @@ body {
     display: flex;
     justify-content: flex-start;
     gap: 40px;
-    /* Reduced gap between cards */
     width: max-content;
-    height: 100%;
-    padding: 0;
-    margin: 0;
+    padding: 0 5vw;
+    /* Start with a little padding on the edges */
 }
 
 .la-pavone-wrapper .about-card {
-    background-color: transparent;
-    padding: 0;
-    width: 800px;
-    /* Centered card width */
-    max-width: 85vw;
-    /* Responsive limit */
-    height: 100vh;
+    background-color: #EFE3D3;
+    padding: 120px 112px;
+    width: 600px;
+    max-width: 80vw;
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    will-change: transform;
-}
-
-.la-pavone-wrapper .about-card-content {
-    background-color: rgba(239, 227, 211, 0.85);
-    /* brand sand color with luxury opacity */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    padding: 60px 100px;
-    width: 100%;
-    /* Fill container width */
-    min-height: 424px;
-    /* Increased card height */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     text-align: center;
-    /* border-radius: 24px; */
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
     will-change: transform;
 }
 
 .la-pavone-wrapper .about-card-title {
     font-family: 'Cinzel', serif;
-    font-size: 32px;
+    font-size: 20px;
     color: #6A1224;
     margin-bottom: 24px;
     font-weight: 400;
-    letter-spacing: 2px;
 }
 
 .la-pavone-wrapper .about-card-text {
-    font-size: 18px;
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.4;
     color: #1F5552;
 }
-
-/* Indicator dots removed as requested */
 
 @media (max-width: 1400px) {
     .la-pavone-wrapper .about-hero-section {
@@ -1577,79 +1546,17 @@ body {
         width: 100%;
     }
 
-    .la-pavone-wrapper .about-cards-section {
-        height: 100vh;
-        margin-top: 0;
-    }
-
-    .la-pavone-wrapper .about-cards-sticky {
-        position: relative;
-        top: 0;
-        height: 100vh;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-    }
-
     .la-pavone-wrapper .about-cards-container {
-        display: flex;
-        flex-direction: row;
-        gap: 20px;
-        /* Reduced gap between cards */
+        flex-direction: column;
+        align-items: center;
         width: 100%;
-        height: 100%;
-        overflow-x: auto;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        scroll-behavior: smooth;
-        padding: 0 10vw;
-        /* Padding to allow centering of first and last card */
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-
-    .la-pavone-wrapper .about-cards-container::-webkit-scrollbar {
-        display: none;
+        padding: 0 20px;
     }
 
     .la-pavone-wrapper .about-card {
-        width: 80vw;
-        /* Centered card width on mobile */
-        height: 100vh;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        scroll-snap-align: center;
-        box-sizing: border-box;
-        padding: 0;
+        width: 100%;
+        max-width: 500px;
     }
-
-    .la-pavone-wrapper .about-card-content {
-        width: 90vw;
-        min-height: 380px;
-        /* Increased card height on mobile */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 30px 24px;
-        border-radius: 16px;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-    }
-
-    .la-pavone-wrapper .about-card-title {
-        font-size: 24px;
-        margin-bottom: 16px;
-    }
-
-    .la-pavone-wrapper .about-card-text {
-        font-size: 15px;
-        line-height: 1.5;
-    }
-
-
 
     .la-pavone-wrapper .about-hero-title {
         font-size: 36px;
@@ -2699,11 +2606,6 @@ section.similar-fragrances-section {
     display: none;
 }
 
- .la-pavone-wrapper .dashboard-sidebar-close {
-        display: none;
-        
- }
-
 @media (max-width: 991px) {
     .la-pavone-wrapper .dashboard-layout {
         flex-direction: column;
@@ -3615,10 +3517,10 @@ section.similar-fragrances-section {
 .la-pavone-wrapper .qty-btn {
     background: #fff;
     border: none;
-    /*width: 36px;*/
-    /* height: 100%; */
-    font-size: 17px;
-    color: #000;
+    width: 36px;
+    height: 100%;
+    font-size: 18px;
+    color: #333;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -4212,7 +4114,7 @@ section.similar-fragrances-section {
 }
 
 .la-pavone-wrapper .thankyou-card {
-       background-color: rgb(217 225 222 / 61%);
+    background-color: rgba(217, 225, 222, 0.95);
     backdrop-filter: blur(8px);
     border-radius: 12px;
     padding: 60px 50px;
@@ -4343,6 +4245,25 @@ section.similar-fragrances-section {
     transform: scale(1.04);
     color: #ffffff;
 }
+
+
+.cart-page-wrapper #apply-coupon-btn {
+    padding: 10px 24px;
+    border: 1px solid #1F5552;
+    color: #1F5552;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    background: transparent;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.cart-page-wrapper #apply-coupon-btn:hover {
+    background-color: #1F5552;
+    color: #ffffff !important;
+}
+
 
 /* Modals need wrapper specificity because they live at top body level */
 .la-pavone-wrapper #couponsModal .modal-content {
@@ -5763,7 +5684,22 @@ main.terms-page-content {
         height: auto !important;
     }
 
-    /* Handled by max-width: 991px horizontal scroll snapping configuration */
+    .la-pavone-wrapper .about-cards-section {
+        height: auto;
+        margin-top: 10px;
+    }
+
+    .la-pavone-wrapper .about-cards-sticky {
+
+        height: auto;
+        position: static;
+        padding: 20px 0 40px;
+
+    }
+
+    .la-pavone-wrapper .about-card {
+        padding: 20px 20px !important;
+    }
 
     .la-pavone-wrapper .about-full-img-section {
 
@@ -5776,7 +5712,11 @@ main.terms-page-content {
         overflow: hidden;
     }
 
-    /* Container layout handled by max-width: 991px rule */
+    .la-pavone-wrapper .about-cards-container {
+
+        gap: 20px;
+
+    }
 
     .la-pavone-wrapper .product-name {
 
@@ -5964,9 +5904,4 @@ main.terms-page-content {
         height: 100vh;
     }
 
-}
-
-
-.la-pavone-wrapper .qty-btn i {
-    font-size: 14px;
 }
