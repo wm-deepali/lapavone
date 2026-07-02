@@ -17,16 +17,14 @@ class SmsSettingsController extends Controller
 
         $request->merge([
             'enabled' => $request->has('enabled'),
-            'notify_order_placed' => $request->has('notify_order_placed'),
             'notify_otp' => $request->has('notify_otp'),
+            'notify_order_confirmed' => $request->has('notify_order_confirmed'),
             'notify_payment_received' => $request->has('notify_payment_received'),
             'notify_order_shipped' => $request->has('notify_order_shipped'),
-            'notify_out_for_delivery' => $request->has('notify_out_for_delivery'),
             'notify_order_delivered' => $request->has('notify_order_delivered'),
             'notify_order_cancelled' => $request->has('notify_order_cancelled'),
-            'notify_refund_initiated' => $request->has('notify_refund_initiated'),
+            'notify_coupon' => $request->has('notify_coupon'),
             'notify_abandoned_cart' => $request->has('notify_abandoned_cart'),
-            'notify_promotional' => $request->has('notify_promotional'),
         ]);
 
         $data = $request->validate([
@@ -80,32 +78,29 @@ class SmsSettingsController extends Controller
 
             // Booleans — checkboxes are absent when unchecked, so we don't require them
             'enabled' => ['nullable', 'boolean'],
-            'notify_order_placed' => ['nullable', 'boolean'],
             'notify_otp' => ['nullable', 'boolean'],
             'notify_payment_received' => ['nullable', 'boolean'],
             'notify_order_shipped' => ['nullable', 'boolean'],
-            'notify_out_for_delivery' => ['nullable', 'boolean'],
             'notify_order_delivered' => ['nullable', 'boolean'],
             'notify_order_cancelled' => ['nullable', 'boolean'],
-            'notify_refund_initiated' => ['nullable', 'boolean'],
             'notify_abandoned_cart' => ['nullable', 'boolean'],
-            'notify_promotional' => ['nullable', 'boolean'],
+            'notify_order_confirmed' => ['nullable', 'boolean'],
+            'notify_coupon' => ['nullable', 'boolean'],
         ]);
 
         // Normalise boolean fields (checkboxes send "on" or are absent)
         $booleans = [
             'enabled',
-            'notify_order_placed',
             'notify_otp',
+            'notify_order_confirmed',
             'notify_payment_received',
             'notify_order_shipped',
-            'notify_out_for_delivery',
             'notify_order_delivered',
             'notify_order_cancelled',
-            'notify_refund_initiated',
+            'notify_coupon',
             'notify_abandoned_cart',
-            'notify_promotional',
         ];
+
         foreach ($booleans as $key) {
             $data[$key] = $request->boolean($key);
         }
@@ -131,8 +126,10 @@ class SmsSettingsController extends Controller
         $settings->update($data);
 
         return redirect()
-            ->route(  'admin.admin-setting.index',
-                ['tab' => 'sms'])
+            ->route(
+                'admin.admin-setting.index',
+                ['tab' => 'sms']
+            )
             ->with('success', 'SMS settings saved successfully.');
     }
 

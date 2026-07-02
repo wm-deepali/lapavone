@@ -4,6 +4,13 @@
     @include('admin.header')
 
     <style>
+        .cke_notifications_area,
+        .cke_notification,
+        .cke_notification_warning {
+            display: none !important;
+        }
+
+        
         :root {
             --bg: #f1f2f4;
             --surface: #ffffff;
@@ -910,12 +917,6 @@
                                 </div>
 
                                 <div class="field-group">
-                                    <label class="field-label">Product Notes</label>
-                                    <textarea name="product_notes" id="product_notes" class="field-textarea"
-                                        style="min-height:100px">{{ old('product_notes', $product->product_notes) }}</textarea>
-                                </div>
-
-                                <div class="field-group">
                                     <label class="field-label">How To Use</label>
                                     <textarea name="how_to_use" id="how_to_use" class="field-textarea"
                                         style="min-height:100px">{{ old('how_to_use', $product->how_to_use) }}</textarea>
@@ -941,6 +942,47 @@
 
                                     <div class="field-hint">
                                         Used for headings on the product page.
+                                    </div>
+                                </div>
+
+                                @php
+                                    $notes = old('notes');
+
+                                    if (!$notes) {
+                                        $notes = is_array($product->product_notes)
+                                            ? $product->product_notes
+                                            : json_decode($product->product_notes ?? '[]', true);
+                                    }
+
+                                    $notes = $notes ?: [['title' => '', 'subtitle' => '']];
+                                @endphp
+
+                                <div class="field-group">
+                                    <div
+                                        style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                                        <label class="field-label">Product Notes</label>
+
+                                        <button type="button" class="btn-accent-outline" id="add-note-row">
+                                            <i class="fa fa-plus"></i> Add More
+                                        </button>
+                                    </div>
+
+                                    <div id="notes-wrapper">
+
+                                        @foreach($notes as $index => $note)
+                                            <div class="note-row" style="display:flex;gap:10px;margin-bottom:10px;">
+                                                <input type="text" name="notes[{{ $index }}][title]" class="field-input"
+                                                    placeholder="Title" value="{{ $note['title'] ?? '' }}">
+
+                                                <input type="text" name="notes[{{ $index }}][subtitle]" class="field-input"
+                                                    placeholder="Sub Title" value="{{ $note['subtitle'] ?? '' }}">
+
+                                                <button type="button" class="btn-secondary-dash remove-note-row">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        @endforeach
+
                                     </div>
                                 </div>
                             </div>
@@ -1022,7 +1064,8 @@
                                                 onchange="previewSingle(this,'default-preview')">
                                             <div class="upload-icon"><i class="fa fa-image"></i></div>
                                             <div class="upload-label" style="font-size:13px;">
-                                                {{ $defaultImg ? 'Replace' : 'Upload' }}</div>
+                                                {{ $defaultImg ? 'Replace' : 'Upload' }}
+                                            </div>
                                             <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
                                         </div>
                                         <div id="default-preview" style="margin-top:10px;"></div>
@@ -1048,7 +1091,8 @@
                                                 onchange="previewSingle(this,'hover-preview')">
                                             <div class="upload-icon"><i class="fa fa-image"></i></div>
                                             <div class="upload-label" style="font-size:13px;">
-                                                {{ $hoverImg ? 'Replace' : 'Upload' }}</div>
+                                                {{ $hoverImg ? 'Replace' : 'Upload' }}
+                                            </div>
                                             <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
                                         </div>
                                         <div id="hover-preview" style="margin-top:10px;"></div>
@@ -1110,7 +1154,8 @@
                                             onchange="previewSingle(this,'story-preview')">
                                         <div class="upload-icon"><i class="fa fa-image"></i></div>
                                         <div class="upload-label" style="font-size:13px;">
-                                            {{ isset($storyImg) && $storyImg ? 'Replace' : 'Upload' }}</div>
+                                            {{ isset($storyImg) && $storyImg ? 'Replace' : 'Upload' }}
+                                        </div>
                                         <div class="upload-sub">PNG, JPG, WEBP — 2 MB max</div>
                                     </div>
                                     <div id="story-preview" style="margin-top:10px;"></div>
@@ -1282,18 +1327,52 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+
+<script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
+
+<script>
+    CKEDITOR.disableAutoInline = true;
+
+    // Disable version warning
+    CKEDITOR.config.versionCheck = false;
+
+    CKEDITOR.replace('description');
+    CKEDITOR.replace('how_to_use');
+</script>
 
 <script>
     let selectedAttributeValues = @json($selectedAttributeValues);
     let existingVariants = @json($existingVariants);
+    
+    let noteIndex = $('#notes-wrapper .note-row').length;
 
-    /* ── CKEditor ───────────────────────────────────────────────── */
-    CKEDITOR.config.versionCheck = false;
-    CKEDITOR.replace('description');
-    CKEDITOR.replace('product_notes');
-    CKEDITOR.replace('how_to_use');
-    // CKEDITOR.replace('the_story');
+    $(document).on('click', '#add-note-row', function () {
+
+        $('#notes-wrapper').append(`
+        <div class="note-row" style="display:flex;gap:10px;margin-bottom:10px;">
+            <input type="text"
+                   name="notes[${noteIndex}][title]"
+                   class="field-input"
+                   placeholder="Title">
+
+            <input type="text"
+                   name="notes[${noteIndex}][subtitle]"
+                   class="field-input"
+                   placeholder="Sub Title">
+
+            <button type="button"
+                    class="btn-secondary-dash remove-note-row">
+                <i class="fa fa-trash"></i>
+            </button>
+        </div>
+    `);
+
+        noteIndex++;
+    });
+
+    $(document).on('click', '.remove-note-row', function () {
+        $(this).closest('.note-row').remove();
+    });
 
     $(document).ready(function () {
         let categoryId = $('#category_id').val();

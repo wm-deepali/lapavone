@@ -4,6 +4,12 @@
     @include('admin.header')
 
     <style>
+        .cke_notifications_area,
+        .cke_notification,
+        .cke_notification_warning {
+            display: none !important;
+        }
+
         :root {
             --bg: #f1f2f4;
             --surface: #ffffff;
@@ -770,12 +776,6 @@
                                 </div>
 
                                 <div class="field-group">
-                                    <label class="field-label">Product Notes</label>
-                                    <textarea name="product_notes" id="product_notes"
-                                        class="field-textarea">{{ old('product_notes') }}</textarea>
-                                </div>
-
-                                <div class="field-group">
                                     <label class="field-label">How To Use</label>
                                     <textarea name="how_to_use" id="how_to_use"
                                         class="field-textarea">{{ old('how_to_use') }}</textarea>
@@ -800,6 +800,33 @@
 
                                     <div class="field-hint">
                                         Used for headings on this product page.
+                                    </div>
+                                </div>
+
+                                <div class="field-group">
+                                    <div
+                                        style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                                        <label class="field-label">Product Notes</label>
+
+                                        <button type="button" class="btn-outline-accent" id="add-note-row">
+                                            <i class="fa fa-plus"></i> Add More
+                                        </button>
+                                    </div>
+
+                                    <div id="notes-wrapper">
+
+                                        <div class="note-row" style="display:flex;gap:10px;margin-bottom:10px;">
+                                            <input type="text" name="notes[0][title]" class="field-input"
+                                                placeholder="Title">
+
+                                            <input type="text" name="notes[0][subtitle]" class="field-input"
+                                                placeholder="Sub Title">
+
+                                            <button type="button" class="btn-secondary-dash remove-note-row">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -1084,11 +1111,13 @@
 <script>
     /* ── CKEditor ───────────────────────────────────────────────── */
     CKEDITOR.config.versionCheck = false;
-    CKEDITOR.replace('description');
-    CKEDITOR.replace('product_notes');
-    CKEDITOR.replace('how_to_use');
-    // CKEDITOR.replace('the_story');
 
+    CKEDITOR.replace('description');
+    CKEDITOR.replace('how_to_use');
+</script>
+
+
+<script>
     /* ── Slug auto-generate ─────────────────────────────────────── */
     $(document).on('keyup', '#product_name', function () {
         let slug = $(this).val().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -1353,5 +1382,35 @@
         }
     );
 </script>
+<script>
+    let noteIndex = 1;
 
+    $(document).on('click', '#add-note-row', function () {
+
+        $('#notes-wrapper').append(`
+        <div class="note-row" style="display:flex;gap:10px;margin-bottom:10px;">
+            <input type="text"
+                   name="notes[${noteIndex}][title]"
+                   class="field-input"
+                   placeholder="Title">
+
+            <input type="text"
+                   name="notes[${noteIndex}][subtitle]"
+                   class="field-input"
+                   placeholder="Sub Title">
+
+            <button type="button"
+                    class="btn-secondary-dash remove-note-row">
+                <i class="fa fa-trash"></i>
+            </button>
+        </div>
+    `);
+
+        noteIndex++;
+    });
+
+    $(document).on('click', '.remove-note-row', function () {
+        $(this).closest('.note-row').remove();
+    });
+</script>
 @include('admin.footer')

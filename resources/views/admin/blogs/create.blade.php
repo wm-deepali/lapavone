@@ -4,6 +4,12 @@
     @include('admin.header')
 
     <style>
+        .cke_notifications_area,
+        .cke_notification,
+        .cke_notification_warning {
+            display: none !important;
+        }
+
         :root {
             --bg: #f1f2f4;
             --surface: #ffffff;
@@ -467,8 +473,9 @@
                             </div>
                             <div class="section-card-body">
                                 <div class="field-group">
-                                    <textarea name="content" class="field-textarea" rows="12" style="min-height:280px"
-                                        required placeholder="Write your blog content here…"></textarea>
+                                    <textarea name="content" id="contentEditor" required>
+        {{ old('content') }}
+    </textarea>
                                 </div>
                             </div>
                         </div>
@@ -585,7 +592,14 @@
 </div>
 
 @include('admin.footer')
-
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('contentEditor', {
+        height: 450,
+        filebrowserUploadUrl: "{{ route('admin.ckeditor.upload', ['_token' => csrf_token()]) }}",
+        filebrowserUploadMethod: 'form'
+    });
+</script>
 <script>
     // Slug auto-generate from title
     document.getElementById('title').addEventListener('keyup', function () {

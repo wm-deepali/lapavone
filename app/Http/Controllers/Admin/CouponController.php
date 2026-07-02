@@ -166,6 +166,18 @@ class CouponController extends Controller
             '{brand_name}' => config('app.name'),
         ]);
 
+        if ($customer?->email) {
+            \App\Services\Email\EmailDispatcher::send('coupon', $customer->email, [
+                '{coupon_code}' => $coupon->code,
+                '{discount_value}' => $coupon->discount_type === 'percentage'
+                    ? $coupon->discount_value . '%'
+                    : '₹' . number_format($coupon->discount_value, 2),
+                '{expiry_date}' => \Carbon\Carbon::parse($coupon->end_date)->format('d M Y'),
+                '{customer_name}' => $customer->name ?? 'Valued Customer',
+                '{store_url}' => url('/shop'),
+            ], $customer->name);
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'Coupon SMS sent successfully to ' . $request->mobile,

@@ -53,7 +53,7 @@ class Product extends Model
         'status' => 'boolean',
         'quality' => 'boolean',
         'pan_india' => 'boolean',
-
+        'product_notes' => 'array'
     ];
 
     public function category()

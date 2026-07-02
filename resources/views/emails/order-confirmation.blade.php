@@ -5,7 +5,255 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Confirmation – {{ $order->order_number }}</title>
-  @include('emails.partials.order-email-base')
+  <style>
+    /* ── Reset ── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #e8eae6;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Wrapper ── */
+    .wrapper {
+      max-width: 620px;
+      margin: 30px auto;
+      background: #ffffff;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    }
+
+    /* ── Header ── */
+    .email-header {
+      background: #1F5552;
+      text-align: center;
+      padding: 32px 30px 28px;
+      border-bottom: 3px solid #174743;
+    }
+    .email-header .brand {
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f4f5f2;
+      margin-top: 6px;
+    }
+    .email-header .tagline {
+      font-size: 11px;
+      color: #a8c4c2;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    /* ── Meta Bar ── */
+    .meta-bar {
+      display: table;
+      width: 100%;
+      background: #163e3c;
+      border-bottom: 2px solid #0f2c2a;
+    }
+    .meta-cell {
+      display: table-cell;
+      padding: 14px 16px;
+      text-align: center;
+      border-right: 1px solid #1F5552;
+      vertical-align: middle;
+    }
+    .meta-cell:last-child { border-right: none; }
+    .meta-label {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #7ab0ad;
+      margin-bottom: 3px;
+    }
+    .meta-value {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #f4f5f2;
+    }
+
+    /* ── Body ── */
+    .body {
+      padding: 36px 36px 28px;
+      background: #ffffff;
+    }
+    .greeting {
+      font-family: 'Georgia', serif;
+      font-size: 16px;
+      color: #1F5552;
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .intro {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.7;
+      margin-bottom: 28px;
+    }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #1F5552;
+      border-bottom: 2px solid #1F5552;
+      padding-bottom: 7px;
+      margin-bottom: 16px;
+    }
+
+    /* ── Order Items ── */
+    .item-row {
+      display: table;
+      width: 100%;
+      border-bottom: 1px solid #e6eae9;
+      padding: 14px 0;
+    }
+    .item-img-cell {
+      display: table-cell;
+      width: 60px;
+      vertical-align: middle;
+      padding-right: 14px;
+    }
+    .item-img {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #d0d8d7;
+    }
+    .item-img-placeholder {
+      display: block;
+      width: 56px;
+      height: 56px;
+      background: #e8efee;
+      border-radius: 4px;
+      border: 1px solid #d0d8d7;
+    }
+    .item-detail-cell {
+      display: table-cell;
+      vertical-align: middle;
+    }
+    .item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 3px;
+    }
+    .item-meta {
+      font-size: 11px;
+      color: #7a9e9c;
+    }
+    .item-price-cell {
+      display: table-cell;
+      vertical-align: middle;
+      text-align: right;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1F5552;
+      white-space: nowrap;
+    }
+
+    /* ── Info Grid ── */
+    .info-grid {
+      display: table;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .info-col {
+      display: table-cell;
+      width: 50%;
+      padding-right: 16px;
+      vertical-align: top;
+    }
+    .info-col:last-child { padding-right: 0; padding-left: 16px; }
+    .info-box {
+      background: #f4f5f2;
+      border: 1px solid #d4dbd9;
+      border-left: 3px solid #1F5552;
+      border-radius: 3px;
+      padding: 14px 16px;
+      font-size: 12px;
+      color: #444;
+      line-height: 1.7;
+    }
+    .info-box strong {
+      color: #1F5552;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .info-box p { margin: 0; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      margin: 32px 0 10px;
+    }
+    .cta-btn {
+      display: inline-block;
+      background: #1F5552;
+      color: #f4f5f2 !important;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 14px 36px;
+      border-radius: 2px;
+    }
+
+    /* ── Help Strip ── */
+    .help-strip {
+      background: #f4f5f2;
+      border-top: 1px solid #d4dbd9;
+      border-bottom: 1px solid #d4dbd9;
+      text-align: center;
+      padding: 20px 30px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.7;
+    }
+    .help-strip a {
+      color: #1F5552;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* ── Footer ── */
+    .email-footer {
+      background: #1F5552;
+      text-align: center;
+      padding: 24px 30px;
+    }
+    .brand-footer {
+      display: block;
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #f4f5f2;
+      margin-bottom: 12px;
+    }
+    .email-footer p {
+      font-size: 11px;
+      color: #7ab0ad;
+      line-height: 1.8;
+    }
+    .email-footer a {
+      color: #a8c4c2;
+      text-decoration: none;
+    }
+  </style>
 </head>
 
 <body>
@@ -16,7 +264,7 @@
     <div class="email-header">
 
       @if(!empty($logoPath))
-        <div style="background:#ffffff;display:inline-block;padding:12px 20px;border-radius:8px;margin-bottom:15px;">
+        <div style="background:#f4f5f2;display:inline-block;padding:10px 18px;border-radius:4px;margin-bottom:12px;">
           <img src="{{ $message->embed($logoPath) }}" alt="{{ $settings->site_name }}"
             style="max-height:70px;max-width:220px;">
         </div>
@@ -33,19 +281,23 @@
     </div>
 
     {{-- ── Hero ── --}}
-    <div style="background: linear-gradient(135deg, #2c1f14 0%, #4a3728 100%); padding: 40px; text-align: center;">
-      <div
-        style="width:54px;height:54px;background:#d4af7a;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:14px;">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      </div>
+    <div style="background: linear-gradient(135deg, #1F5552 0%, #2a6e6a 100%); padding: 40px; text-align: center;">
+      <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto 14px auto;">
+  <tr>
+    <td width="54" height="54" align="center" valign="middle"
+        style="width:54px;height:54px;background:#f4f5f2;border-radius:50%;">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1F5552" stroke-width="2.5"
+        stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </td>
+  </tr>
+</table>
       <h1
-        style="font-family:'Playfair Display',Georgia,serif;font-size:26px;font-weight:600;color:#f5f0e8;margin-bottom:6px;">
+        style="font-family:'Georgia',serif;font-size:26px;font-weight:600;color:#f4f5f2;margin-bottom:6px;">
         Your order is confirmed!
       </h1>
-      <p style="font-size:13px;color:#c4b49a;line-height:1.6;">
+      <p style="font-size:13px;color:#a8c4c2;line-height:1.6;">
         Thank you, {{ $order->customer_name }}. We've received your order and<br>
         our artisans are preparing your piece with care.
       </p>
@@ -155,11 +407,11 @@
           @endif
         @endif
 
-        <hr style="border:none;border-top:1px solid #ede8e0;margin:10px 0;">
+        <hr style="border:none;border-top:1px solid #d4dbd9;margin:10px 0;">
 
         <div style="display:table;width:100%;padding:5px 0;">
           <span style="display:table-cell;font-size:15px;font-weight:600;color:#1a1a1a;">Grand Total</span>
-          <span style="display:table-cell;text-align:right;font-size:16px;font-weight:700;color:#b08d57;">
+          <span style="display:table-cell;text-align:right;font-size:16px;font-weight:700;color:#1F5552;">
             ₹ {{ number_format($order->grand_total, 2) }}
           </span>
         </div>

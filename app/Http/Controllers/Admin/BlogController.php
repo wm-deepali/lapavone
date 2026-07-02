@@ -153,4 +153,24 @@ class BlogController extends Controller
 
     }
 
+    public function ckeditorUpload(Request $request)
+    {
+        if ($request->hasFile('upload')) {
+
+            $file = $request->file('upload');
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $file->move(public_path('uploads/blogs'), $filename);
+
+            $CKEditorFuncNum = $request->input('CKEditorFuncNum');
+
+            $url = asset('uploads/blogs/' . $filename);
+
+            return response(
+                "<script>window.parent.CKEDITOR.tools.callFunction($CKEditorFuncNum, '$url', 'Image uploaded successfully');</script>"
+            );
+        }
+    }
+
+
 }

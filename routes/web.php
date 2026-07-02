@@ -47,7 +47,8 @@ use App\Http\Controllers\Admin\{
     TestimonialSectionController,
     AudioSectionController,
     SmsSettingsController,
-    SmsTemplateController
+    SmsTemplateController,
+    EmailTemplateController
 };
 
 use Illuminate\Support\Facades\Route;
@@ -246,7 +247,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::resource('faqs', FaqController::class)->names('faqs');
 
         Route::resource('blogs', BlogController::class)->names('blogs');
-
+        Route::post('/ckeditor/upload', [BlogController::class, 'ckeditorUpload'])->name('ckeditor.upload');
 
         Route::resource('clients', ClientController::class)->names('clients');
 
@@ -327,6 +328,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/settings/templates/send-test', [SmsTemplateController::class, 'test'])->name('settings.templates.test');
         Route::post('/settings/templates/{eventKey}', [SmsTemplateController::class, 'update'])->name('settings.templates.update');
 
+
+        Route::post('settings/email-templates/test', [EmailTemplateController::class, 'sendTest'])->name('settings.email-templates.test');
+        Route::post('settings/email-templates/{eventKey}', [EmailTemplateController::class, 'save'])->name('settings.email-templates.save');
 
 
         // Orders routes

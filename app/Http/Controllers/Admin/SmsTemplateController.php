@@ -44,7 +44,12 @@ class SmsTemplateController extends Controller
         // Read active provider and sender from SMS settings (read-only in templates UI)
         $smsSettings = SmsSetting::first();
 
-        return view('admin.admin-settings.templates', compact('templates', 'meta', 'smsSettings'));
+        $emailData = EmailTemplateController::getData();
+
+        return view('admin.admin-settings.templates', array_merge(
+            compact('templates', 'meta', 'smsSettings'),
+            $emailData  // unpacks emailMeta, emailTemplates, smtpSettings into top-level variables
+        ));
     }
 
     /**
@@ -171,7 +176,7 @@ class SmsTemplateController extends Controller
             $sampleValues
         );
 
-        
+
         if ($result['success']) {
             return response()->json([
                 'success' => true,

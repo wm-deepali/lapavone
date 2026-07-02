@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\PasswordResetOtpMail;
 use App\Models\Customer;
 use App\Models\SmtpSetting;
+use App\Services\Email\EmailDispatcher;
 use App\Services\Sms\SmsDispatcher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -156,6 +157,9 @@ class CustomerAuthController extends Controller
             ]
         );
 
+        // ── Capture the guest session ID BEFORE Auth::login() regenerates it ──
+        $guestSessionId = session()->getId();
+
         $customer = Customer::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
@@ -165,15 +169,23 @@ class CustomerAuthController extends Controller
         ]);
 
         Auth::guard('customer')->login($customer);
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
+        $this->mergeGuestCart($customer, $guestSessionId);
+        $this->mergeGuestWishlist($customer, $guestSessionId);
 
         session()->forget(['register_mobile', 'register_otp', 'otp_verified']);
+
+        EmailDispatcher::send(
+            'welcome',
+            $customer->email,
+            [
+                '{customer_name}' => $customer->name,
+            ]
+        );
 
         return response()->json([
             'status' => true,
             'message' => 'Registration successful.',
-            'redirect' => $this->intendedRedirect(), // ← change
+            'redirect' => $this->intendedRedirect(),
         ]);
     }
 
@@ -188,6 +200,9 @@ class CustomerAuthController extends Controller
 
         $mobile = session('register_mobile');
 
+        // ── Capture the guest session ID BEFORE Auth::login() regenerates it ──
+        $guestSessionId = session()->getId();
+
         $customer = Customer::firstOrCreate(
             ['mobile' => $mobile],
             [
@@ -199,14 +214,14 @@ class CustomerAuthController extends Controller
         );
 
         Auth::guard('customer')->login($customer);
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
+        $this->mergeGuestCart($customer, $guestSessionId);
+        $this->mergeGuestWishlist($customer, $guestSessionId);
 
         session()->forget(['register_mobile', 'register_otp', 'otp_verified']);
 
         return response()->json([
             'status' => true,
-            'redirect' => $this->intendedRedirect(), // ← change
+            'redirect' => $this->intendedRedirect(),
         ]);
     }
 
@@ -289,15 +304,18 @@ class CustomerAuthController extends Controller
             ]);
         }
 
+        // ── Capture the guest session ID BEFORE Auth::login() regenerates it ──
+        $guestSessionId = session()->getId();
+
         Auth::guard('customer')->login($customer);
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
+        $this->mergeGuestCart($customer, $guestSessionId);
+        $this->mergeGuestWishlist($customer, $guestSessionId);
 
         session()->forget(['login_mobile', 'login_otp', 'login_is_new']);
 
         return response()->json([
             'status' => true,
-            'redirect' => $this->intendedRedirect(), // ← change
+            'redirect' => $this->intendedRedirect(),
         ]);
     }
 
@@ -321,15 +339,18 @@ class CustomerAuthController extends Controller
             ]);
         }
 
+        // ── Capture the guest session ID BEFORE Auth::login() regenerates it ──
+        $guestSessionId = session()->getId();
+
         Auth::guard('customer')->login($customer);
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
+        $this->mergeGuestCart($customer, $guestSessionId);
+        $this->mergeGuestWishlist($customer, $guestSessionId);
 
         $request->session()->regenerate();
 
         return response()->json([
             'status' => true,
-            'redirect' => $this->intendedRedirect(), // ← change
+            'redirect' => $this->intendedRedirect(),
         ]);
     }
 
@@ -447,11 +468,14 @@ class CustomerAuthController extends Controller
             ]
         );
 
-        Auth::guard('customer')->login($customer);
-        $this->mergeGuestCart($customer);
-        $this->mergeGuestWishlist($customer);
+        // ── Capture the guest session ID BEFORE Auth::login() regenerates it ──
+        $guestSessionId = session()->getId();
 
-        return redirect()->intended(route('home')); // ← change
+        Auth::guard('customer')->login($customer);
+        $this->mergeGuestCart($customer, $guestSessionId);
+        $this->mergeGuestWishlist($customer, $guestSessionId);
+
+        return redirect()->intended(route('home'));
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -504,24 +528,32 @@ class CustomerAuthController extends Controller
 
     private function sendEmailOtp(string $email, int $otp): void
     {
-        $smtpSetting = SmtpSetting::first();
-
-        if (!$smtpSetting) {
-            return;
-        }
-
-        MailHelper::configure();
-
-        // Resolve the customer's name so the email feels personal.
         $customer = Customer::where('email', $email)->first();
         $customerName = $customer?->name ?? 'Valued Customer';
 
-        Mail::to($email)->send(new PasswordResetOtpMail($email, $otp, $customerName));
+        $extras = \App\Models\EmailTemplate::where('event_key', 'password-reset')->first()?->extra_settings ?? [];
+        $otpExpiry = (int) ($extras['otp_expiry_minutes'] ?? 10);
+
+        EmailDispatcher::send('password-reset', $email, [
+            '{customer_name}' => $customerName,
+            '{email}' => $email,
+            '{otp}' => (string) $otp,
+            '{otp_expiry}' => (string) $otpExpiry,
+        ]);
     }
 
-    private function mergeGuestCart(Customer $customer): void
+    /**
+     * Merge a guest's cart (keyed by their pre-login session ID) into the
+     * customer's cart. The caller MUST capture $guestSessionId via
+     * session()->getId() BEFORE calling Auth::guard('customer')->login(),
+     * since login() regenerates the session ID internally
+     * (SessionGuard::updateSession() -> $session->migrate(true)).
+     * Reading session()->getId() after login() here would return the new
+     * post-login ID and silently fail to find the guest's cart.
+     */
+    private function mergeGuestCart(Customer $customer, string $guestSessionId): void
     {
-        $guestCart = Cart::where('session_id', session()->getId())->first();
+        $guestCart = Cart::where('session_id', $guestSessionId)->first();
 
         if (!$guestCart) {
             return;
@@ -529,7 +561,7 @@ class CustomerAuthController extends Controller
 
         $userCart = Cart::firstOrCreate(
             ['user_id' => $customer->id],
-            ['session_id' => session()->getId(), 'total_amount' => 0]
+            ['session_id' => $guestSessionId, 'total_amount' => 0]
         );
 
         if ($guestCart->id == $userCart->id) {
@@ -562,9 +594,13 @@ class CustomerAuthController extends Controller
         $guestCart->delete();
     }
 
-    private function mergeGuestWishlist(Customer $customer): void
+    /**
+     * Merge a guest's wishlist (keyed by their pre-login session ID) into the
+     * customer's wishlist. Same session-ID-capture rule as mergeGuestCart().
+     */
+    private function mergeGuestWishlist(Customer $customer, string $guestSessionId): void
     {
-        $guestItems = Wishlist::where('session_id', session()->getId())->get();
+        $guestItems = Wishlist::where('session_id', $guestSessionId)->get();
 
         if ($guestItems->isEmpty()) {
             return;
@@ -585,7 +621,7 @@ class CustomerAuthController extends Controller
             }
         }
 
-        Wishlist::where('session_id', session()->getId())->delete();
+        Wishlist::where('session_id', $guestSessionId)->delete();
     }
 
     /**

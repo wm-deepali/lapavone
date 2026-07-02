@@ -59,16 +59,14 @@ class SmsSetting extends Model
         'enabled',
 
         // Notification toggles
-        'notify_order_placed',
+        'notify_otp',
+        'notify_order_confirmed',
         'notify_order_shipped',
-        'notify_payment_received',
-        'notify_order_shipped',
-        'notify_out_for_delivery',
         'notify_order_delivered',
         'notify_order_cancelled',
-        'notify_refund_initiated',
+        'notify_payment_received',
+        'notify_coupon',
         'notify_abandoned_cart',
-        'notify_promotional',
     ];
 
     /**
@@ -77,27 +75,27 @@ class SmsSetting extends Model
      */
     protected $casts = [
         // Secrets — stored encrypted
-        'msg91_auth_key'        => 'encrypted',
-        'twilio_auth_token'     => 'encrypted',
-        'textlocal_api_key'     => 'encrypted',
-        'kaleyra_api_key'       => 'encrypted',
-        'vonage_api_secret'     => 'encrypted',
+        'msg91_auth_key' => 'encrypted',
+        'twilio_auth_token' => 'encrypted',
+        'textlocal_api_key' => 'encrypted',
+        'kaleyra_api_key' => 'encrypted',
+        'vonage_api_secret' => 'encrypted',
         'aws_secret_access_key' => 'encrypted',
-        'fast2sms_api_key'      => 'encrypted',
-        'sinch_api_token'       => 'encrypted',
+        'fast2sms_api_key' => 'encrypted',
+        'sinch_api_token' => 'encrypted',
 
         // Booleans
-        'enabled'                    => 'boolean',
-        'notify_order_placed'        => 'boolean',
-        'notify_otp'                 => 'boolean',
-        'notify_payment_received'    => 'boolean',
-        'notify_order_shipped'       => 'boolean',
-        'notify_out_for_delivery'    => 'boolean',
-        'notify_order_delivered'     => 'boolean',
-        'notify_order_cancelled'     => 'boolean',
-        'notify_refund_initiated'    => 'boolean',
-        'notify_abandoned_cart'      => 'boolean',
-        'notify_promotional'         => 'boolean',
+        'enabled' => 'boolean',
+        'notify_order_placed' => 'boolean',
+        'notify_otp' => 'boolean',
+        'notify_payment_received' => 'boolean',
+        'notify_order_shipped' => 'boolean',
+        'notify_out_for_delivery' => 'boolean',
+        'notify_order_delivered' => 'boolean',
+        'notify_order_cancelled' => 'boolean',
+        'notify_refund_initiated' => 'boolean',
+        'notify_abandoned_cart' => 'boolean',
+        'notify_promotional' => 'boolean',
     ];
 
     /**

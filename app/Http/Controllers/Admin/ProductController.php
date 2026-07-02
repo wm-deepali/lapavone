@@ -125,6 +125,9 @@ class ProductController extends Controller
             'banner_images' => 'nullable|array|max:10',
             'banner_images.*' => 'image|max:2048',
             'story_image' => 'nullable|image|max:2048',
+            'notes' => 'nullable|array',
+            'notes.*.title' => 'nullable|string|max:255',
+            'notes.*.subtitle' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -139,7 +142,7 @@ class ProductController extends Controller
                 'sub_title' => $request->sub_title,
                 'weight' => $request->weight,
                 'description' => $request->description,
-                'product_notes' => $request->product_notes,
+                'product_notes' => $request->notes ?? [],
                 'how_to_use' => $request->how_to_use,
                 'the_story' => $request->the_story,
                 'detail_page_color' => $request->detail_page_color ?? '#B8832F',
@@ -393,6 +396,9 @@ class ProductController extends Controller
             'banner_images' => 'nullable|array|max:10',
             'banner_images.*' => 'image|max:2048',
             'story_image' => 'nullable|image|max:2048',
+            'notes' => 'nullable|array',
+            'notes.*.title' => 'nullable|string|max:255',
+            'notes.*.subtitle' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -407,7 +413,7 @@ class ProductController extends Controller
                 'sub_title' => $request->sub_title,
                 'weight' => $request->weight,
                 'description' => $request->description,
-                'product_notes' => $request->product_notes,
+                'product_notes' => $request->notes ?? [],
                 'how_to_use' => $request->how_to_use,
                 'the_story' => $request->the_story,
                 'detail_page_color' => $request->detail_page_color ?? '#B8832F',

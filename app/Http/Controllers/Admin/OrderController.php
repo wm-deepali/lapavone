@@ -10,6 +10,7 @@ use App\Models\Courier;
 use App\Models\InvoiceSetting;
 use App\Models\Order;
 use App\Models\SmtpSetting;
+use App\Services\Sms\SmsDispatcher;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -323,35 +324,207 @@ class OrderController extends Controller
                 ]);
             }
 
+            /*
+            |--------------------------------------------------------------------------
+            | Email Notifications
+            |--------------------------------------------------------------------------
+            */
 
-            // Send status mails
             $smtpSetting = SmtpSetting::first();
 
             if ($smtpSetting) {
 
-                MailHelper::configure();
+                /*
+                |--------------------------------------------------------------------------
+                | Email Notifications
+                |--------------------------------------------------------------------------
+                */
 
-                // Shipped Mail
-                if (
-                    $request->status === 'shipped' &&
-                    $smtpSetting->order_shipped
-                ) {
-                    Mail::to($order->customer_email)
-                        ->send(
-                            new OrderShippedMail($order)
-                        );
+                // Build these once — shipped/delivered/cancelled all need them
+                // Build these once — shipped/delivered/cancelled all need them
+                $orderItems = '';
+
+                if (in_array($request->status, ['shipped', 'delivered', 'cancelled'])) {
+                    $order->loadMissing(['items.product', 'courier', 'state', 'city']);
+
+                    foreach ($order->items as $item) {
+
+                        $productImage = $item->product?->defaultImage?->image
+                            ?? $item->product?->images?->first()?->image
+                            ?? null;
+
+                        $imageHtml = $productImage
+                            ? "<img src='" . asset('storage/' . $productImage) . "' alt='{$item->product_name}' style='width:56px;height:56px;object-fit:cover;border-radius:4px;border:1px solid #d0d8d7;display:block;'>"
+                            : "<span style='display:block;width:56px;height:56px;background:#e8efee;border-radius:4px;border:1px solid #d0d8d7;'></span>";
+
+                        $weightHtml = $item->product?->weight
+                            ? "<div style='font-size:11px;color:#7a9e9c;'>{$item->product?->weight}ml</div>"
+                            : '';
+
+                        $orderItems .= "
+            <div style='display:table;width:100%;border-bottom:1px solid #e6eae9;padding:14px 0;'>
+                <div style='display:table-cell;width:60px;vertical-align:middle;padding-right:14px;'>
+                    {$imageHtml}
+                </div>
+                <div style='display:table-cell;vertical-align:middle;'>
+                    <div style='font-size:13px;font-weight:600;color:#1a1a1a;margin-bottom:3px;'>{$item->product_name}</div>
+                    {$weightHtml}
+                    <div style='font-size:11px;color:#7a9e9c;'>Qty: {$item->quantity}</div>
+                </div>
+                <div style='display:table-cell;vertical-align:middle;text-align:right;font-size:14px;font-weight:700;color:#1F5552;white-space:nowrap;'>
+                    ₹ " . number_format($item->total, 2) . "
+                </div>
+            </div>
+        ";
+                    }
+
+                    $shippingAddress = "
+        <div>
+            <strong>{$order->customer_name}</strong><br>
+            {$order->address_line_1}
+    ";
+
+                    if (!empty($order->address_line_2)) {
+                        $shippingAddress .= "<br>{$order->address_line_2}";
+                    }
+
+                    $shippingAddress .= "
+            <br>{$order->city?->name}, {$order->state?->name} - {$order->pincode}
+            <br>📞 {$order->customer_phone}
+        </div>
+    ";
                 }
 
-                // Delivered Mail
-                if (
-                    $request->status === 'delivered' &&
-                    $smtpSetting->order_delivered
-                ) {
-                    Mail::to($order->customer_email)
-                        ->send(
-                            new OrderDeliveredMail($order)
-                        );
+
+                if ($request->status === 'shipped') {
+
+                    \App\Services\Email\EmailDispatcher::send(
+                        'order-shipped',
+                        $order->customer_email,
+                        [
+                            '{customer_name}' => $order->customer_name,
+
+                            '{order_number}' => $order->order_number,
+                            '{shipped_date}' => now()->format('d M Y'),
+
+                            '{courier_name}' => $order->courier?->name ?? 'Courier Service',
+                            '{tracking_number}' => $order->tracking_number ?? 'N/A',
+                            '{tracking_url}' => $order->courier?->website_url
+                                ?? url('/track-order/' . $order->order_number),
+
+                            '{expected_delivery}' => now()->addDays(3)->format('d M Y'),
+
+                            '{grand_total}' => '₹' . number_format($order->grand_total, 2),
+
+                            '{payment_method}' => ucfirst($order->payment_method),
+                            '{payment_status}' => ucfirst($order->payment_status),
+
+                            '{order_items}' => $orderItems,
+                            '{shipping_address}' => $shippingAddress,
+
+                            '{order_url}' => route('order.success', $order->id),
+                        ],
+                        $order->customer_name
+                    );
                 }
+
+                if ($request->status === 'delivered') {
+
+                    \App\Services\Email\EmailDispatcher::send(
+                        'order-delivered',
+                        $order->customer_email,
+                        [
+                            '{customer_name}' => $order->customer_name,
+
+                            '{order_number}' => $order->order_number,
+                            '{delivered_date}' => now()->format('d M Y'),
+                            '{grand_total}' => '₹' . number_format($order->grand_total, 2),
+                            '{item_count}' => $order->items->count(),
+
+                            '{payment_method}' => ucfirst($order->payment_method),
+                            '{payment_status}' => ucfirst($order->payment_status),
+
+                            '{order_items}' => $orderItems,
+                            '{shipping_address}' => $shippingAddress,
+
+                            '{review_url}' => route('home'),
+                            '{order_url}' => route('order.success', $order->id),
+                            '{return_url}' => route('order.success', $order->id),
+                        ],
+                        $order->customer_name
+                    );
+                }
+
+                if ($request->status === 'cancelled') {
+
+                    \App\Services\Email\EmailDispatcher::send(
+                        'order-cancelled',
+                        $order->customer_email,
+                        [
+                            '{customer_name}' => $order->customer_name,
+                            '{order_number}' => $order->order_number,
+
+                            '{cancel_reason}' => $request->note ?: 'Cancelled by store',
+                            '{refund_amount}' => '₹' . number_format($order->grand_total, 2),
+                            '{refund_days}' => '5-7',
+
+                            '{shipping_address}' => $shippingAddress,
+                        ],
+                        $order->customer_name
+                    );
+                }
+
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | SMS Notifications
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $request->status === 'shipped' &&
+                !empty($order->customer_phone)
+            ) {
+
+                SmsDispatcher::send('order-shipped', $order->customer_phone, [
+                    '{order_id}' => $order->order_number,
+                    '{courier_name}' => $order->courier?->name ?? 'Courier Service',
+                    '{awb_number}' => $order->tracking_number ?? 'N/A',
+                    '{tracking_url}' => url('/track-order/' . $order->order_number),
+                    '{expected_delivery}' => now()->addDays(3)->format('d M Y'),
+                    '{customer_name}' => $order->customer_name,
+                    '{brand_name}' => config('app.name'),
+                ]);
+            }
+
+            if (
+                $request->status === 'delivered' &&
+                !empty($order->customer_phone)
+            ) {
+
+                SmsDispatcher::send('order-delivered', $order->customer_phone, [
+                    '{customer_name}' => $order->customer_name,
+                    '{order_id}' => $order->order_number,
+                    '{review_url}' => route('home'),
+                    '{store_name}' => config('app.name'),
+                    '{brand_name}' => config('app.name'),
+                ]);
+            }
+
+            if (
+                $request->status === 'cancelled' &&
+                !empty($order->customer_phone)
+            ) {
+
+                SmsDispatcher::send('order-cancelled', $order->customer_phone, [
+                    '{customer_name}' => $order->customer_name,
+                    '{order_id}' => $order->order_number,
+                    '{cancel_reason}' => $request->note ?: 'Cancelled by store',
+                    '{refund_amount}' => '₹' . number_format($order->grand_total, 2),
+                    '{refund_days}' => '5-7',
+                    '{brand_name}' => config('app.name'),
+                ]);
             }
         }
 

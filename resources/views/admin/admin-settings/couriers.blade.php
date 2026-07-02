@@ -1,25 +1,26 @@
-<form method="POST" action="{{ route('admin.couriers.store') }}">
-    @csrf
+<div class="settings-layout">
 
-    <div class="settings-layout">
+    <div class="settings-sidenav">
+        <span class="settings-sidenav-label">
+            Courier Management
+        </span>
 
-        <div class="settings-sidenav">
-            <span class="settings-sidenav-label">
-                Courier Management
-            </span>
+        <a href="#add-courier" class="active">
+            <i class="fa-solid fa-plus"></i>
+            Add Courier
+        </a>
 
-            <a href="#add-courier" class="active">
-                <i class="fa-solid fa-plus"></i>
-                Add Courier
-            </a>
+        <a href="#courier-list">
+            <i class="fa-solid fa-truck"></i>
+            Courier List
+        </a>
+    </div>
 
-            <a href="#courier-list">
-                <i class="fa-solid fa-truck"></i>
-                Courier List
-            </a>
-        </div>
+    <div class="settings-content">
 
-        <div class="settings-content">
+        <form method="POST" action="{{ route('admin.couriers.store') }}">
+            @csrf
+
 
             {{-- Add Courier --}}
             <div id="add-courier" class="settings-section">
@@ -32,6 +33,7 @@
                 <p class="settings-section-desc">
                     Add courier companies that can be selected while updating order tracking details.
                 </p>
+                <input type="hidden" name="id" id="courier_id">
 
                 <div class="form-grid">
 
@@ -41,11 +43,8 @@
                             <span class="req">*</span>
                         </label>
 
-                        <input type="text"
-                            name="name"
-                            class="field-input"
-                            placeholder="e.g. Delhivery"
-                            required>
+                        <input type="text" name="name" id="courier_name" class="field-input"
+                            placeholder="e.g. Delhivery" required>
                     </div>
 
                     <div class="field-group">
@@ -53,9 +52,7 @@
                             Website URL
                         </label>
 
-                        <input type="url"
-                            name="website_url"
-                            class="field-input"
+                        <input type="url" name="website_url" class="field-input" id="courier_url"
                             placeholder="https://www.delhivery.com">
                     </div>
 
@@ -74,16 +71,14 @@
                     </div>
 
                     <label class="toggle-switch">
-                        <input type="checkbox"
-                            name="is_active"
-                            checked>
+                        <input type="checkbox" id="courier_active" name="is_active" checked>
                         <span class="toggle-track"></span>
                     </label>
 
                 </div>
 
                 <div style="margin-top:20px;">
-                    <button type="submit" class="btn-primary-dash">
+                    <button type="submit" class="btn-primary-dash" id="courier_submit_btn">
                         <i class="fa-solid fa-floppy-disk"></i>
                         Save Courier
                     </button>
@@ -91,130 +86,123 @@
 
             </div>
 
-            <hr class="section-divider">
+        </form>
+        <hr class="section-divider">
 
-            {{-- Courier List --}}
-            <div id="courier-list" class="settings-section">
+        {{-- Courier List --}}
+        <div id="courier-list" class="settings-section">
 
-                <h3 class="settings-section-title">
-                    <i class="fa-solid fa-truck"></i>
-                    Courier List
-                </h3>
+            <h3 class="settings-section-title">
+                <i class="fa-solid fa-truck"></i>
+                Courier List
+            </h3>
 
-                <p class="settings-section-desc">
-                    Manage available courier companies.
-                </p>
+            <p class="settings-section-desc">
+                Manage available courier companies.
+            </p>
 
-                <div class="table-responsive">
+            <div class="table-responsive">
 
-                    <table class="table table-bordered align-middle">
+                <table class="table table-bordered align-middle">
 
-                        <thead>
+                    <thead>
+                        <tr>
+                            <th width="60">#</th>
+                            <th>Courier Name</th>
+                            <th>Website</th>
+                            <th width="100">Status</th>
+                            <th width="180">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @forelse($couriers as $courier)
+
                             <tr>
-                                <th width="60">#</th>
-                                <th>Courier Name</th>
-                                <th>Website</th>
-                                <th width="100">Status</th>
-                                <th width="180">Action</th>
-                            </tr>
-                        </thead>
 
-                        <tbody>
+                                <td>
+                                    {{ $loop->iteration }}
+                                </td>
 
-                            @forelse($couriers as $courier)
+                                <td>
+                                    <strong>
+                                        {{ $courier->name }}
+                                    </strong>
+                                </td>
 
-                                <tr>
+                                <td>
 
-                                    <td>
-                                        {{ $loop->iteration }}
-                                    </td>
+                                    @if($courier->website_url)
 
-                                    <td>
-                                        <strong>
-                                            {{ $courier->name }}
-                                        </strong>
-                                    </td>
+                                        <a href="{{ $courier->website_url }}" target="_blank">
+                                            {{ $courier->website_url }}
+                                        </a>
 
-                                    <td>
+                                    @else
 
-                                        @if($courier->website_url)
+                                        -
 
-                                            <a href="{{ $courier->website_url }}"
-                                                target="_blank">
-                                                {{ $courier->website_url }}
-                                            </a>
+                                    @endif
 
-                                        @else
+                                </td>
 
-                                            -
+                                <td>
 
-                                        @endif
+                                    @if($courier->is_active)
 
-                                    </td>
+                                        <span class="badge bg-success">
+                                            Active
+                                        </span>
 
-                                    <td>
+                                    @else
 
-                                        @if($courier->is_active)
+                                        <span class="badge bg-danger">
+                                            Inactive
+                                        </span>
 
-                                            <span class="badge bg-success">
-                                                Active
-                                            </span>
+                                    @endif
 
-                                        @else
+                                </td>
 
-                                            <span class="badge bg-danger">
-                                                Inactive
-                                            </span>
+                                <td>
 
-                                        @endif
+                                    <button type="button" class="btn btn-sm btn-primary edit-courier-btn"
+                                        data-id="{{ $courier->id }}" data-name="{{ $courier->name }}"
+                                        data-url="{{ $courier->website_url }}" data-active="{{ $courier->is_active }}">
+                                        Edit
+                                    </button>
 
-                                    </td>
+                                    <form action="{{ route('admin.couriers.delete', $courier) }}" method="POST"
+                                        style="display:inline-block">
 
-                                    <td>
+                                        @csrf
+                                        @method('DELETE')
 
-                                        <button type="button"
-                                            class="btn btn-sm btn-primary edit-courier-btn"
-                                            data-id="{{ $courier->id }}"
-                                            data-name="{{ $courier->name }}"
-                                            data-url="{{ $courier->website_url }}"
-                                            data-active="{{ $courier->is_active }}">
-                                            Edit
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Delete this courier?')">
+                                            Delete
                                         </button>
 
-                                        <form action="{{ route('admin.couriers.delete', $courier) }}"
-                                            method="POST"
-                                            style="display:inline-block">
+                                    </form>
 
-                                            @csrf
-                                            @method('DELETE')
+                                </td>
 
-                                            <button type="submit"
-                                                class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Delete this courier?')">
-                                                Delete
-                                            </button>
+                            </tr>
 
-                                        </form>
+                        @empty
 
-                                    </td>
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    No courier found.
+                                </td>
+                            </tr>
 
-                                </tr>
+                        @endforelse
 
-                            @empty
+                    </tbody>
 
-                                <tr>
-                                    <td colspan="5" class="text-center">
-                                        No courier found.
-                                    </td>
-                                </tr>
-
-                            @endforelse
-
-                        </tbody>
-
-                    </table>
-
-                </div>
+                </table>
 
             </div>
 
@@ -222,4 +210,39 @@
 
     </div>
 
-</form>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        document.querySelectorAll('.edit-courier-btn').forEach(button => {
+
+            button.addEventListener('click', function () {
+
+                document.getElementById('courier_id').value =
+                    this.dataset.id;
+
+                document.getElementById('courier_name').value =
+                    this.dataset.name;
+
+                document.getElementById('courier_url').value =
+                    this.dataset.url ?? '';
+
+                document.getElementById('courier_active').checked =
+                    this.dataset.active == 1;
+
+                document.getElementById('courier_submit_btn').innerHTML =
+                    '<i class="fa-solid fa-pen"></i> Update Courier';
+
+                document
+                    .getElementById('add-courier')
+                    .scrollIntoView({
+                        behavior: 'smooth'
+                    });
+
+            });
+
+        });
+
+    });
+</script>

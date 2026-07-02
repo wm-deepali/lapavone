@@ -205,6 +205,9 @@
                         <div class="checkout-summary-card">
 
                             <!-- Items -->
+                            @if($cart && $cart->items && $cart->items->count())
+
+
                             @foreach($cart->items as $item)
                                 <div class="checkout-item">
 
@@ -310,12 +313,23 @@
                                 <span class="fw-bold" id="total-val">₹{{ number_format($cart->grand_total, 2) }}</span>
                             </div>
 
+
+
                             <button class="lp-btn lp-btn-solid w-100 mt-4" style="padding: 16px; font-size: 16px;"
                                 id="place-order-btn">
                                 COMPLETE ORDER
                             </button>
                             <p class="secure-checkout mt-3 text-center"><i class="fa-solid fa-lock"></i> Secure
                                 Encrypted Checkout</p>
+                                
+                                
+@else
+
+    <div class="text-center py-4">
+        <h5>Your cart is empty</h5>
+    </div>
+
+@endif
                         </div>
                     </div>
                 </div>

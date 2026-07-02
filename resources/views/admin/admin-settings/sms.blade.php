@@ -464,17 +464,46 @@
 
                 @php
                     $notifEvents = [
-                        'notify_order_placed'     => ['Order Placed / Confirmed',    'Send SMS when a new order is successfully placed.'],
-                        'notify_otp'              => ['OTP / Order Verification',    'Send OTP for account login, COD confirmation, or order changes.'],
-                        'notify_payment_received' => ['Payment Received',            'Notify customer when payment is successfully processed.'],
-                        'notify_order_shipped'    => ['Order Shipped',               'Alert customer when the order is dispatched with tracking info.'],
-                        'notify_out_for_delivery' => ['Out for Delivery',            'Notify when the order is out for delivery.'],
-                        'notify_order_delivered'  => ['Order Delivered',             'Send a delivery confirmation SMS to the customer.'],
-                        'notify_order_cancelled'  => ['Order Cancelled',             'Notify customer when their order is cancelled.'],
-                        'notify_refund_initiated' => ['Refund Initiated',            'Inform customer when a refund has been processed.'],
-                        'notify_abandoned_cart'   => ['Abandoned Cart Reminder',     'Send a reminder SMS when a customer leaves items in cart.'],
-                        'notify_promotional'      => ['Promotional / Marketing',     'Send promotional campaigns and offers via SMS.'],
-                    ];
+    'notify_otp' => [
+        'OTP / Verification',
+        'Send OTP SMS for login, registration and verification.',
+    ],
+
+    'notify_order_confirmed' => [
+        'Order Confirmed',
+        'Send SMS when an order is confirmed.',
+    ],
+
+    'notify_payment_received' => [
+        'Payment Received',
+        'Notify customer when payment is successfully received.',
+    ],
+
+    'notify_order_shipped' => [
+        'Order Shipped',
+        'Alert customer when the order is dispatched.',
+    ],
+
+    'notify_order_delivered' => [
+        'Order Delivered',
+        'Send delivery confirmation SMS.',
+    ],
+
+    'notify_order_cancelled' => [
+        'Order Cancelled',
+        'Notify customer when an order is cancelled.',
+    ],
+
+    'notify_coupon' => [
+        'Coupon / Offer',
+        'Send promotional coupon and offer SMS.',
+    ],
+
+    'notify_abandoned_cart' => [
+        'Abandoned Cart',
+        'Send reminder SMS for abandoned carts.',
+    ],
+];
                 @endphp
 
                 <div id="sms-notif-rows" style="opacity:{{ old('enabled', $settings?->enabled) ? '1' : '0.4' }};pointer-events:{{ old('enabled', $settings?->enabled) ? 'auto' : 'none' }};transition:opacity .2s">

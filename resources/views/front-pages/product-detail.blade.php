@@ -9,12 +9,6 @@
         if ($bannerImages->isEmpty() && $defaultImg) {
             $bannerImages = collect([$defaultImg]);
         }
-
-        $notes = null;
-        if ($product->product_notes) {
-            $decoded = json_decode($product->product_notes, true);
-            $notes = is_array($decoded) ? $decoded : null;
-        }
     @endphp
 
     <style>
@@ -281,16 +275,33 @@
                             </div>
                         @endif
 
-                        @if($product->product_notes)
-                            <div class="accordion-item">
-                                <div class="accordion-header" style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
-                                    NOTES <i class="fa-solid fa-chevron-down"></i>
-                                </div>
-                                <div class="accordion-body">
-                                    <p>{!! $product->product_notes !!}</p>
-                                </div>
-                            </div>
-                        @endif
+                        
+@if(!empty($product->product_notes))
+    <div class="accordion-item">
+        <div class="accordion-header"
+            style="color: {{ $product->detail_page_color ?? '#B8832F' }};">
+            NOTES <i class="fa-solid fa-chevron-down"></i>
+        </div>
+
+        <div class="accordion-body">
+            <div class="notes-grid">
+
+                @foreach($product->product_notes as $note)
+                    <div class="note-col">
+                        <div class="note-title">
+                            {{ $note['title'] ?? '' }}
+                        </div>
+
+                        <div class="note-desc">
+                            {{ $note['subtitle'] ?? '' }}
+                        </div>
+                    </div>
+                @endforeach
+
+            </div>
+        </div>
+    </div>
+@endif
 
                         @if($product->how_to_use)
                             <div class="accordion-item">
